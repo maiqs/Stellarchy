@@ -204,6 +204,7 @@ Sources:
   - https://community.playchessup.com/t/chess-com-rematch-button/2078
 
 ## Bugs and balance
+- [x] **Invite links never loaded (round 32, there since round 3):** a fresh page at `/r/CODE` resolved `app.js`, `style.css` and the other files under `/r/` and got 404s. Creating a room only changed the address after load, so earlier tests missed it. Fixed with `<base href="/">`. The browser tests now open an invite link fresh.
 - [x] **Dark specks after battles (round 28):** debris and lasers used additive blending that also added opacity to the see-through canvas, so fading debris left black specks over the nebula backdrop. Light effects now add colour only (`lightOnly` in `client/scene.js`); checked clean after a 56-turn war.
 - [x] **Best moments wrapped badly (round 28):** each bold name became its own flex column. The text is wrapped in one span.
 - [x] **The end-of-game bar never showed (round 19):** a lost `return` (from round 9's Watch another war edit) let the waiting bar overwrite "X rules the stars". Restored and checked in a watched war.
@@ -491,3 +492,13 @@ Sources:
   - Local dev relaxes the room limit unless a test sends `x-limit-test`.
   - Tests: 50 of 50 unit and 31 of 31 room checks pass.
   - Paul was playing solo in the preview, so his tab was left alone (local games don't use the server).
+- **Round 32 (2026-11-26):**
+  - Automated browser tests (`tests/e2e.mjs`, `.\run.ps1 e2e`): headless Edge via playwright-core, with its own dev server on port 8788 and separate storage, so Paul's preview is untouched. 14 checks:
+    - title screen
+    - look editor (3D preview, dice and fish, saving)
+    - a full solo game to the results chart, the end bar (the round-19 bug), and replay open and close
+    - a card photo, and "?" opening the guide
+    - an online room (create, add AI, start), and an invite link opened fresh
+    - no script errors or 404s, and phone size with no sideways scrolling
+  - The tests found a real bug at once: invite links never loaded (see Bugs). Fixed.
+  - 50 of 50 unit tests and 14 of 14 browser checks pass.
