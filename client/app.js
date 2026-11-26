@@ -30,7 +30,7 @@ let MAP = mapOf(300), S = MAP.systems, scene = null;
 function useMap(size, centre = "Sol") {
   const m = mapOf(size, centre); if (scene && m === MAP) return;
   if (scene) scene.dispose();
-  MAP = m; S = MAP.systems; scene = createScene({ container: $("stage"), labels: $("labels"), map: MAP }); scene.onPick(onPick); scene.setSymbols(!!store.get("stellarchy_symbols", false)); scene.setRegions(store.get("stellarchy_regions", true)); applyComfort();
+  MAP = m; S = MAP.systems; scene = createScene({ container: $("stage"), labels: $("labels"), map: MAP }); scene.onPick(onPick); scene.setSymbols(!!store.get("stellarchy_symbols", false)); scene.setRegions(store.get("stellarchy_regions", true)); applyPins(); applyComfort();
 }
 
 useMap(300); scene.setAutoRotate(!document.body.classList.contains("calm"));
@@ -505,7 +505,9 @@ function renderSunCard() {
     <dl><dt>Held by</dt><dd>${o >= 0 ? hullInfo(lookOf(o).hull).glyph + " " : ""}${esc(nameOf(o))}${g && g.flagships && g.flag && g.flag[o] === i ? " ⚑ flagship" : g && g.hq.indexOf(i) >= 0 ? " ★ home" : ""}</dd><dt>Ships</dt><dd>${o === -2 ? "hidden by fog" : `${a} ${a ? `(${fleet})` : ""}`}</dd>
     <dt>Sun</dt><dd><span class="sundot" style="color:${CARD_COLOR[kind]};background:${CARD_COLOR[kind]}"></span>${esc((s.spect || "").trim() || "type unknown")}${c ? ` · ${SUN_WORDS[c] || ""}` : ""}</dd>
     <dt>Surface</dt><dd>${surfaceTemp(s)}</dd><dt>Light</dt><dd>${lightText(s)}</dd><dt>From Earth</dt><dd>${s.name === "Sol" ? "home" : s.distLy.toFixed(1) + " ly"}</dd></dl>
-    ${STAR_FACTS[s.name] ? `<p class="fact">${esc(STAR_FACTS[s.name])}</p>` : ""}`;
+    ${STAR_FACTS[s.name] ? `<p class="fact">${esc(STAR_FACTS[s.name])}</p>` : ""}
+    <button type="button" class="btn small ghost" id="scPin">${pinsGet().includes(s.name) ? "📌 Unpin" : "📌 Pin this sun"}</button>`;
+  $("scPin").onclick = ev => { ev.stopPropagation(); togglePin(s.name); renderSunCard(); };
 }
 
 // ---------- cards ----------
@@ -595,7 +597,8 @@ $("hCards").onclick = openCards;
 $("hFind").onclick = () => {
   const g = st && st.game, k = seatIx();
   openDialog(`<div class="dlg"><h2>Find a sun</h2><input id="fQ" placeholder="Name, e.g. Sirius" autocomplete="off">
-    <div class="seg">${k >= 0 && g ? `<button type="button" id="fHome">My home sun</button><button type="button" id="fBorder">My busiest border</button>` : ""}<button type="button" id="fSol">${esc(disp(S[0]))}</button></div><div class="rooms" id="fList"></div>${regionList(g, k)}</div>`, el => {
+    <div class="seg">${k >= 0 && g ? `<button type="button" id="fHome">My home sun</button><button type="button" id="fBorder">My busiest border</button>` : ""}<button type="button" id="fSol">${esc(disp(S[0]))}</button></div><div class="rooms" id="fList"></div>${pinList()}${regionList(g, k)}</div>`, el => {
+      el.querySelectorAll("#fPins [data-go]").forEach(b => b.onclick = () => { dlg.close(); selectSun(+b.dataset.go); scene.focus(+b.dataset.go, 22); render(); });
       el.querySelectorAll("[data-region]").forEach(b => b.onclick = () => { dlg.close(); const c = scene.regionCentre(+b.dataset.region); if (c) scene.flyTo(c, 45); });
       const list = el.querySelector("#fList"), go = i => { dlg.close(); selectSun(i); scene.focus(i, 22); render(); };
       const show = q => { q = q.trim().toLowerCase(); const hits = q ? S.map((s, i) => [s, i]).filter(([s]) => s.name.toLowerCase().includes(q) || (s.members || []).some(m => m.toLowerCase().includes(q))).slice(0, 12) : [];
@@ -780,7 +783,14 @@ function startReplay() {
   ui.replay = { t: 0, n: h.samples.length, playing: true, timer: 0 };
   showFrame(); tickReplay();
 }
-function showFrame() { const r = ui.replay, h = st.game.hist; scene.showOwners(replayOwners(h, r.t)); renderBar(); }
+function showFrame() {
+  const r = ui.replay, h = st.game.hist, k = seatIx(); let o = replayOwners(h, r.t);
+  if (r.mine && k >= 0) {   // your eyes only: your suns and their neighbours; the rest dark, as under fog of war
+    const vis = new Uint8Array(o.length); o.forEach((w, i) => { if (w === k) { vis[i] = 1; for (const j of MAP.adj[i]) vis[j] = 1; } });
+    o = o.map((w, i) => vis[i] ? w : -2);
+  }
+  scene.showOwners(o); renderBar();
+}
 function tickReplay() {
   const r = ui.replay; if (!r) return; clearTimeout(r.timer);
   if (!r.playing) return;
@@ -793,7 +803,9 @@ function renderReplayBar() {
   bar.innerHTML = `<p class="eyebrow">Replay · turn ${s.turn}</p>
     <div class="big" style="color:${esc(lookOf(lead).main)};font-size:1.1rem">${esc(nameOf(lead))} leads with ${s.held[lead]} suns</div>
     <div class="stepper"><button class="btn" id="rPlay" type="button" aria-label="${r.playing ? "Pause" : "Play"}">${r.playing ? "❚❚" : "▶"}</button>
-      <input type="range" id="rRange" min="0" max="${r.n - 1}" value="${r.t}" aria-label="Replay position"><button class="btn" id="rExit" type="button">Done</button></div>`;
+      <input type="range" id="rRange" min="0" max="${r.n - 1}" value="${r.t}" aria-label="Replay position"><button class="btn" id="rExit" type="button">Done</button></div>
+    ${seatIx() >= 0 ? `<div class="seg" style="justify-content:center"><button type="button" id="rAll" aria-pressed="${!r.mine}">Whole map</button><button type="button" id="rMine" aria-pressed="${!!r.mine}">Through my eyes</button></div>` : ""}`;
+  if ($("rAll")) { $("rAll").onclick = () => { r.mine = false; showFrame(); }; $("rMine").onclick = () => { r.mine = true; showFrame(); }; }
   $("rRange").oninput = e => { r.t = +e.target.value; r.playing = false; clearTimeout(r.timer); showFrame(); };
   $("rPlay").onclick = () => { if (!r.playing && r.t >= r.n - 1) r.t = 0; r.playing = !r.playing; renderBar(); if (r.playing) { showFrame(); tickReplay(); } };
   $("rExit").onclick = endReplay;
@@ -875,4 +887,15 @@ function regionList(g, me) {
       <div class="mini">${lead < 0 ? "Nobody yet" : `${all ? "Held by" : "Led by"} <span style="color:${esc(lookOf(lead).main)}">${esc(nameOf(lead))}${lead === me ? " (you)" : ""}</span>${all ? " ★" : ` · ${n} of ${c.members.length}`}`}</div></div></button>`;
   }).join("");
   return `<p class="eyebrow">Regions · hold all of one for its bonus</p><div class="rooms">${rows}</div>`;
+}
+
+// ---------- pins: favourite suns, kept per map in this browser (by name, since numbering differs per map) ----------
+function pinKey() { return `stellarchy_pins_${MAP.n}@${MAP.systems[0].name}`; }   // a function (hoisted): the first map is built before this line runs
+function pinsGet() { const p = store.get(pinKey(), []); return Array.isArray(p) ? p.filter(x => typeof x === "string").slice(0, 50) : []; }
+function applyPins() { if (!scene) return; const names = new Set(pinsGet()); scene.setPins(S.map((s, i) => names.has(s.name) ? i : -1).filter(i => i >= 0)); }
+function togglePin(name) { const p = pinsGet(), at = p.indexOf(name); if (at >= 0) p.splice(at, 1); else p.push(name); store.set(pinKey(), p); applyPins(); toast(at >= 0 ? `Unpinned ${name}.` : `Pinned ${name}. It's in Find, and its name stays on the map.`); }
+function pinList() {
+  const names = pinsGet(); if (!names.length) return "";
+  const rows = names.map(nm => S.findIndex(s => s.name === nm)).filter(i => i >= 0).map(i => `<div class="roomrow"><div class="grow">📌 ${esc(disp(S[i]))}</div><button class="btn small" data-go="${i}" type="button">Go</button></div>`).join("");
+  return `<p class="eyebrow">Pinned</p><div class="rooms" id="fPins">${rows}</div>`;
 }

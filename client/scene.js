@@ -58,7 +58,11 @@ export function createScene({ container, labels, map }) {
   controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
   controls.target.copy(P[0]); camera.position.add(P[0]);   // look at the map's centre star
 
+  // Light effects add colour but never opacity: the canvas is see-through (the nebula backdrop shows behind it),
+  // and additive blending that also adds alpha left fading debris as black specks over the backdrop (round 28).
+  const lightOnly = m => Object.assign(m, { blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor });
   // backdrop: faint distance rings and a deep starfield
+
   { const ringMat = new THREE.LineBasicMaterial({ color: 0x1a2440, transparent: true, opacity: .7 });
     for (const r of [10, 20, 30]) { const pts = []; for (let k = 0; k <= 160; k++) { const t = k / 160 * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(t) * r, 0, Math.sin(t) * r)); } scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), ringMat)); } }
   { const g = new THREE.BufferGeometry(), v = [], c = []; const rnd = seeded(11);
@@ -99,7 +103,7 @@ export function createScene({ container, labels, map }) {
         #include <colorspace_fragment>
       }`,
     });
-    const pts = new THREE.Points(g, mat); pts.frustumCulled = false; scene.add(pts); return { pts, col, alpha, pulse, g, mat };
+    lightOnly(mat); const pts = new THREE.Points(g, mat); pts.frustumCulled = false; scene.add(pts); return { pts, col, alpha, pulse, g, mat };
   };
   const glowL = pointLayer(glowTex, i => starR[i] * 6.5, .55);
   // marks: pulsing rings for "you can pick this" (home sun choices, attack targets, your selection)
@@ -186,7 +190,7 @@ export function createScene({ container, labels, map }) {
   boltGeo.setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array(MAXBOLTS * 6), 3));
   boltGeo.setAttribute("color", new THREE.Float32BufferAttribute(new Float32Array(MAXBOLTS * 6), 3));
   const boltLines = new THREE.LineSegments(boltGeo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
-  boltLines.frustumCulled = false; scene.add(boltLines);
+  boltLines.frustumCulled = false; scene.add(boltLines); lightOnly(boltLines.material);
   let bolts = [];
   function fireBattle(f, t) {
     const shots = Math.min(18, 3 + ((f.la || 0) + (f.ld || 0)) * 2);
@@ -204,7 +208,7 @@ export function createScene({ container, labels, map }) {
   const pPos = new Float32Array(MAXP * 3), pCol = new Float32Array(MAXP * 3), pVel = new Float32Array(MAXP * 3), pLife = new Float32Array(MAXP), pBase = new Float32Array(MAXP * 3);
   pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3)); pGeo.setAttribute("color", new THREE.BufferAttribute(pCol, 3));
   const sparks = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: .24, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
-  sparks.frustumCulled = false; scene.add(sparks);
+  sparks.frustumCulled = false; scene.add(sparks); lightOnly(sparks.material);
   let pNext = 0;
   function boom(p, who, cls, small) {
     if (quality === 0 && Math.random() < .5) return;   // lite effects: half the explosions throw debris
@@ -239,7 +243,7 @@ export function createScene({ container, labels, map }) {
       r.el.style.opacity = a.toFixed(2); r.el.style.transform = `translate(${(v.x + 1) / 2 * W}px, ${(1 - v.y) / 2 * H}px) translate(-50%, -50%)`;
     }
   }
-  let replay = false, flagAt = new Set(), showAllNames = false, symbols = false, selected = -1, markSet = new Map(), hoverI = -1;
+  let pins = new Set(), replay = false, flagAt = new Set(), showAllNames = false, symbols = false, selected = -1, markSet = new Map(), hoverI = -1;
 
   function paint() {
     const col = new THREE.Color();
@@ -247,7 +251,7 @@ export function createScene({ container, labels, map }) {
       const m = mainOf(owner[i]); stars.setColorAt(i, col.set(m)); glowL.col.set([col.r, col.g, col.b], i * 3);
       if (flagAt.has(i)) { col.set("#f4e3b5"); flagL.col.set([col.r, col.g, col.b], i * 3); flagL.alpha[i] = .9; } else flagL.alpha[i] = 0;
       rims.setColorAt(i, col.set(subOf(owner[i])));
-      const t = (flagAt.has(i) ? "⚑ " : hqOf[i] >= 0 ? "★ " : "") + disp(S[i]); if (lbls[i].textContent !== t) lbls[i].textContent = t;
+      const t = (pins.has(i) ? "📌 " : "") + (flagAt.has(i) ? "⚑ " : hqOf[i] >= 0 ? "★ " : "") + disp(S[i]); if (lbls[i].textContent !== t) lbls[i].textContent = t;
     }
     stars.instanceColor.needsUpdate = rims.instanceColor.needsUpdate = true; glowL.g.attributes.color.needsUpdate = true; flagL.g.attributes.color.needsUpdate = flagL.g.attributes.alpha.needsUpdate = true;
   }
@@ -374,7 +378,7 @@ export function createScene({ container, labels, map }) {
       v.copy(P[i]).project(camera); const on = v.z < 1 && Math.abs(v.x) < 1.1 && Math.abs(v.y) < 1.1;
       const x = (v.x + 1) / 2 * W, y = (1 - v.y) / 2 * H, dist = on ? camera.position.distanceTo(P[i]) : 1;
       const rpx = on ? starR[i] * 1.12 * fovK / dist : 0;
-      const l = lbls[i], showL = on && (showAllNames || dist < 26 || S[i].name === "Sol" || i === selected || i === hoverI || hqOf[i] >= 0 || flagAt.has(i) || (markSet.size <= 30 && markSet.has(i)));
+      const l = lbls[i], showL = on && (showAllNames || pins.has(i) || dist < 26 || S[i].name === "Sol" || i === selected || i === hoverI || hqOf[i] >= 0 || flagAt.has(i) || (markSet.size <= 30 && markSet.has(i)));
       if (!showL) { if (l._v !== 0) { l.style.display = "none"; l._v = 0; } } else { if (l._v !== 1) { l.style.display = ""; l._v = 1; } l.style.transform = `translate(${x}px, ${y + rpx + 3}px) translate(-50%, 0)`; }
       const c = cnts[i], mk = markSet.get(i), txt = mk && mk.text ? mk.text : (symbols && owner[i] >= 0 ? glyphOf(owner[i]) : "") + armies[i];
       if (!on || rpx < 5 || replay || (owner[i] < 0 && !(mk && mk.text))) { if (c._v !== 0) { c.style.display = "none"; c._v = 0; } continue; }
@@ -413,11 +417,13 @@ export function createScene({ container, labels, map }) {
     // drag to attack: {sources: Set of suns, targetsOf(from) -> Set, onDrop(from, to), color}, or null to turn it off
     setDrag(cfg) { dragCfg = cfg; },
     get quality() { return quality; },
+    get debug() { return { sparks, pCol, pLife, MAXP }; },   // for tests and investigation
     pickAt(x, y, touch) { return nearest(x, y, touch ? 34 : 20); },   // the sun under a screen point, or -1
     setAutoRotate(on) { controls.autoRotate = on; },
     setAllNames(on) { showAllNames = on; },
     setSymbols(on) { symbols = on; },
     setRegions(on) { showRegions = on; },
+    setPins(set) { pins = new Set(set); paint(); },   // pinned suns always show their name
     regionCentre(k) { return regions[k] ? regions[k].at.clone() : null; },
     flyTo(vec, dist) { glide(vec, dist); },
     // replay: colours only (who held each sun), no fleets or counts; setBoard() afterwards restores the live board

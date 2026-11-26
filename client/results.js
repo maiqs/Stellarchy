@@ -15,14 +15,14 @@ export function highlights(g, v) {
   const out = [], name = k => `<b style="color:${esc(v.lookOf(k).main)}">${esc(v.nameOf(k))}</b>`;
   if (g.best) {   // the biggest single battle
     let k = -1; g.best.forEach((b, j) => { if (b && (k < 0 || b.ld > g.best[k].ld)) k = j; });
-    if (k >= 0) { const b = g.best[k]; out.push(`<li><span>💥</span>Biggest battle: ${name(k)} destroyed <b>${b.ld}</b> ships at ${esc(v.sunName(b.to))}${b.cap ? " and took it" : ""} (turn ${b.turn}).</li>`); }
+    if (k >= 0) { const b = g.best[k]; out.push(`<li><span>💥</span><span>Biggest battle: ${name(k)} destroyed <b>${b.ld}</b> ships at ${esc(v.sunName(b.to))}${b.cap ? " and took it" : ""} (turn ${b.turn}).</span></li>`); }
   }
-  if (g.kos) { const top = Math.max(...g.kos); if (top > 0) { const k = g.kos.indexOf(top); out.push(`<li><span>☠</span>Most knock-outs: ${name(k)}, ${top} player${top === 1 ? "" : "s"}.</li>`); } }
+  if (g.kos) { const top = Math.max(...g.kos); if (top > 0) { const k = g.kos.indexOf(top); out.push(`<li><span>☠</span><span>Most knock-outs: ${name(k)}, ${top} player${top === 1 ? "" : "s"}.</span></li>`); } }
   const s = g.hist && g.hist.samples;   // the strongest runner-up, at their peak
   if (s && s.length > 2) {
     let k = -1, peak = 0, turn = 0;
     v.seats.forEach((_, j) => { if (j === g.winner) return; s.forEach(p => { if (p.held[j] > peak) { peak = p.held[j]; k = j; turn = p.turn; } }); });
-    if (k >= 0) out.push(`<li><span>📈</span>Closest rival: ${name(k)} held <b>${peak}</b> suns at turn ${turn}.</li>`);
+    if (k >= 0) out.push(`<li><span>📈</span><span>Closest rival: ${name(k)} held <b>${peak}</b> suns at turn ${turn}.</span></li>`);
   }
   return out.length ? `<ul class="moments">${out.join("")}</ul>` : "";
 }

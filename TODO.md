@@ -124,7 +124,7 @@ Paul: look online for features people want and give them to people. I looked at 
   - Offline play is also a frequent ask. Make it work offline as an installable web app.
 - [x] **Quick play:** one button joins an open room or starts one filled with bots that people can replace. *(Round 11: ⚡ Quick play joins a running quick room by taking over an AI player (keeping its colour), or starts a new one: 4 seats, 100 suns, 90 s turns, starting at once. If the server can't be reached it falls back to Play vs AI.)*
 - [x] **Quick chat and emotes.** Players ask for "quick chats". Use preset lines and emotes, with no free text to moderate. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
-- [x] **Finding things on big maps:** *(Round 3: search by name, plus "My home sun" and "My busiest border", are done; Round 27: region names float on the map (fading in as you zoom out, with a menu switch), and Find lists every region's bonus, size and leader; tap one to fly there. Pins are not done.)*
+- [x] **Finding things on big maps:** *(Round 3: search by name, plus "My home sun" and "My busiest border", are done; Round 27: region names float on the map (fading in as you zoom out, with a menu switch), and Find lists every region's bonus, size and leader; tap one to fly there. Round 28: pins are done. 📌 Pin from the sun card; pinned suns keep their name on the map, and Find lists them first. Saved per map.)*
   - search for a sun by name
   - pin suns
   - jump to "my borders" and "my home sun"
@@ -148,7 +148,7 @@ Sources:
 - https://steamcommunity.com/app/1128810/discussions/0/1743393963178028328
 
 - [ ] **Round 5 research:**
-  - [x] **Fog-of-war replays:** after a fogged game, show a time-lapse of the whole map, plus each player's own view turn by turn. Dominating12 players asked for exactly this. It fits the end-of-game replay item above. *(Round 19's replay is the whole-map time-lapse and works after fogged games too. Each player's own fogged view, turn by turn, is not done.)*
+  - [x] **Fog-of-war replays:** after a fogged game, show a time-lapse of the whole map, plus each player's own view turn by turn. Dominating12 players asked for exactly this. It fits the end-of-game replay item above. *(Round 19's replay is the whole-map time-lapse and works after fogged games too. Round 28: the replay has a Through my eyes switch that shows only your suns and their neighbours at each moment.)*
   - [x] **Configurable rooms:** Warzone calls its configurability one of its best features (fog level, cards, ranked or practice). Next options for us: *(Round 13: card rules (rising, fixed 8, or none) and the starting fleet (10, 20, 40), plus fog from round 12.)*
     - card rules: escalating with the cap, fixed values, or no cards
     - fog of war
@@ -204,6 +204,8 @@ Sources:
   - https://community.playchessup.com/t/chess-com-rematch-button/2078
 
 ## Bugs and balance
+- [x] **Dark specks after battles (round 28):** debris and lasers used additive blending that also added opacity to the see-through canvas, so fading debris left black specks over the nebula backdrop. Light effects now add colour only (`lightOnly` in `client/scene.js`); checked clean after a 56-turn war.
+- [x] **Best moments wrapped badly (round 28):** each bold name became its own flex column. The text is wrapped in one span.
 - [x] **The end-of-game bar never showed (round 19):** a lost `return` (from round 9's Watch another war edit) let the waiting bar overwrite "X rules the stars". Restored and checked in a watched war.
 - [x] **Hidden information leaked (round 8):** every update carried the whole deck in draw order and every player's hand, readable in the browser's developer tools. Now each viewer gets only their own hand (others as counts) and a deck count. Room checks cover it.
 - [x] **Big maps never end (top bug, round 4):** a 6-player game on 1,000 suns had not finished after 12,000 turns, at about 11 ms a turn. Fixes to try:
@@ -428,4 +430,11 @@ Sources:
   - Regions on the map: each region's name floats at its centre in its own colour, fading in as you zoom out, with a Region names switch in the menu.
   - Find now lists every region with its bonus, size, and who leads or holds it; tap one to fly there.
   - Fixed: a lost space (`onclick =()`) from an earlier edit made a pattern miss. Found by counting the hooks after the edit.
+  - 43 of 43 tests pass.
+- **Round 28 (2026-11-26):**
+  - Pins: 📌 from the sun card, labels always shown, a Pinned list in Find, saved per map by sun name.
+  - Replay: a Through my eyes switch (only what you could see at each moment).
+  - Fixed: dark specks on the map after battles. Fading debris was adding opacity to the see-through canvas; all light effects now add colour only.
+  - Fixed: best-moment lines broke into columns.
+  - Avoided a hoisting trap: `pinKey` is a function declaration, because the first map is built before that code runs.
   - 43 of 43 tests pass.
