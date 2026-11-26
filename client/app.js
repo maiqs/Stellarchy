@@ -149,6 +149,7 @@ $("mCreate").onclick = () => needName(createDialog);
 $("mJoin").onsubmit = e => { e.preventDefault(); needName(() => joinCode($("joinCode").value)); };
 $("mRooms").onclick = roomsDialog;
 $("mCredits").onclick = e => { e.preventDefault(); creditsDialog(); };
+$("mHow").onclick = e => { e.preventDefault(); howDialog(); };
 
 function optionSeg(name, opts, cur) { return `<div class="seg" data-seg="${name}">${opts.map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${String(v) === String(cur)}">${esc(l)}</button>`).join("")}</div>`; }
 function wireSegs(el, state, redraw) { el.querySelectorAll("[data-seg]").forEach(seg => seg.querySelectorAll("button").forEach(b => b.onclick = () => {
@@ -177,8 +178,8 @@ function rulesFields(o) {
     <div class="field"><span>Flagships</span>${optionSeg("flagships", [["false", "Off"], ["true", "On"]], String(!!o.flagships))}<p class="hint">${o.flagships ? "Everyone has a flagship ⚑ (at their home sun, or their biggest sun when dealt). Its guns add 1 to the best defending die. Lose it and you are out at once, and your suns go dark." : "No flagships: you are out only when you lose your last sun."}</p></div>
     ${o.mode === "dealt" ? "" : `<div class="field"><span>Starting fleet</span>${optionSeg("hqArmies", [[10, "10 ships"], [20, "20"], [40, "40"]], o.hqArmies)}<p class="hint">Ships at each home sun when the war begins. Bigger fleets spread faster.</p></div>`}`;
 }
-function soloDialog() {
-  const o = { size: 100, ...store.get("stellarchy_solo", { bots: 5, mode: "legacy", targetPct: 100, pace: "normal" }) };
+function soloDialog(preset) {
+  const o = { size: 100, ...store.get("stellarchy_solo", { bots: 5, mode: "legacy", targetPct: 100, pace: "normal" }), ...(preset || {}) };
   const draw = () => openDialog(`<form class="dlg" method="dialog"><h2>Play vs AI</h2>
     <div class="field"><span>Opponents</span>${optionSeg("bots", [[1, "1"], [2, "2"], [3, "3"], [5, "5"], [7, "7"], [11, "11"], [15, "15"], [23, "23"], [31, "31"]], o.bots)}</div>
     ${sizeField(o, o.bots + 1)}
@@ -188,14 +189,15 @@ function soloDialog() {
     ${rulesFields(o)}
     <div class="field"><span>Win at</span>${optionSeg("targetPct", [[50, "50%"], [65, "65%"], [80, "80%"], [100, "Total conquest"]], o.targetPct)}</div>
     <div class="field"><span>AI speed</span>${optionSeg("pace", [["slow", "Slow"], ["normal", "Normal"], ["fast", "Fast"], ["instant", "Instant"]], o.pace)}</div>
-    <div class="row end"><button class="btn ghost" value="cancel">Cancel</button><button class="btn go big" id="sGo" value="ok">Launch</button></div></form>`, el => {
+    <div class="row end"><button class="btn ghost small" id="sLink" type="button" title="A link that opens Play vs AI with these settings">Copy setup link</button><button class="btn ghost" value="cancel">Cancel</button><button class="btn go big" id="sGo" value="ok">Launch</button></div></form>`, el => {
       wireSegs(el, o, draw);
+      el.querySelector("#sLink").onclick = () => copySetup("solo", o);
       el.querySelector("#sGo").onclick = () => { store.set("stellarchy_solo", o); useMap(o.size, o.centre || "Sol"); startRoom(new LocalRoom(MAP, o, me)); };
     });
   draw();
 }
-function createDialog() {
-  const o = { size: 100, ...store.get("stellarchy_create", { maxSeats: 6, mode: "legacy", targetPct: 100, timer: 0, public: true, pace: "normal" }) };
+function createDialog(preset) {
+  const o = { size: 100, ...store.get("stellarchy_create", { maxSeats: 6, mode: "legacy", targetPct: 100, timer: 0, public: true, pace: "normal" }), ...(preset || {}) };
   const draw = () => openDialog(`<form class="dlg" method="dialog"><h2>Create a room</h2>
     <div class="field"><span>Seats</span>${optionSeg("maxSeats", [[2, "2"], [3, "3"], [4, "4"], [6, "6"], [8, "8"], [12, "12"], [16, "16"], [24, "24"], [32, "32"]], o.maxSeats)}<p class="hint">Empty seats can be filled with AI players before you start.${o.maxSeats > 16 ? " Big tables suit big maps (500+ suns) and long turn timers." : ""}</p></div>
     <div class="field"><span>Who can find it</span>${optionSeg("public", [["true", "Listed in open rooms"], ["false", "Link only"]], String(o.public))}</div>
@@ -205,8 +207,9 @@ function createDialog() {
     <div class="field"><span>Fog of war</span>${optionSeg("fog", [["false", "Off"], ["true", "On"]], String(!!o.fog))}<p class="hint">${o.fog ? "You see only your own suns and their neighbours. Everything else is dark until you get close." : "Everyone sees the whole map."}</p></div>
     ${rulesFields(o)}
     <div class="field"><span>Win at</span>${optionSeg("targetPct", [[50, "50%"], [65, "65%"], [80, "80%"], [100, "Total conquest"]], o.targetPct)}</div>
-    <div class="row end"><button class="btn ghost" value="cancel">Cancel</button><button class="btn go big" id="cGo" value="ok">Create</button></div></form>`, el => {
+    <div class="row end"><button class="btn ghost small" id="cLink" type="button" title="A link that opens Create a room with these settings">Copy setup link</button><button class="btn ghost" value="cancel">Cancel</button><button class="btn go big" id="cGo" value="ok">Create</button></div></form>`, el => {
       wireSegs(el, o, draw);
+      el.querySelector("#cLink").onclick = () => copySetup("room", o);
       el.querySelector("#cGo").onclick = async () => {
         o.public = o.public === true || o.public === "true"; store.set("stellarchy_create", o);
         const r = await fetch("/api/rooms", { method: "POST", body: JSON.stringify(o) }).catch(() => null);
@@ -563,7 +566,7 @@ $("hMenu").onclick = () => openDialog(`<div class="dlg"><h2>Menu</h2>
   <div class="field"><span>Sound</span><div class="seg"><button type="button" id="mSound" aria-pressed="${sound.on}">${sound.on ? "Sound on" : "Sound off"}</button></div><p class="hint">Quiet cues: your turn, your battles, captures, knock-outs and the win.</p></div>
   <div class="field"><span>Motion</span><div class="seg"><button type="button" id="mCalm" aria-pressed="${document.body.classList.contains("calm")}">Calm motion</button></div><p class="hint">No camera glides, spinning or bouncing interface. Battles still show.</p></div>
   ${"Notification" in window && Notification.permission === "default" ? `<button class="btn" id="mNotify" type="button">Alert me when it's my turn</button>` : ""}
-  <div class="row end"><button class="btn" id="mLeave" type="button">Leave game</button><button class="btn go" id="mBack" type="button">Back to the war</button></div></div>`, el => {
+  <div class="row end"><button class="btn ghost" id="mHowIn" type="button">How to play</button><button class="btn" id="mLeave" type="button">Leave game</button><button class="btn go" id="mBack" type="button">Back to the war</button></div></div>`, el => {
     el.querySelector("#mNames").onclick = () => { ui.allNames = !ui.allNames; scene.setAllNames(ui.allNames); dlg.close(); };
     el.querySelector("#mSpin").onclick = () => { ui.spin = !ui.spin; scene.setAutoRotate(ui.spin); dlg.close(); };
     el.querySelectorAll("#mCam button").forEach(b => b.onclick = () => { store.set("stellarchy_camspeed", +b.dataset.v); applyComfort(); dlg.close(); });
@@ -571,6 +574,7 @@ $("hMenu").onclick = () => openDialog(`<div class="dlg"><h2>Menu</h2>
     el.querySelector("#mCalm").onclick =() => { store.set("stellarchy_calm", !document.body.classList.contains("calm")); applyComfort(); dlg.close(); };
     el.querySelector("#mSym").onclick =() => { const on = !store.get("stellarchy_symbols", false); store.set("stellarchy_symbols", on); scene.setSymbols(on); dlg.close(); };
     const nb = el.querySelector("#mNotify"); if (nb) nb.onclick = () => { Notification.requestPermission(); dlg.close(); };
+    el.querySelector("#mHowIn").onclick = () => howDialog();
     el.querySelector("#mLeave").onclick = () => leaveRoom(); el.querySelector("#mBack").onclick = () => dlg.close();
   });
 $("hCode").onclick = share;
@@ -796,4 +800,51 @@ if ("serviceWorker" in navigator && (location.protocol === "https:" || new URLSe
     if (!room) { reloaded = true; location.reload(); }
     else promptToast("A new version of Stellarchy is ready.", "Reload", () => { reloaded = true; location.reload(); });
   });
+}
+
+// ---------- shareable setups: a link that opens Play vs AI or Create a room with the same settings ----------
+const SETUP_KEYS = { size: "n", centre: "s", mode: "s", targetPct: "n", fog: "b", cards: "s", hqArmies: "n", flagships: "b", bots: "n", maxSeats: "n", timer: "n", public: "b", pace: "s" };
+function copySetup(kind, o) {
+  const p = new URLSearchParams({ play: kind });
+  for (const k in SETUP_KEYS) if (o[k] !== undefined) p.set(k, String(o[k]));
+  const url = `${location.origin}/?${p}`;
+  (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => toast("Setup link copied. Anyone who opens it gets these settings."), () => toast(url));
+}
+// only known keys, with the right kind of value; the dialogs check the values themselves
+function readSetup(p) {
+  const o = {};
+  for (const [k, t] of Object.entries(SETUP_KEYS)) {
+    const v = p.get(k); if (v === null || v.length > 40) continue;
+    if (t === "n" && /^\d+$/.test(v)) o[k] = +v; else if (t === "b" && (v === "true" || v === "false")) o[k] = v === "true"; else if (t === "s" && /^[\w '’-]+$/.test(v)) o[k] = v;
+  }
+  return o;
+}
+{
+  const p = new URLSearchParams(location.search), kind = p.get("play");
+  if (kind === "solo" || kind === "room") { const preset = readSetup(p); history.replaceState(null, "", "/"); needName(() => kind === "solo" ? soloDialog(preset) : createDialog(preset)); }
+}
+
+// ---------- how to play ----------
+function howDialog() {
+  openDialog(`<div class="dlg how"><h2>How to play</h2>
+    <p class="hint">Take suns until you hold the win target, or every sun for total conquest. Each sun is a real star near Earth.</p>
+    <h3>Your turn</h3>
+    <ol>
+      <li><b>Reinforce.</b> New ships: a third of your suns (at least 3), plus region bonuses, plus 2 while you hold your home sun. Tap or hold your suns to place them, or Spread on borders. Then Confirm.</li>
+      <li><b>Attack.</b> Tap (or drag from) one of your suns with 2+ ships, then a neighbour. Empty suns are simply taken. Battles are dice: up to 3 attacking against up to 2 defending, highest against highest, and defenders win ties. After a capture, choose how many ships move in.</li>
+      <li><b>Fortify.</b> One move between two of your suns joined through your own space. Then End turn.</li>
+    </ol>
+    <h3>Cards</h3>
+    <p class="hint">Take at least one sun in a turn to earn a card, named for its sun's colour: red, orange or yellow-white, plus wilds. Trade three of a kind, or one of each, for ships. With five cards you must trade. Knocking a player out takes their cards.</p>
+    <h3>Regions</h3>
+    <p class="hint">Suns are grouped into regions. Hold a whole region for its bonus every turn. The sun card shows the region and its bonus.</p>
+    <h3>Room options</h3>
+    <ul>
+      <li><b>Fog of war:</b> you see only your suns and their neighbours.</li>
+      <li><b>Flagships ⚑:</b> each player's flagship adds 1 to the best defending die there. Lose it and you are out.</li>
+      <li><b>Cards:</b> rising sets (capped at 40), fixed 8-ship sets, or no cards.</li>
+      <li><b>Truces 🤝:</b> offer one from the players panel. They last 3 rounds and aren't binding, but breaking one is announced to everyone.</li>
+      <li><b>Turn timer:</b> if you run out, the AI plays in your style until you act again.</li>
+    </ul>
+    <div class="row end"><button class="btn go" id="howOk" type="button">Got it</button></div></div>`, el => el.querySelector("#howOk").onclick = () => dlg.close());
 }

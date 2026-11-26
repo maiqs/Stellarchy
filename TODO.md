@@ -137,7 +137,7 @@ Paul: look online for features people want and give them to people. I looked at 
   - a replay you can scrub through
 - [ ] **Speed controls:** skip animations, and watch bots at speed.
 - [x] **Undo before confirm:** take back placements until you press Confirm.
-- [ ] **Later:** a map editor and custom scenarios, which are big in Warzone. *(Round 22: first scenario step done: centre the map on one of 12 famous stars (Sirius, Vega, Tau Ceti and more), up to 1,000 suns off Sol. A full map editor is still open.)*
+- [ ] **Later:** a map editor and custom scenarios, which are big in Warzone. *(Round 22: first scenario step done: centre the map on one of 12 famous stars (Sirius, Vega, Tau Ceti and more), up to 1,000 suns off Sol. Round 24: setups can be shared as links (Copy setup link → a link that opens Play vs AI or Create room pre-filled). A full map editor is still open.)*
 
 Sources:
 - https://warlight.uservoice.com/forums/77051-warzone-features/filters/hot
@@ -383,3 +383,7 @@ Sources:
   - Checked offline: stopped the server, reloaded, and the page came from the cache and a solo game started. The test worker was then unregistered from the dev tab.
   - The room test fails if files are synced or pages driven against the same server while it runs (seen in rounds 15 and 23). Run it alone. Undisturbed: 27 of 27, with the 16-seat game's win target lowered to 30%.
   - 40 of 40 unit tests pass.
+- **Round 24 (2026-11-26):**
+  - How to play: a guide covering turn steps, battle dice, cards, regions and every room option (fog, flagships, card rules, truces, timers). It's on the title screen and in the in-game menu.
+  - Shareable setups: Copy setup link in Play vs AI and Create room. Opening a `?play=solo|room&…` link opens that dialog pre-filled. It reads only whitelisted keys with type checks (an injected `<script>` parameter was ignored) and tidies the address bar.
+  - 40 of 40 tests pass.
