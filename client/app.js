@@ -170,6 +170,7 @@ function rulesFields(o) {
   o.cards = o.cards || "escalating"; o.hqArmies = o.hqArmies || 10;
   return `<div class="field"><span>Cards</span>${optionSeg("cards", [["escalating", "Rising sets"], ["fixed", "Fixed sets"], ["none", "No cards"]], o.cards)}
     <p class="hint">${o.cards === "escalating" ? "Each set traded at the table pays more: 4, 6, 8, 10, 12, 15, then +5, capped at 40." : o.cards === "fixed" ? "Every set pays 8 ships, however many have been traded." : "No cards at all: ships come only from suns, regions and your home sun."}</p></div>
+    <div class="field"><span>Flagships</span>${optionSeg("flagships", [["false", "Off"], ["true", "On"]], String(!!o.flagships))}<p class="hint">${o.flagships ? "Everyone has a flagship ⚑ (at their home sun, or their biggest sun when dealt). Its guns add 1 to the best defending die. Lose it and you are out at once, and your suns go dark." : "No flagships: you are out only when you lose your last sun."}</p></div>
     ${o.mode === "dealt" ? "" : `<div class="field"><span>Starting fleet</span>${optionSeg("hqArmies", [[10, "10 ships"], [20, "20"], [40, "40"]], o.hqArmies)}<p class="hint">Ships at each home sun when the war begins. Bigger fleets spread faster.</p></div>`}`;
 }
 function soloDialog() {
@@ -270,6 +271,7 @@ function onState(m) {
 function eventToast(e, k) {
   if (e.t === "bt" && (e.a === k || e.d === k)) { sound.laser(); if (e.cap) (e.a === k ? sound.capture : sound.lost)(); }
   if (e.t === "elim") sound.out();
+  if (e.t === "flagship") toast(e.from === k ? `Your flagship has fallen to ${nameOf(e.seat)}. You are out.` : e.seat === k ? `You took the flagship of ${nameOf(e.from)}! They are out. ⚑` : `${nameOf(e.seat)} took the flagship of ${nameOf(e.from)}! ⚑`, e.from === k ? "err" : undefined);
   if (e.t === "win") sound.win();
   truceToast(e, k);
   if (e.t === "bt") { if (e.a === k) ui.rollRev = st.rev; floatLoss(e.from, e.la, e.a); floatLoss(e.to, e.ld, e.d); }
@@ -479,7 +481,7 @@ function renderSunCard() {
   el.hidden = false;
   el.innerHTML = `<p class="eyebrow">${esc(cont ? cont.name : "")}${cont ? ` · +${cont.bonus} for holding all ${cont.members.length}` : ""}</p>
     <h3><span class="swatch s" style="--sw-main:${o === -2 ? "#2c3550" : o < 0 ? "#eef2ff" : esc(lookOf(o).main)};--sw-sub:${o < 0 ? "#05070c" : esc(lookOf(o).sub)}"></span>${esc(disp(s))}</h3>
-    <dl><dt>Held by</dt><dd>${o >= 0 ? hullInfo(lookOf(o).hull).glyph + " " : ""}${esc(nameOf(o))}${g && g.hq.indexOf(i) >= 0 ? " ★ home" : ""}</dd><dt>Ships</dt><dd>${o === -2 ? "hidden by fog" : `${a} ${a ? `(${fleet})` : ""}`}</dd>
+    <dl><dt>Held by</dt><dd>${o >= 0 ? hullInfo(lookOf(o).hull).glyph + " " : ""}${esc(nameOf(o))}${g && g.flagships && g.flag && g.flag[o] === i ? " ⚑ flagship" : g && g.hq.indexOf(i) >= 0 ? " ★ home" : ""}</dd><dt>Ships</dt><dd>${o === -2 ? "hidden by fog" : `${a} ${a ? `(${fleet})` : ""}`}</dd>
     <dt>Sun</dt><dd><span class="sundot" style="color:${CARD_COLOR[kind]};background:${CARD_COLOR[kind]}"></span>${esc((s.spect || "").trim() || "type unknown")}${c ? ` · ${SUN_WORDS[c] || ""}` : ""}</dd>
     <dt>Surface</dt><dd>${surfaceTemp(s)}</dd><dt>Light</dt><dd>${lightText(s)}</dd><dt>From Earth</dt><dd>${s.name === "Sol" ? "home" : s.distLy.toFixed(1) + " ly"}</dd></dl>
     ${STAR_FACTS[s.name] ? `<p class="fact">${esc(STAR_FACTS[s.name])}</p>` : ""}`;

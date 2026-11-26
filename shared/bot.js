@@ -78,7 +78,8 @@ function placement(map, g, seat, S) {
     + (map.adj[i].some(j => g.owner[j] !== seat && map.contOf[j] === goal) ? S.continent * 2 : 0)
     + (map.adj[i].some(j => g.owner[j] < 0) ? S.claim : 0)
     + (map.adj[i].some(j => g.owner[j] >= 0 && g.owner[j] !== seat && g.owner.filter(o => o === g.owner[j]).length <= 3) ? S.elim : 0)
-    + (g.hq[seat] === i ? 2 * (S.hold + 0.5) : 0);
+    + (g.hq[seat] === i ? 2 * (S.hold + 0.5) : 0)
+    + (g.flagships && g.flag[seat] === i ? 4 * (S.hold + 0.5) : 0);   // guard the flagship: losing it ends your game
   const ranked = (fr.length ? fr : mine(g, seat)).sort((a, b) => score(b) - score(a));
   const p = {};
   if (S.spread && ranked.length > 2) {   // defensive: spread across the three most threatened borders
@@ -106,7 +107,8 @@ function chooseAttack(map, g, seat, S, aggression) {
       if (!ok) continue;
       const sc = (dOwn < 0 ? S.claim : 2.5) + (map.contOf[j] === goal ? S.continent : 0) + Math.min(3, (att - def) / (def + 1))
         + (dOwn >= 0 && counts.get(dOwn) <= 2 ? S.elim : 0) + (dOwn >= 0 && g.hq[dOwn] === j ? 2 : 0)
-        + (needCard ? S.cards : 0) - (g.hq[seat] === i && threat(map, g, i, seat) > 0 ? 2 * S.hold : 0);
+        + (needCard ? S.cards : 0) - (g.hq[seat] === i && threat(map, g, i, seat) > 0 ? 2 * S.hold : 0)
+        + (g.flagships && dOwn >= 0 && g.flag[dOwn] === j ? S.elim + 4 : 0) - (g.flagships && g.flag[seat] === i ? 3 : 0);   // hunt flagships, keep your own home
       if (sc > bs) { bs = sc; best = [i, j]; }
     }
   }

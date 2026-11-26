@@ -50,6 +50,7 @@ export class Room {
       this.s.opts.fog = !!o.fog;   // fog of war: see only your suns and their neighbours
       this.s.opts.cards = ["escalating", "fixed", "none"].includes(o.cards) ? o.cards : "escalating";
       this.s.opts.hqArmies = [10, 20, 40].includes(o.hqArmies) ? o.hqArmies : 10;
+      this.s.opts.flagships = !!o.flagships;   // room option: lose your flagship and you are out
       if (o.quick) { this.s.opts.quick = true; this.s.public = true; this.s.opts.timer = 90; }   // quick play: listed, and a 90 s clock so a vanished player is covered
       this.s.opts.size = Math.max(clampSize(o.size ?? 100), this.s.opts.maxSeats * SUNS_PER_SEAT);
       if (this.env.DEV && o.idleMs) this.s.opts.idleMs = clampInt(o.idleMs, 500, 3600000, 0);   // local tests only
@@ -208,7 +209,7 @@ export class Room {
   start() {
     const s = this.s;
     if (this.map.n < s.seats.length * SUNS_PER_SEAT) return;
-    s.game = newGame(this.map, { mode: s.opts.mode, targetPct: s.opts.targetPct, cards: s.opts.cards, hqArmies: s.opts.hqArmies, seats: s.seats }, this.rng());
+    s.game = newGame(this.map, { mode: s.opts.mode, targetPct: s.opts.targetPct, cards: s.opts.cards, hqArmies: s.opts.hqArmies, flagships: s.opts.flagships, seats: s.seats }, this.rng());
     s.status = "playing"; this.log("The war begins"); this.turnBegan();
   }
 
@@ -222,6 +223,7 @@ export class Room {
     for (const e of ev) {
       if (e.t === "turn") this.turnBegan();
       if (e.t === "elim") this.log(`${s.seats[e.seat].name} was wiped out by ${s.seats[e.by].name}`);
+      if (e.t === "flagship") this.log(`${s.seats[e.seat].name} took the flagship of ${s.seats[e.from].name}!`);
       if (e.t === "truceOffer") this.log(`${s.seats[e.from].name} offered ${s.seats[e.to].name} a truce`);
       if (e.t === "truce") this.log(`${s.seats[e.a].name} and ${s.seats[e.b].name} agreed a truce for 3 rounds`);
       if (e.t === "truceBroken") this.log(`${s.seats[e.by].name} broke the truce with ${s.seats[e.with].name}!`);
@@ -303,7 +305,7 @@ export class Room {
         }
         this.sentTo.set(ws, { owner: view.owner.slice(), armies: view.armies.slice(), rev: s.rev });
         msg = { ...base, events: view.vis ? maskEvents(base.events, view.vis) : base.events,
-                game: { ...pub, cards: g.cards.map((h, k) => k === me ? h : new Array(h.length).fill(-1)), lastRoll: view.vis && g.lastRoll && !(view.vis[g.lastRoll.from] || view.vis[g.lastRoll.to]) ? null : g.lastRoll }, board };
+                game: { ...pub, flag: view.vis && g.flag ? g.flag.map(f => f >= 0 && view.vis[f] ? f : -1) : g.flag, cards: g.cards.map((h, k) => k === me ? h : new Array(h.length).fill(-1)), lastRoll: view.vis && g.lastRoll && !(view.vis[g.lastRoll.from] || view.vis[g.lastRoll.to]) ? null : g.lastRoll }, board };
         if (a.needFull) { a.needFull = false; ws.serializeAttachment(a); }
       }
       try { ws.send(JSON.stringify(msg)); } catch (e) {}

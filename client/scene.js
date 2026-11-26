@@ -219,14 +219,14 @@ export function createScene({ container, labels, map }) {
   const disp = s => s.name === "Sol" ? "Sol (Earth)" : s.name;
   const lbls = S.map(s => { const d = document.createElement("div"); d.className = "lbl" + (s.name === "Sol" ? " sol" : ""); d.textContent = disp(s); labels.appendChild(d); return d; });
   const cnts = S.map(() => { const d = document.createElement("div"); d.className = "cnt"; labels.appendChild(d); return d; });
-  let showAllNames = false, symbols = false, selected = -1, markSet = new Map(), hoverI = -1;
+  let flagAt = new Set(), showAllNames = false, symbols = false, selected = -1, markSet = new Map(), hoverI = -1;
 
   function paint() {
     const col = new THREE.Color();
     for (let i = 0; i < n; i++) {
       const m = mainOf(owner[i]); stars.setColorAt(i, col.set(m)); glowL.col.set([col.r, col.g, col.b], i * 3);
       rims.setColorAt(i, col.set(subOf(owner[i])));
-      const t = (hqOf[i] >= 0 ? "★ " : "") + disp(S[i]); if (lbls[i].textContent !== t) lbls[i].textContent = t;
+      const t = (flagAt.has(i) ? "⚑ " : hqOf[i] >= 0 ? "★ " : "") + disp(S[i]); if (lbls[i].textContent !== t) lbls[i].textContent = t;
     }
     stars.instanceColor.needsUpdate = rims.instanceColor.needsUpdate = true; glowL.g.attributes.color.needsUpdate = true;
   }
@@ -353,7 +353,7 @@ export function createScene({ container, labels, map }) {
       v.copy(P[i]).project(camera); const on = v.z < 1 && Math.abs(v.x) < 1.1 && Math.abs(v.y) < 1.1;
       const x = (v.x + 1) / 2 * W, y = (1 - v.y) / 2 * H, dist = on ? camera.position.distanceTo(P[i]) : 1;
       const rpx = on ? starR[i] * 1.12 * fovK / dist : 0;
-      const l = lbls[i], showL = on && (showAllNames || dist < 26 || S[i].name === "Sol" || i === selected || i === hoverI || hqOf[i] >= 0 || (markSet.size <= 30 && markSet.has(i)));
+      const l = lbls[i], showL = on && (showAllNames || dist < 26 || S[i].name === "Sol" || i === selected || i === hoverI || hqOf[i] >= 0 || flagAt.has(i) || (markSet.size <= 30 && markSet.has(i)));
       if (!showL) { if (l._v !== 0) { l.style.display = "none"; l._v = 0; } } else { if (l._v !== 1) { l.style.display = ""; l._v = 1; } l.style.transform = `translate(${x}px, ${y + rpx + 3}px) translate(-50%, 0)`; }
       const c = cnts[i], mk = markSet.get(i), txt = mk && mk.text ? mk.text : (symbols && owner[i] >= 0 ? glyphOf(owner[i]) : "") + armies[i];
       if (!on || rpx < 5 || (owner[i] < 0 && !(mk && mk.text))) { if (c._v !== 0) { c.style.display = "none"; c._v = 0; } continue; }
@@ -372,6 +372,7 @@ export function createScene({ container, labels, map }) {
     setBoard(b, lookFn, events) {
       owner = b.owner.slice(); armies = b.armies.slice(); look = lookFn;
       hqOf = new Array(n).fill(-1); (b.hq || []).forEach((h, k) => { if (h >= 0 && owner[h] === k) hqOf[h] = k; });
+      flagAt = new Set(b.flagships && b.flag ? b.flag.filter((f, k) => f >= 0 && owner[f] === k) : []);
       paint(); buildFleets(events || []); paintHighlight();
     },
     clearBoard() { owner = new Array(n).fill(-1); armies = new Array(n).fill(0); hqOf = new Array(n).fill(-1); fleet = S.map(() => []); dying = []; paint(); },

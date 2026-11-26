@@ -171,7 +171,7 @@ Sources:
   - [ ] **Something to do while waiting:** the classic complaint about turn-based multiplayer is idle time. Ideas:
     - plan next turn's placement during others' turns, applied when your turn starts
     - a live "what's happening" feed
-  - [ ] **Commander or flagship (room option):** Warzone's commanders put "yourself" on the board: a unit worth 7 armies, and losing it eliminates you. A flagship at your home sun would add a target and a story.
+  - [x] **Commander or flagship (room option):** Warzone's commanders put "yourself" on the board: a unit worth 7 armies, and losing it eliminates you. A flagship at your home sun would add a target and a story. *(Round 17: a Flagships option. ⚑ at the home sun (or the biggest dealt sun); +1 on the best defending die there; losing it knocks you out and your suns go dark. The AI guards its own and hunts others. Hidden under fog unless visible.)*
   - [ ] **Simultaneous turns (big, later):** fixes waiting but changes the game; some players warn it becomes a clicking contest. Note it, don't build yet.
   - [x] **Turn notifications:** Wargroove's turn pop-ups kept multiplayer alive for players. We have browser notifications and the tab title; the long-turn sound is still open.
 
@@ -331,3 +331,11 @@ Sources:
   - Adaptive quality for slower devices: the pixel ratio drops to 1, then debris is halved, if frames stay under about 45 fps.
   - Sound, synthesised with no audio files: your-turn chime, laser for your battles, capture and loss pings, knock-out thud, win fanfare. It's quiet, it wakes on the first tap, and a menu switch turns it off.
   - 32 of 32 tests pass.
+- **Round 17 (2026-11-26):**
+  - Flagships room option (from Warzone's commanders):
+    - each player's ⚑ starts at their home sun, or their biggest sun in dealt games
+    - its guns add 1 to the best defending die
+    - capturing it knocks its player out at once, and their other suns go dark
+  - The AI guards its own flagship and hunts the others. Flagships are hidden under fog unless you can see that sun.
+  - Labels, the sun card, alerts and the log all show it, in online rooms and solo play.
+  - 33 of 33 tests pass.

@@ -146,3 +146,22 @@ test("truces: offer, accept, expire, and breaking one is announced", async () =>
   for (let k = 0; k < 3 * 3 + 1 && g.status === "playing"; k++) playTurn(MAP, g, g.turn, "balanced", rng);
   assert.equal(truceBetween(g, 1, 2), undefined, "expired");
 });
+
+test("flagships: start at home, and taking one knocks its player out", () => {
+  // computer games with flagships still run to the end
+  let rng = mulberry32(51), g = newGame(MAP, { mode: "legacy", flagships: true, seats: seats(5) }, rng);
+  runGame(MAP, g, rng);
+  assert.equal(g.status, "over");
+  // dealt: each flagship starts at that player's biggest sun
+  rng = mulberry32(52); g = newGame(MAP, { mode: "dealt", flagships: true, targetPct: 90, seats: seats(3, false) }, rng);
+  g.seats.forEach((_, p) => assert.equal(g.owner[g.flag[p]], p));
+  // capture a flagship: its player is out at once and their other suns go dark
+  const def = 1, to = g.flag[def], from = MAP.adj[to].find(j => g.owner[j] === 0) ?? (() => { const j = MAP.adj[to][0]; g.owner[j] = 0; g.armies[j] = 1; return j; })();
+  g.turn = 0; g.phase = "attack"; g.armies[from] = 500; g.armies[to] = 1;
+  const before = g.owner.filter(o => o === def).length;
+  const r = act(MAP, g, 0, { t: "attack", from, to, blitz: true }, rng);
+  assert.ok(r.ok && before > 1);
+  assert.ok(r.events.some(e => e.t === "flagship") && r.events.some(e => e.t === "elim" && e.seat === def));
+  assert.equal(g.owner.filter(o => o === def).length, 0);
+  assert.deepEqual(invariants(MAP, g), []);
+});

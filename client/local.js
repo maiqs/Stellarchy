@@ -23,7 +23,7 @@ export class LocalRoom {
       seats.push({ id: "ai_" + b, name: BOT_NAMES[b], main: f.main, sub: f.sub, hull: HULL_KEYS[(b + 1) % 5], style: STYLE_KEYS[b % STYLE_KEYS.length], ai: true, away: false, online: true });
     }
     this.seats = seats;
-    this.g = newGame(map, { mode: opts.mode, targetPct: opts.targetPct, cards: opts.cards, hqArmies: opts.hqArmies, seats }, this.rng);
+    this.g = newGame(map, { mode: opts.mode, targetPct: opts.targetPct, cards: opts.cards, hqArmies: opts.hqArmies, flagships: opts.flagships, seats }, this.rng);
     this.say("The war begins");
     setTimeout(() => { this.emit({ t: "welcome", seat: opts.watch ? null : "me", token: null, creator: true }); this.commit([]); }, 0);
   }
@@ -57,6 +57,7 @@ export class LocalRoom {
     for (const e of events) {
       if (e.t === "elim") this.say(`${this.seats[e.seat].name} was wiped out by ${this.seats[e.by].name}`);
       if (e.t === "win") this.say(`${this.seats[e.seat].name} wins with ${e.systems} suns`);
+      if (e.t === "flagship") this.say(`${this.seats[e.seat].name} took the flagship of ${this.seats[e.from].name}!`);
       if (e.t === "truce") this.say(`${this.seats[e.a].name} and ${this.seats[e.b].name} agreed a truce for 3 rounds`);
       if (e.t === "truceBroken") this.say(`${this.seats[e.by].name} broke the truce with ${this.seats[e.with].name}!`);
     }
@@ -65,7 +66,7 @@ export class LocalRoom {
     let game = g, evs = events;
     if (fogActive(g, me, this.fog)) {
       const v = maskBoard(this.map, g, me);
-      game = { ...g, owner: v.owner, armies: v.armies, totals: totals(g), fog: true, lastRoll: g.lastRoll && !(v.vis[g.lastRoll.from] || v.vis[g.lastRoll.to]) ? null : g.lastRoll };
+      game = { ...g, owner: v.owner, armies: v.armies, flag: g.flag && g.flag.map(f => f >= 0 && v.vis[f] ? f : -1), totals: totals(g), fog: true, lastRoll: g.lastRoll && !(v.vis[g.lastRoll.from] || v.vis[g.lastRoll.to]) ? null : g.lastRoll };
       evs = maskEvents(events, v.vis);
     } else game = { ...g, totals: totals(g), fog: !!this.fog };
     this.emit({ t: "state", rev: this.rev, code: null, local: true, status: g.status === "over" ? "over" : "playing", opts: { pace: this.pace, fog: !!this.fog },

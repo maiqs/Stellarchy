@@ -37,6 +37,7 @@ export function newGame(map, opts, rng) {
     targetPct: allAI ? 100 : clampPct(opts.targetPct ?? 100),   // computer-only games run to total conquest (Paul)
     cardMode: ["escalating", "fixed", "none"].includes(opts.cards) ? opts.cards : "escalating",   // room option: how card sets pay
     hqArmies: [10, 20, 40].includes(opts.hqArmies) ? opts.hqArmies : HQ_ARMIES,           // room option: the starting fleet at a home sun
+    flagships: !!opts.flagships, flag: seats.map(() => -1),   // room option: lose your flagship and you are out
     seats, owner: new Array(n).fill(-1), armies: new Array(n).fill(0), hq: seats.map(() => -1),
     turn: first, setupFirst: first, phase: "setup", reinforcements: 0, fortified: false, turnNo: 1,
     alive: seats.map(() => true), deck: shuffled([...Array(n + 2).keys()], rng), discard: [], cards: seats.map(() => []),
@@ -50,6 +51,7 @@ export function newGame(map, opts, rng) {
       for (let k = 0; k < mine.length; k++) g.armies[mine[Math.floor(rng() * mine.length)]]++;
     }
     g.phase = "reinforce"; g.reinforcements = reinforcementsFor(map, g, first);
+    if (g.flagships) g.flag = seats.map((_, p) => { let best = -1; g.owner.forEach((o, i) => { if (o === p && (best < 0 || g.armies[i] > g.armies[best])) best = i; }); return best; });   // dealt: at your biggest sun
   }
   return g;
 }
@@ -118,6 +120,7 @@ const ACTIONS = {
     if (!hqChoices(map, g).includes(sys)) return "too close to another home sun";
     const fleet = g.hqArmies || HQ_ARMIES;
     g.owner[sys] = seat; g.armies[sys] = fleet; g.hq[seat] = sys;
+    if (g.flagships) g.flag[seat] = sys;   // the flagship starts at the home sun
     ev.push({ t: "hq", seat, s: sys }, { t: "rf", s: sys, n: fleet });
     const k = g.seats.length;
     for (let d = 1; d <= k; d++) { const c = (seat + d) % k; if (g.hq[c] < 0) { g.turn = c; return; } }
@@ -166,6 +169,7 @@ const ACTIONS = {
     let lostA = 0, lostD = 0, rounds = 0, a, d;
     do {
       a = roll(Math.min(3, g.armies[from] - 1)); d = roll(Math.min(2, g.armies[to]));
+      if (g.flagships && g.flag[def] === to) d[0] = Math.min(6, d[0] + 1);   // the flagship's guns: +1 on the best defending die
       for (let k = 0; k < Math.min(a.length, d.length); k++) { if (a[k] > d[k]) { g.armies[to]--; lostD++; } else { g.armies[from]--; lostA++; } }
       rounds++;
     } while (blitz && g.armies[to] > 0 && g.armies[from] > 1);
@@ -176,6 +180,11 @@ const ACTIONS = {
     const moveIn = a.length;
     g.owner[to] = seat; g.armies[to] = moveIn; g.armies[from] -= moveIn; g.conq = true;
     if (g.hq[def] === to) ev.push({ t: "hqTaken", seat, from: def, s: to });
+    // flagship rule: taking a player's flagship knocks them out; their other suns go dark (unclaimed)
+    if (g.flagships && g.flag[def] === to) {
+      ev.push({ t: "flagship", seat, from: def, s: to });
+      for (let i = 0; i < g.owner.length; i++) if (g.owner[i] === def) { g.owner[i] = -1; g.armies[i] = 0; }
+    }
     if (!g.owner.includes(def)) {
       g.alive[def] = false; ev.push({ t: "elim", seat: def, by: seat });
       if (g.cards[def].length) { g.cards[seat].push(...g.cards[def]); g.cards[def] = []; }   // the victor takes the beaten player's cards
