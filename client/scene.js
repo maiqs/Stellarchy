@@ -117,6 +117,7 @@ export function createScene({ container, labels, map }) {
   let owner = new Array(n).fill(-1), armies = new Array(n).fill(0), hqOf = new Array(n).fill(-1), look = () => ({ main: UNCLAIMED, sub: "#05070c", hull: "triangle" });
   const mainOf = p => p < 0 ? UNCLAIMED : look(p).main, subOf = p => p < 0 ? "#05070c" : look(p).sub;
   const hullOf = p => { const h = p >= 0 && look(p).hull; return HULL_KEYS.includes(h) ? h : HULL_KEYS[Math.max(0, p) % HULLS.length]; };
+  const glyphOf = p => HULLS.find(h => h.key === hullOf(p)).glyph;
 
   // ---- fleets: persistent per system so ships can launch, travel, explode and break apart ----
   const fleetMeshes = {};
@@ -215,7 +216,7 @@ export function createScene({ container, labels, map }) {
   const disp = s => s.name === "Sol" ? "Sol (Earth)" : s.name;
   const lbls = S.map(s => { const d = document.createElement("div"); d.className = "lbl" + (s.name === "Sol" ? " sol" : ""); d.textContent = disp(s); labels.appendChild(d); return d; });
   const cnts = S.map(() => { const d = document.createElement("div"); d.className = "cnt"; labels.appendChild(d); return d; });
-  let showAllNames = false, selected = -1, markSet = new Map(), hoverI = -1;
+  let showAllNames = false, symbols = false, selected = -1, markSet = new Map(), hoverI = -1;
 
   function paint() {
     const col = new THREE.Color();
@@ -308,7 +309,7 @@ export function createScene({ container, labels, map }) {
       const rpx = on ? starR[i] * 1.12 * fovK / dist : 0;
       const l = lbls[i], showL = on && (showAllNames || dist < 26 || S[i].name === "Sol" || i === selected || i === hoverI || hqOf[i] >= 0 || (markSet.size <= 30 && markSet.has(i)));
       if (!showL) { if (l._v !== 0) { l.style.display = "none"; l._v = 0; } } else { if (l._v !== 1) { l.style.display = ""; l._v = 1; } l.style.transform = `translate(${x}px, ${y + rpx + 3}px) translate(-50%, 0)`; }
-      const c = cnts[i], mk = markSet.get(i), txt = mk && mk.text ? mk.text : String(armies[i]);
+      const c = cnts[i], mk = markSet.get(i), txt = mk && mk.text ? mk.text : (symbols && owner[i] >= 0 ? glyphOf(owner[i]) : "") + armies[i];
       if (!on || rpx < 5 || (owner[i] < 0 && !(mk && mk.text))) { if (c._v !== 0) { c.style.display = "none"; c._v = 0; } continue; }
       if (c._v !== 1) { c.style.display = ""; c._v = 1; }
       c.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
@@ -342,6 +343,7 @@ export function createScene({ container, labels, map }) {
     onPick(fn) { pickCb = fn; }, onHover(fn) { hoverCb = fn; },
     setAutoRotate(on) { controls.autoRotate = on; },
     setAllNames(on) { showAllNames = on; },
+    setSymbols(on) { symbols = on; },   // colour-blind help: each holder's ship symbol beside the count
     screenOf,
     stop() { running = false; },
     dispose() { running = false; removeEventListener("resize", resize); renderer.dispose(); renderer.domElement.remove(); labels.innerHTML = ""; scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); },

@@ -75,5 +75,16 @@ check(a.state.status === "over", `game finished (turn ${a.state.game.turnNo}, ${
 const sneaky = client(code, { name: "Late" }); await sneaky.ready; await until(() => sneaky.state);
 check(sneaky.seat === null, "a late arrival watches instead of taking a seat");
 for (const c of [a, bb, sneaky]) c.ws.close();
+// an idle room closes itself (needs DEV=1 in .dev.vars for the short idle time)
+{
+  const r = await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 2, public: true, idleMs: 1500 }) });
+  const { code: idle } = await r.json();
+  const c = client(idle, { name: "Idle" }); await c.ready; await until(() => c.state);
+  c.ws.close(); await sleep(3500);
+  const after = await fetch(BASE + `/api/rooms/${idle}`);
+  check(after.status === 404, `an empty room closes itself after its idle time (${idle}: ${after.status})`);
+  const list = await (await fetch(BASE + "/api/rooms")).json();
+  check(!list.rooms.some(x => x.code === idle), "a closed room leaves the lobby list");
+}
 console.log(failures ? `${failures} FAILED` : "all room checks passed");
 process.exit(failures ? 1 : 0);

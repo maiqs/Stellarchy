@@ -6,6 +6,7 @@ import { hqChoices, mustTrade, isSet, connected, cardKind, ownedBy, target, effP
 import { STYLES, STYLE_KEYS } from "./shared/bot.js";
 import { createScene, HULLS, fleetOf, CLASSES } from "./scene.js";
 import { LocalRoom } from "./local.js";
+import { EMOTES } from "./shared/emotes.js";
 import { CARD_NAMES, CARD_COLOR, STAR_FACTS, SUN_WORDS, surfaceTemp, disp, lightText } from "./cards.js";
 
 const $ = id => document.getElementById(id);
@@ -13,6 +14,8 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const PALETTE = ["#ff4d5a", "#3e9bff", "#f5d90a", "#3fcf6a", "#b06bff", "#ff8a2a", "#22d3c5", "#ff6fb5", "#9dff3a", "#ffffff", "#5b6bff", "#ff3df2", "#00e5ff", "#ffb3a7", "#c9a227", "#7cffc4"];
 const SUBS = ["#ffffff", "#0b0f18", "#ffe066", "#ff4d5a", "#3e9bff", "#3fcf6a", "#b06bff", "#ff8a2a"];
+// Okabe-Ito colours: told apart by people with the common kinds of colour blindness
+const CB_SAFE = ["#e69f00", "#56b4e9", "#009e73", "#f0e442", "#0072b2", "#d55e00", "#cc79a7", "#ffffff"];
 const store = { get(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 
 // ---------- boot ----------
@@ -24,7 +27,7 @@ let MAP = mapOf(300), S = MAP.systems, scene = null;
 function useMap(size) {
   const m = mapOf(size); if (scene && m === MAP) return;
   if (scene) scene.dispose();
-  MAP = m; S = MAP.systems; scene = createScene({ container: $("stage"), labels: $("labels"), map: MAP }); scene.onPick(onPick);
+  MAP = m; S = MAP.systems; scene = createScene({ container: $("stage"), labels: $("labels"), map: MAP }); scene.onPick(onPick); scene.setSymbols(!!store.get("stellarchy_symbols", false));
 }
 
 useMap(300); scene.setAutoRotate(true);
@@ -53,6 +56,7 @@ function lookDialog(after) {
     <div class="preview"><span class="swatch" style="--sw-main:${d.main};--sw-sub:${d.sub}"></span><div><b>${esc(d.name || "Stellarch")}</b><div class="hint">${HULLS.find(h => h.key === d.hull).name} ships · ${esc(STYLES[d.style].name)}</div></div></div>
     <label class="field"><span>Name</span><input id="lName" maxlength="24" value="${esc(d.name)}" placeholder="Stellarch of Sol" autocomplete="nickname"></label>
     <div class="field"><span>Main colour</span><div class="palette">${PALETTE.map(c => `<button type="button" data-main="${c}" style="--c:${c}" aria-label="${c}" aria-pressed="${c === d.main}"></button>`).join("")}</div></div>
+    <div class="field"><span>Colour-blind-safe colours</span><div class="palette">${CB_SAFE.map(c => `<button type="button" data-main="${c}" style="--c:${c}" aria-label="${c} (colour-blind safe)" aria-pressed="${c === d.main}"></button>`).join("")}</div></div>
     <div class="field"><span>Highlight colour</span><div class="palette">${SUBS.map(c => `<button type="button" data-sub="${c}" style="--c:${c}" aria-label="${c}" aria-pressed="${c === d.sub}"></button>`).join("")}</div></div>
     <div class="field"><span>Ships</span><div class="seg hulls">${HULLS.map(h => `<button type="button" data-hull="${h.key}" aria-pressed="${h.key === d.hull}" title="${h.name}">${h.glyph}</button>`).join("")}</div></div>
     <div class="field"><span>Play style</span><div class="seg">${STYLE_KEYS.map(k => `<button type="button" data-style="${k}" aria-pressed="${k === d.style}">${esc(STYLES[k].name)}</button>`).join("")}</div><p class="hint">${esc(STYLES[d.style].blurb)} The AI plays this way for you if you step away.</p></div>
@@ -78,11 +82,12 @@ function startRoom(r) {
     if (m.t === "welcome") { mySeat = m.seat; isCreator = !!m.creator; if (m.token && st && st.code) store.set("stellarchy_tok_" + st.code, m.token); }
     else if (m.t === "state") onState(m);
     else if (m.t === "error") toast(m.error, "err");
-    else if (m.t === "emote") { const s = st && st.seats.find(x => x.id === m.seat); if (s) toast(`${s.name}: ${m.e}`); }
+    else if (m.t === "emote") showEmote(m.seat, m.e);
     else if (m.t === "closed") toast("Connection lost. Reconnecting…", "err");
     else if (m.t === "gone") { leaveRoom(); toast("That room has closed.", "err"); }
   });
   $("title").hidden = true; $("hud").hidden = false; scene.setAutoRotate(false);
+  setTimeout(() => showHints(), 600);
 }
 function leaveRoom() {
   if (room) room.close(); room = null; st = null; mySeat = null;
@@ -132,7 +137,8 @@ function optionSeg(name, opts, cur) { return `<div class="seg" data-seg="${name}
 function wireSegs(el, state, redraw) { el.querySelectorAll("[data-seg]").forEach(seg => seg.querySelectorAll("button").forEach(b => b.onclick = () => { const v = b.dataset.v; state[seg.dataset.seg] = isNaN(+v) ? v : +v; redraw(); })); }
 
 // map size picker: suns from 10 to 3,000, never fewer than 4 per seat
-const sizeWords = n => n <= 25 ? "a few minutes" : n <= 100 ? "about 15–40 minutes" : n <= 300 ? "an hour or more" : n <= 1000 ? "a long campaign" : "epic: best over days, with long turns";
+// measured with 4–6 AI players (round 6): 50 suns ≈ 7 turns each, 100 ≈ 20, 300 ≈ 60
+const sizeWords = n => n <= 25 ? "a few minutes" : n <= 50 ? "about 10 minutes" : n <= 100 ? "about 20–40 minutes" : n <= 200 ? "about an hour" : n <= 300 ? "1–2 hours" : n <= 1000 ? "a long campaign" : "epic: best over days, with long turns";
 function sizeField(o, seats) {
   const min = seats * 4, steps = SIZE_STEPS.filter(s => s >= min);
   if (o.size < min) o.size = steps.find(s => s >= min) || 3000;
@@ -140,7 +146,7 @@ function sizeField(o, seats) {
     <p class="hint">The ${o.size.toLocaleString()} nearest real star systems to Earth${o.size >= 1000 ? ", out to " + Math.round(mapOf(o.size).systems.at(-1).distLy) + " light years" : ""}. A game takes ${sizeWords(o.size)}.${o.size >= 1000 ? " Fainter stars are missing from the catalogue this far out, so big maps lean towards brighter stars." : ""}</p></div>`;
 }
 function soloDialog() {
-  const o = { size: 300, ...store.get("stellarchy_solo", { bots: 5, mode: "legacy", targetPct: 100, pace: "normal" }) };
+  const o = { size: 100, ...store.get("stellarchy_solo", { bots: 5, mode: "legacy", targetPct: 100, pace: "normal" }) };
   const draw = () => openDialog(`<form class="dlg" method="dialog"><h2>Play vs AI</h2>
     <div class="field"><span>Opponents</span>${optionSeg("bots", [[1, "1"], [2, "2"], [3, "3"], [5, "5"], [7, "7"], [11, "11"], [15, "15"]], o.bots)}</div>
     ${sizeField(o, o.bots + 1)}
@@ -155,7 +161,7 @@ function soloDialog() {
   draw();
 }
 function createDialog() {
-  const o = { size: 300, ...store.get("stellarchy_create", { maxSeats: 6, mode: "legacy", targetPct: 100, timer: 0, public: true, pace: "normal" }) };
+  const o = { size: 100, ...store.get("stellarchy_create", { maxSeats: 6, mode: "legacy", targetPct: 100, timer: 0, public: true, pace: "normal" }) };
   const draw = () => openDialog(`<form class="dlg" method="dialog"><h2>Create a room</h2>
     <div class="field"><span>Seats</span>${optionSeg("maxSeats", [[2, "2"], [3, "3"], [4, "4"], [6, "6"], [8, "8"], [12, "12"], [16, "16"]], o.maxSeats)}<p class="hint">Empty seats can be filled with AI players before you start.</p></div>
     <div class="field"><span>Who can find it</span>${optionSeg("public", [["true", "Listed in open rooms"], ["false", "Link only"]], String(o.public))}</div>
@@ -397,7 +403,7 @@ function renderPlayers() {
     const cards = g && g.cards[k] ? g.cards[k].length : 0;
     return `<div class="prow ${g && g.turn === k && g.status === "playing" ? "turn" : ""} ${out ? "out" : ""}" style="--pc:${esc(s.main)}">
       <span class="swatch s" style="--sw-main:${esc(s.main)};--sw-sub:${esc(s.sub)}"></span>
-      <span class="nm">${esc(s.name)}${tag ? `<small>${tag}</small>` : ""}</span>
+      <span class="nm"><span class="glyph" title="${esc((HULLS.find(h => h.key === s.hull) || HULLS[0]).name)} ships">${(HULLS.find(h => h.key === s.hull) || HULLS[0]).glyph}</span> ${esc(s.name)}${tag ? `<small>${tag}</small>` : ""}</span>
       <span class="st">${g ? `${sys} ☀ · ${ships}${cards ? ` · ${cards}▤` : ""}` : ""}${!g && isCreator && s.id !== mySeat ? `<button class="btn small ghost" data-rm="${esc(s.id)}" type="button" aria-label="Remove">✕</button>` : ""}</span>
       ${g ? `<span class="bar-track"><i style="width:${(100 * sys / total).toFixed(1)}%"></i></span>` : ""}</div>`;
   }).join("") + (mySeat ? `<button class="btn small ghost" id="pLook" type="button">Edit my look</button>` : `<p class="hint">You're watching.</p>`);
@@ -421,7 +427,7 @@ function renderSunCard() {
   el.hidden = false;
   el.innerHTML = `<p class="eyebrow">${esc(cont ? cont.name : "")}${cont ? ` · +${cont.bonus} for holding all ${cont.members.length}` : ""}</p>
     <h3><span class="swatch s" style="--sw-main:${o < 0 ? "#eef2ff" : esc(lookOf(o).main)};--sw-sub:${o < 0 ? "#05070c" : esc(lookOf(o).sub)}"></span>${esc(disp(s))}</h3>
-    <dl><dt>Held by</dt><dd>${esc(nameOf(o))}${g && g.hq.indexOf(i) >= 0 ? " ★ home" : ""}</dd><dt>Ships</dt><dd>${a} ${a ? `(${fleet})` : ""}</dd>
+    <dl><dt>Held by</dt><dd>${o >= 0 ? (HULLS.find(h => h.key === lookOf(o).hull) || HULLS[0]).glyph + " " : ""}${esc(nameOf(o))}${g && g.hq.indexOf(i) >= 0 ? " ★ home" : ""}</dd><dt>Ships</dt><dd>${a} ${a ? `(${fleet})` : ""}</dd>
     <dt>Sun</dt><dd><span class="sundot" style="color:${CARD_COLOR[kind]};background:${CARD_COLOR[kind]}"></span>${esc((s.spect || "").trim() || "type unknown")}${c ? ` · ${SUN_WORDS[c] || ""}` : ""}</dd>
     <dt>Surface</dt><dd>${surfaceTemp(s)}</dd><dt>Light</dt><dd>${lightText(s)}</dd><dt>From Earth</dt><dd>${s.name === "Sol" ? "home" : s.distLy.toFixed(1) + " ly"}</dd></dl>
     ${STAR_FACTS[s.name] ? `<p class="fact">${esc(STAR_FACTS[s.name])}</p>` : ""}`;
@@ -473,11 +479,13 @@ function winDialog() {
 
 // ---------- top bar ----------
 $("hMenu").onclick = () => openDialog(`<div class="dlg"><h2>Menu</h2>
-  <div class="field"><span>Show</span><div class="seg"><button type="button" id="mNames" aria-pressed="${!!ui.allNames}">All sun names</button><button type="button" id="mSpin" aria-pressed="${!!ui.spin}">Slow rotation</button></div></div>
+  <div class="field"><span>Show</span><div class="seg"><button type="button" id="mNames" aria-pressed="${!!ui.allNames}">All sun names</button><button type="button" id="mSpin" aria-pressed="${!!ui.spin}">Slow rotation</button><button type="button" id="mSym" aria-pressed="${!!store.get("stellarchy_symbols", false)}">Ship symbols on suns</button></div>
+  <p class="hint">Ship symbols put each holder's ship shape (▲ ■ ▬ ● ◓) beside the count, so colour is never the only clue.</p></div>
   ${"Notification" in window && Notification.permission === "default" ? `<button class="btn" id="mNotify" type="button">Alert me when it's my turn</button>` : ""}
   <div class="row end"><button class="btn" id="mLeave" type="button">Leave game</button><button class="btn go" id="mBack" type="button">Back to the war</button></div></div>`, el => {
     el.querySelector("#mNames").onclick = () => { ui.allNames = !ui.allNames; scene.setAllNames(ui.allNames); dlg.close(); };
     el.querySelector("#mSpin").onclick = () => { ui.spin = !ui.spin; scene.setAutoRotate(ui.spin); dlg.close(); };
+    el.querySelector("#mSym").onclick = () => { const on = !store.get("stellarchy_symbols", false); store.set("stellarchy_symbols", on); scene.setSymbols(on); dlg.close(); };
     const nb = el.querySelector("#mNotify"); if (nb) nb.onclick = () => { Notification.requestPermission(); dlg.close(); };
     el.querySelector("#mLeave").onclick = () => leaveRoom(); el.querySelector("#mBack").onclick = () => dlg.close();
   });
@@ -511,3 +519,41 @@ if (linked) needName(() => joinCode(linked[1]));
 window.stellarchy = { MAP, scene, get state() { return st; }, ui };   // for debugging and tests
 // keep floating cards clear of the action bar, whatever its height
 new ResizeObserver(() => document.documentElement.style.setProperty("--barh", $("bar").offsetHeight + "px")).observe($("bar"));
+
+// ---------- quick chat: preset lines float as bubbles over the sender's home sun ----------
+$("emotePop").innerHTML = EMOTES.map(e => `<button type="button" role="menuitem" data-emote="${esc(e)}">${esc(e)}</button>`).join("");
+$("emotePop").addEventListener("click", ev => { const b = ev.target.closest("[data-emote]"); if (!b || !room) return; room.send({ t: "emote", e: b.dataset.emote }); toggleEmotes(false); });
+function toggleEmotes(on) { const p = $("emotePop"); on = on ?? p.hidden; p.hidden = !on; $("hEmote").setAttribute("aria-expanded", on); }
+$("hEmote").onclick = () => { if (!mySeat) return toast("Watchers can't chat. Join a room to take part."); toggleEmotes(); };
+addEventListener("pointerdown", ev => { if (!$("emotePop").hidden && !ev.target.closest("#emotePop, #hEmote")) toggleEmotes(false); });
+function showEmote(seatId, e) {
+  if (!st) return; const k = st.seats.findIndex(s => s.id === seatId); if (k < 0) return;
+  const s = st.seats[k], g = st.game;
+  // over their home sun, else their biggest fleet, else the top of the screen
+  let at = null;
+  if (g) { let i = g.hq[k] >= 0 && g.owner[g.hq[k]] === k ? g.hq[k] : -1; if (i < 0) { let best = 0; g.owner.forEach((o, j) => { if (o === k && g.armies[j] > best) { best = g.armies[j]; i = j; } }); } if (i >= 0) at = scene.screenOf(i); }
+  if (!at || at[0] < 0 || at[0] > innerWidth || at[1] < 60 || at[1] > innerHeight - 120) at = [innerWidth / 2, 110];
+  const b = document.createElement("div"); b.className = "bubble";
+  b.style.setProperty("--bc", s.main); b.style.setProperty("--at", `translate(${Math.round(Math.min(innerWidth - 140, Math.max(8, at[0] + 10)))}px, ${Math.round(at[1] - 54)}px)`);
+  b.innerHTML = `<small>${esc(s.name)}</small>${esc(e)}`;
+  $("bubbles").appendChild(b); setTimeout(() => b.remove(), 2900);
+  while ($("bubbles").children.length > 6) $("bubbles").firstChild.remove();
+}
+
+// ---------- first-game hints: three short tips, once per browser ----------
+const HINTS = [
+  ["Every light is a real star", "These are Sol and its nearest neighbours, placed where they really are. Lines are hyperlanes: ships travel along them."],
+  ["The bar tells you what to do", "Your turn has three steps: place new ships, attack, then move ships once. The glowing bar at the bottom always says what's next."],
+  ["Look around", "Drag to turn the map, scroll or pinch to zoom, tap any sun to see who holds it. ⌕ finds a sun by name."],
+];
+function showHints(step = 0) {
+  dlg.classList.add("tip"); dlg.addEventListener("close", () => dlg.classList.remove("tip"), { once: true });
+  if (store.get("stellarchy_hints_done", false)) return;
+  if (step >= HINTS.length) { store.set("stellarchy_hints_done", true); return; }
+  const [h, p] = HINTS[step];
+  openDialog(`<div class="dlg"><p class="eyebrow">Tip ${step + 1} of ${HINTS.length}</p><h2>${h}</h2><p class="hint" style="font-size:.95rem">${p}</p>
+    <div class="row end"><button class="btn ghost" id="hSkip" type="button">Skip tips</button><button class="btn go" id="hNext" type="button">${step + 1 < HINTS.length ? "Next" : "Let's go"}</button></div></div>`, el => {
+      el.querySelector("#hSkip").onclick = () => { store.set("stellarchy_hints_done", true); dlg.close(); };
+      el.querySelector("#hNext").onclick = () => { if (step + 1 >= HINTS.length) { store.set("stellarchy_hints_done", true); dlg.close(); } else showHints(step + 1); };
+    });
+}

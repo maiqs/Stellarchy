@@ -7,6 +7,7 @@ import { buildMap, clampSize } from "../shared/mapgen.js";
 import { prepareMap, mulberry32 } from "../shared/map.js";
 import { newGame, act, MAX_SEATS, SUNS_PER_SEAT } from "../shared/rules.js";
 import { botIntent, STYLE_KEYS } from "../shared/bot.js";
+import { EMOTES, botEmotes } from "../shared/emotes.js";
 
 // maps are built per size and kept for reuse (the same size always gives the same map)
 const MAPS = new Map();
@@ -48,10 +49,11 @@ export class Room {
         seats: [], tokens: {}, creator: null, game: null, rev: 0, log: [], seed: (Math.random() * 2 ** 31) | 0, rngState: 0,
         turnStarted: 0, deadline: 0,
       };
-      this.s.opts.size = Math.max(clampSize(o.size ?? 300), this.s.opts.maxSeats * SUNS_PER_SEAT);
+      this.s.opts.size = Math.max(clampSize(o.size ?? 100), this.s.opts.maxSeats * SUNS_PER_SEAT);
+      if (this.env.DEV && o.idleMs) this.s.opts.idleMs = clampInt(o.idleMs, 500, 3600000, 0);   // local tests only
       if (o.allAI) { for (let k = 0; k < this.s.opts.maxSeats; k++) this.addBot(); }
       await this.save(); await this.report();
-      if (o.allAI) { this.start(); await this.commit(); }
+      if (o.allAI) { this.start(); await this.commit(); } else await this.schedule();
       return Response.json({ ok: true });
     }
     if (!this.s) return new Response("no such room", { status: 404 });
@@ -74,10 +76,12 @@ export class Room {
 
   // ---- WebSocket messages ----
   async webSocketMessage(ws, raw) {
+    if (!this.s) { try { ws.close(1000, "room closed"); } catch (e) {} return; }
     const a = ws.deserializeAttachment() || {};
+    this.s.lastSeen = Date.now();   // people, not computer moves, keep a room alive
     const now = Date.now(); a.bucket = Math.min(20, (a.bucket ?? 20) + (now - (a.last || now)) / 250); a.last = now;   // 4 messages a second, bursts of 20
     if (a.bucket < 1) { ws.send(JSON.stringify({ t: "error", error: "slow down" })); ws.serializeAttachment(a); return; }
-    a.bucket--;
+    a.bucket--; ws.serializeAttachment(a);   // saved every message, or the limit never bites
     let m; try { m = JSON.parse(typeof raw === "string" ? raw : new TextDecoder().decode(raw)); } catch (e) { return; }
     if (!m || typeof m.t !== "string" || (typeof raw === "string" && raw.length > 4000)) return;
     const reply = o => ws.send(JSON.stringify(o));
@@ -123,7 +127,10 @@ export class Room {
         seat.away = !!m.on; seat.autoAway = false; this.log(m.on ? `${seat.name} handed their seat to the AI` : `${seat.name} took their seat back`);
         this.syncGameSeats(); break;
       }
-      case "emote": if (typeof m.e === "string" && EMOTES.includes(m.e)) { this.broadcast({ t: "emote", seat: seatId, e: m.e }); } return;
+      case "emote": {   // one every 2 s per connection
+        if (typeof m.e !== "string" || !EMOTES.includes(m.e) || now - (a.emoted || 0) < 2000) return;
+        a.emoted = now; ws.serializeAttachment(a); this.broadcast({ t: "emote", seat: seatId, e: m.e }); return;
+      }
       case "intent": {
         const g = s.game; if (!g || s.status !== "playing") return reply({ t: "error", error: "no game running" });
         const k = s.seats.indexOf(seat);
@@ -140,10 +147,12 @@ export class Room {
   async webSocketClose(ws) { await this.dropped(ws); }
   async webSocketError(ws) { await this.dropped(ws); }
   async dropped(ws) {
-    const a = ws.deserializeAttachment() || {}; if (!a.seat || !this.s) return;
+    if (!this.s) return;
+    this.s.lastSeen = Date.now();
+    const a = ws.deserializeAttachment() || {}; if (!a.seat) { await this.schedule(); return; }
     const still = this.ctx.getWebSockets().some(w => w !== ws && (w.deserializeAttachment() || {}).seat === a.seat);
     const st = this.s.seats.find(x => x.id === a.seat); if (!st || still) return;
-    st.online = false; st.lostAt = Date.now();
+    st.online = false; st.lostAt = Date.now(); this.s.lastSeen = Date.now();
     if (this.s.status === "lobby") { /* keep lobby seats; the creator can remove them */ }
     await this.commit();
   }
@@ -189,10 +198,13 @@ export class Room {
       if (e.t === "win") { s.status = "over"; this.log(`${s.seats[e.seat].name} wins with ${e.systems} suns`); }
     }
     s.lastEvents = ev; s.lastEventsRev = s.rev + 1;
+    for (const b of botEmotes(ev, s.seats, Math.random)) this.broadcast({ t: "emote", seat: s.seats[b.seat].id, e: b.e });
   }
 
   async alarm() {
-    const s = this.s; if (!s || s.status !== "playing") return;
+    const s = this.s; if (!s) return;
+    if (await this.cleanupDue()) return;
+    if (s.status !== "playing") { await this.schedule(); return; }
     const g = s.game, k = g.turn, st = s.seats[k], now = Date.now();
     // a dropped human gets a short grace, then the AI covers them until they return
     for (const x of s.seats) if (!x.ai && !x.online && !x.away && x.lostAt && now - x.lostAt > GRACE_MS) { x.away = true; x.autoAway = true; this.log(`${x.name} lost connection: the AI is playing for them`); }
@@ -211,8 +223,10 @@ export class Room {
   }
 
   async schedule() {
-    const s = this.s; if (s.status !== "playing") { await this.ctx.storage.deleteAlarm(); return; }
-    const k = s.game.turn, now = Date.now(); const times = [];
+    const s = this.s, now = Date.now(), times = [], cleanup = this.cleanupAt();
+    if (cleanup) times.push(cleanup);
+    if (s.status !== "playing") { if (times.length) await this.ctx.storage.setAlarm(Math.max(now + 20, times[0])); else await this.ctx.storage.deleteAlarm(); return; }
+    const k = s.game.turn;
     if (this.controlledByAI(k)) times.push(now + PACES[s.opts.pace]);
     if (s.deadline) times.push(s.deadline);
     for (const x of s.seats) if (!x.ai && !x.online && !x.away && x.lostAt) times.push(x.lostAt + GRACE_MS + 50);
@@ -220,6 +234,17 @@ export class Room {
     await this.ctx.storage.setAlarm(Math.max(now + 20, Math.min(...times)));
   }
 
+  // ---- cleanup: rooms nobody is connected to close after a while ----
+  // 30 min idle (10 min once finished); long-turn rooms (12 h or 24 h timers) are kept for 7 days
+  idleLimit() { const s = this.s; if (this.env.DEV && s.opts.idleMs) return s.opts.idleMs; return s.status === "over" ? 10 * 60000 : s.opts.timer >= 43200 ? 7 * 86400000 : 30 * 60000; }
+  cleanupAt() { return this.ctx.getWebSockets().some(w => w.readyState === 1) ? 0 : (this.s.lastSeen || this.s.created || Date.now()) + this.idleLimit(); }
+  async cleanupDue() {
+    const at = this.cleanupAt(); if (!at || Date.now() < at) return false;
+    const code = this.s.code;
+    try { await this.env.LOBBY.get(this.env.LOBBY.idFromName("lobby")).fetch("https://lobby/report", { method: "POST", body: JSON.stringify({ code, public: false }) }); } catch (e) {}
+    await this.ctx.storage.deleteAlarm(); await this.ctx.storage.deleteAll(); this.s = null;
+    return true;
+  }
   // ---- saving and broadcasting ----
   rng() { const s = this.s; s.rngState = (s.rngState + 1) | 0; return mulberry32(s.seed ^ Math.imul(s.rngState, 0x9E3779B1)); }
   log(text) { this.s.log.push({ text, t: Date.now() }); if (this.s.log.length > MAX_LOG) this.s.log.splice(0, this.s.log.length - MAX_LOG); }
@@ -240,5 +265,4 @@ export class Room {
   }
 }
 
-export const EMOTES = ["gg", "wow", "oops", "thanks", "nice", "hurry", "truce?", "betrayal!", "👋", "😂", "😱", "🔥"];
 function clampInt(v, lo, hi, d) { v = Math.round(+v); return Number.isFinite(v) ? Math.max(lo, Math.min(hi, v)) : d; }

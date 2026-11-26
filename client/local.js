@@ -3,6 +3,7 @@
 import { newGame, act } from "./shared/rules.js";
 import { botIntent, STYLE_KEYS } from "./shared/bot.js";
 import { mulberry32 } from "./shared/map.js";
+import { EMOTES, botEmotes } from "./shared/emotes.js";
 
 const PALETTE = ["#ff4d5a", "#3e9bff", "#f5d90a", "#3fcf6a", "#b06bff", "#ff8a2a", "#22d3c5", "#ff6fb5", "#9dff3a", "#ffffff", "#5b6bff", "#ff3df2", "#00e5ff", "#ffb3a7", "#c9a227", "#7cffc4"];
 const PSUB = ["#ffe066", "#ffffff", "#ff4d5a", "#0b0f18", "#3fcf6a", "#3e9bff", "#ff6fb5", "#22d3c5", "#b06bff", "#ff4d5a", "#f5d90a", "#ffffff", "#ff8a2a", "#3e9bff", "#0b0f18", "#b06bff"];
@@ -36,6 +37,7 @@ export class LocalRoom {
   send(m) {
     const g = this.g, me = this.seats.findIndex(s => s.id === "me");
     if (m.t === "pace" && PACES[m.pace]) { this.pace = m.pace; return this.commit([]); }
+    if (m.t === "emote" && EMOTES.includes(m.e) && me >= 0) { this.emit({ t: "emote", seat: "me", e: m.e }); return; }
     if (m.t === "away") { if (me >= 0) { this.seats[me].away = !!m.on; this.g.seats = this.seats; } return this.commit([]); }
     if (m.t !== "intent" || me < 0) return;
     if (this.seats[me].away) this.seats[me].away = false;
@@ -44,6 +46,7 @@ export class LocalRoom {
     this.commit(r.events);
   }
   commit(events) {
+    for (const b of botEmotes(events, this.seats, this.rng)) setTimeout(() => this.emit({ t: "emote", seat: this.seats[b.seat].id, e: b.e }), 400 + this.rng() * 900);
     this.rev++;
     for (const e of events) {
       if (e.t === "elim") this.say(`${this.seats[e.seat].name} was wiped out by ${this.seats[e.by].name}`);

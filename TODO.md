@@ -26,7 +26,7 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
    - [x] `client/`: the page (Three.js, the same r128 neon renderer to start).
    - [x] `server/`: the Worker plus the `Room` Durable Object.
    - [x] `shared/`: the rules (`rules.js`), the map helpers (`map.js`) and the bots (`bot.js`), used by both.
-   - [ ] `data/star_map.json`: 301 systems, lanes and continents. HYG v4.1, CC BY-SA 4.0, credited.
+   - [x] ~~`data/star_map.json`~~ replaced in round 4 by `data/stars.json` (3,000 systems) plus `shared/mapgen.js`. HYG v4.1, CC BY-SA 4.0, credited.
    - [x] `run.ps1`: test, soak and dev.
 3. **Server owns the game**
    - [x] Clients send intents (`place`, `attack`, `move`, `fortify`, `trade`, `endTurn`). The room checks them, rolls the dice, and broadcasts the state and the fx events over WebSocket.
@@ -37,7 +37,7 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
    - [x] Create a room (public or private, seats 2–16, start mode, win %, an all-computer game option). Get a code and a copy-link button. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
    - [x] The lobby lists open public rooms only: seats free, started or not. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
    - [x] Join by code or link. The creator can add or remove bots and start the game. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
-   - [ ] A spectator mode for full or running rooms.
+   - [x] A spectator mode for full or running rooms.
 4b. **Map size slider (Paul, 2026-11-25): 10 to 3,000 suns**
    - [x] **Data:** rebuild the star file with the 3,000 nearest systems, sorted by distance from Sol. The C# builder in `../star_diplomacy/tools` has a 16 pc cap; lift it to about 35 pc. The file is about 400 KB raw and about 100 KB gzipped.
      - Beyond about 20 pc, HYG misses many faint red dwarfs, so big maps lean toward brighter stars. Say so on the credits or info page.
@@ -61,14 +61,14 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
      - all-bot games finish at 10, 300 and 3,000
      - 60 fps on a mid phone at 3,000
 4c. **AI seats and play styles (Paul, 2026-11-25)**
-   - [ ] **All-AI games** default to total conquest (100%). Human games keep the win-% choice.
-   - [ ] **AI takes over a seat** when its player steps away: they disconnect, or miss a turn timer. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
+   - [x] **All-AI games** default to total conquest (100%). Human games keep the win-% choice.
+   - [x] **AI takes over a seat** when its player steps away: they disconnect, or miss a turn timer. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
      - The seat keeps the player's name, colours and token. The seat row shows a small "AI" badge ("Ana (AI playing)").
      - The bot plays in that player's preferred style.
-   - [ ] **The player can return** to their seat at any time with the same browser token, or a rejoin link. They take control back at once. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
+   - [x] **The player can return** to their seat at any time with the same browser token, or a rejoin link. They take control back at once. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
      - If the bot is mid-turn, it finishes its current attack and hands over. No turn is lost.
      - A "Let AI play for me" toggle lets a player hand over on purpose (to grab a coffee).
-   - [ ] **Play styles**, on the main menu (the five style tunings are in `shared/bot.js`; the menu is not built yet): the player picks a preferred style, saved in the browser. It shows as a little icon on their seat. The same styles drive the computer players, which get one at random or the creator sets it per bot.
+   - [x] **Play styles**, on the main menu (the five style tunings are in `shared/bot.js`; the menu is not built yet): the player picks a preferred style, saved in the browser. It shows as a little icon on their seat. The same styles drive the computer players, which get one at random or the creator sets it per bot.
      - **Aggressive:** attacks at lower odds, chases eliminations, keeps few ships at home.
      - **Defensive:** stacks the borders, attacks only at strong odds, holds its continents.
      - **Card hunter:** takes one system every turn to earn a card, saves for big trades, and targets weak players holding many cards.
@@ -80,14 +80,14 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
    - [x] Only the seated player whose turn it is can act. The server rolls all dice.
    - [x] Turn timer: a player who stays quiet is auto-skipped (a bot can play their turn after N misses).
    - [x] Rate limits per connection. Names are length-limited and escaped.
-   - [ ] Empty rooms close after a while. Finished rooms are kept briefly to show the result, then removed.
+   - [x] Empty rooms close after a while. Finished rooms are kept briefly to show the result, then removed. *(Round 6: 30 min with nobody connected, 10 min once finished, 7 days for 12 h or 24 h turn rooms. Tested with a dev-only short idle time.)*
 6. **UI pass (the big one)**
    - [x] Full-screen 3D map. The UI floats on it as neon glass panels, with no big side columns.
    - [x] One clear action bar at the bottom: "YOUR TURN: place 7 ships" → "Attack or end" → "Fortify". Big touch targets.
    - [ ] Tap a star to select it; neighbours light up as targets. Drag or tap to attack, with a dice animation and the result inline. *(Round 3: tap to select, then tap a target, is done; drag-to-attack and a dice animation are not.)*
    - [x] Collapsible drawers: players, cards, log. Hidden by default on phones.
    - [ ] Responsive layout: portrait phone, landscape phone, tablet, desktop. Test at 360×640, 390×844, 768×1024, 1366×768, 1920×1080, 3440×1440. *(Round 3: checked at phone portrait and 1024×768. Other sizes still to test.)*
-   - [ ] First-game hints: three short coach marks, dismissable, shown once.
+   - [x] First-game hints: three short coach marks, dismissable, shown once.
    - [x] A title screen with a slowly turning star map, plus Play / Create room / Join by code.
    - [ ] Settings: bot speed, camera sensitivity, reduced motion, colour-blind-friendly outlines.
    - [ ] Performance: cap the pixel ratio on phones and keep 60 fps on a mid phone. Fall back to fewer effects.
@@ -110,20 +110,20 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
 
 ## Player wishes (online research, 2026-11-25)
 Paul: look online for features people want and give them to people. I looked at Warzone's feature-request forum, Board Game Arena bug reports, and Steam threads for the big official conquest game. These are forum anecdotes, not surveys. Re-check every round ending in 5.
-- [ ] **Never freeze on a quitter.** The top complaint everywhere is games stuck on a departed player's turn. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
+- [x] **Never freeze on a quitter.** The top complaint everywhere is games stuck on a departed player's turn. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
   - AI takeover (step 4c) covers it. Also show a plain "Skipping in 10 s" so nobody waits blind.
 - [ ] **Fair, server-side timers with a grace period.** Board Game Arena players got booted by a timer that ran out before their turn even showed. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
   - Run the clock on the room and start it only once the turn has reached the client.
   - Add extra time when there are many ships to place.
   - Show "time banks" rather than an instant kick.
-- [ ] **Timer choice per room:** none (friends), 90 s, 3 min, or a long-turn mode (12 or 24 h) where AI covers a missed turn. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
+- [x] **Timer choice per room:** none (friends), 90 s, 3 min, or a long-turn mode (12 or 24 h) where AI covers a missed turn. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
   - Long turns need turn alerts: the browser notification API, a flashing tab title and a sound. Email needs accounts, so skip it. *(Round 3: the browser notification and the tab title are done; a sound is not.)*
-- [ ] **No pay-to-play limits, ever.** The big official game's most common complaint is free-tier token caps.
+- [x] **No pay-to-play limits, ever.** The big official game's most common complaint is free-tier token caps.
   - Say it on the title screen: "Free. No tokens, no timers on how much you play."
 - [x] **Solo play against AI with no server.** The rules are shared, so a solo game can run fully in the browser.
   - Offline play is also a frequent ask. Make it work offline as an installable web app.
 - [ ] **Quick play:** one button joins an open room or starts one filled with bots that people can replace.
-- [ ] **Quick chat and emotes.** Players ask for "quick chats". Use preset lines and emotes, with no free text to moderate. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
+- [x] **Quick chat and emotes.** Players ask for "quick chats". Use preset lines and emotes, with no free text to moderate. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
 - [ ] **Finding things on big maps:** *(Round 3: search by name, plus "My home sun" and "My busiest border", are done; pins and the region list are not.)*
   - search for a sun by name
   - pin suns
@@ -154,7 +154,7 @@ Sources:
     - fog of war
     - starting fleet size
   - [ ] **Non-binding truces:** online Diplomacy's appeal is negotiation. Keep it light, with no free-text chat: a "Propose a truce for 3 turns" button the other player accepts or ignores. The game shows truces on the map, but anyone can break one, and breaking it is announced.
-  - [ ] **Colour-blind support:** NetEase found colour-correction use matches the share of colour-blind players. Add a colour-blind-safe palette preset and a per-player pattern or glyph on stars and in the players list, so colour is never the only cue.
+  - [x] **Colour-blind support:** NetEase found colour-correction use matches the share of colour-blind players. Add a colour-blind-safe palette preset and a per-player pattern or glyph on stars and in the players list, so colour is never the only cue. *(Round 6: Okabe-Ito colour-blind-safe colours in the look editor, ship symbols beside names, and a menu option for symbols on every sun.)*
   - [ ] **Portrait and landscape:** 47% of players in that case study switched orientation. Keep both layouts first-class; the landscape phone layout is still untested.
   - [ ] **Ranked play:** this needs accounts, so skip it for now. A local "your record" (wins, best game) in the browser is a free stand-in.
 
@@ -181,8 +181,8 @@ Sources:
   - The tuner now has identity rules: aggressive keeps the lowest odds, defensive the most hold and reserve, the card hunter the most card focus, territorial the most claiming. A second run is going.
   - Round 5, third tuner run (200 games): balanced 13.8%, aggressive 14.7%, territorial 12.9%, defensive 11.6%, card hunter 9.7%, against a fair share of 12.6%. Applied: card hunter margin 0 and region focus 2.7, territorial hold 0.66.
   - Hand-tuning is noisy, swinging several points between 50 and 80 games. Next: an automatic tuner (`TUNE=` env in `tests/soak.js`), running many seeds and nudging each style toward the fair share.
-- [ ] **Automatic tuner** (`tests/tune.js`, round 4): hill-climbs one style weight at a time across 240 games on 28 threads, keeping changes that bring win rates closer together. The first run is going in the background; apply `tests/tune_result.json` next round.
-- [ ] **Games are long:** (round 5: with the card cap the median is down to 781 turns, from 1,712; max 2,116) a median of 1,712 turns from one home sun to total conquest. At "fast" (0.15 s a move) a computer-only game takes hours. Consider a faster pace for computer-only games, or a bigger home start.
+- [x] **Automatic tuner** (`tests/tune.js`, round 4): hill-climbs one style weight at a time across 240 games on 28 threads, keeping changes that bring win rates closer together. The first run is going in the background; apply `tests/tune_result.json` next round.
+- [x] **Games are long:** (round 5: with the card cap the median is down to 781 turns, from 1,712; max 2,116) a median of 1,712 turns from one home sun to total conquest. At "fast" (0.15 s a move) a computer-only game takes hours. Consider a faster pace for computer-only games, or a bigger home start. *(Round 6: new games default to 100 suns, about 20 turns each, and the size picker shows measured lengths.)*
 - [x] **Card trades snowball:** late games reached stacks of 40,000 ships. Fixed in round 5 by capping a set at 40 ships.
 
 ## Round log
@@ -231,3 +231,12 @@ Sources:
   - Gave the tuner identity rules. The second run skipped every candidate, because territorial claimed less than defensive. Fixed (territorial claim 6.5) and started a third run.
   - Online research (round ending in 5) added to Player wishes: fog-of-war replays, configurable rooms, non-binding truces, colour-blind support, orientation, and a local record as a stand-in for ranked play.
   - 28 of 28 tests pass, including full games on 1,000 and 3,000 suns.
+- **Round 6 (2026-11-26):**
+  - Ticked 10 items that were already done.
+  - Long games: new games default to 100 suns, with measured length hints (50 suns ≈ 7 turns each, 100 ≈ 20, 300 ≈ 60).
+  - Quick chat: a ☺ button with 14 preset lines and emoji, shown as a bubble over the sender's home sun, with a 2 s cooldown. AI players react now and then to eliminations, lost home suns and wins.
+  - Colour-blind support: Okabe-Ito colours, ship symbols in the players list and sun card, and an optional symbol beside every sun's count.
+  - First-game tips: three, shown once, with a light backdrop.
+  - Idle rooms close and leave the lobby.
+  - Fixed: the per-connection rate limit was never saved, so it didn't limit anything.
+  - Tests: 28 of 28 unit tests and 14 of 14 room checks pass.
