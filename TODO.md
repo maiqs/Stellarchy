@@ -20,23 +20,23 @@ Host it on Cloudflare's free plan. Workers serves the page, and each room is one
 1. **Tools**
    - [x] Node.js 26.13.1 LTS: the portable zip from nodejs.org (hash checked) in `Documents	ools
 ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
-   - [ ] Wrangler (Cloudflare's CLI, via npm).
-   - [ ] Run everything locally with `wrangler dev`. No account and nothing public until Paul says go.
+   - [x] Wrangler (Cloudflare's CLI, via npm).
+   - [x] Run everything locally with `wrangler dev`. No account and nothing public until Paul says go.
 2. **Project layout**
    - [ ] `client/`: the page (Three.js, the same r128 neon renderer to start).
-   - [ ] `server/`: the Worker plus the `Room` Durable Object.
+   - [x] `server/`: the Worker plus the `Room` Durable Object.
    - [x] `shared/`: the rules (`rules.js`), the map helpers (`map.js`) and the bots (`bot.js`), used by both.
    - [ ] `data/star_map.json`: 301 systems, lanes and continents. HYG v4.1, CC BY-SA 4.0, credited.
    - [x] `run.ps1`: test, soak and dev.
 3. **Server owns the game**
-   - [ ] Clients send intents (`place`, `attack`, `move`, `fortify`, `trade`, `endTurn`). The room checks them, rolls the dice, and broadcasts the state and the fx events over WebSocket.
-   - [ ] A late joiner gets the full state on connect.
-   - [ ] Reconnect keeps your seat: a per-browser player token in localStorage, no account.
-   - [ ] Bots run in the room on alarms, so a game keeps going when every tab closes.
+   - [x] Clients send intents (`place`, `attack`, `move`, `fortify`, `trade`, `endTurn`). The room checks them, rolls the dice, and broadcasts the state and the fx events over WebSocket.
+   - [x] A late joiner gets the full state on connect.
+   - [ ] Reconnect keeps your seat: a per-browser player token in localStorage, no account. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
+   - [x] Bots run in the room on alarms, so a game keeps going when every tab closes.
 4. **Rooms and lobby**
-   - [ ] Create a room (public or private, seats 2–16, start mode, win %, an all-computer game option). Get a code and a copy-link button.
-   - [ ] The lobby lists open public rooms only: seats free, started or not.
-   - [ ] Join by code or link. The creator can add or remove bots and start the game.
+   - [ ] Create a room (public or private, seats 2–16, start mode, win %, an all-computer game option). Get a code and a copy-link button. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
+   - [ ] The lobby lists open public rooms only: seats free, started or not. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
+   - [ ] Join by code or link. The creator can add or remove bots and start the game. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
    - [ ] A spectator mode for full or running rooms.
 4b. **Map size slider (Paul, 2026-11-25): 10 to 3,000 suns**
    - [ ] **Data:** rebuild the star file with the 3,000 nearest systems, sorted by distance from Sol. The C# builder in `../star_diplomacy/tools` has a 16 pc cap; lift it to about 35 pc. The file is about 400 KB raw and about 100 KB gzipped.
@@ -62,10 +62,10 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
      - 60 fps on a mid phone at 3,000
 4c. **AI seats and play styles (Paul, 2026-11-25)**
    - [ ] **All-AI games** default to total conquest (100%). Human games keep the win-% choice.
-   - [ ] **AI takes over a seat** when its player steps away: they disconnect, or miss a turn timer.
+   - [ ] **AI takes over a seat** when its player steps away: they disconnect, or miss a turn timer. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
      - The seat keeps the player's name, colours and token. The seat row shows a small "AI" badge ("Ana (AI playing)").
      - The bot plays in that player's preferred style.
-   - [ ] **The player can return** to their seat at any time with the same browser token, or a rejoin link. They take control back at once.
+   - [ ] **The player can return** to their seat at any time with the same browser token, or a rejoin link. They take control back at once. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
      - If the bot is mid-turn, it finishes its current attack and hands over. No turn is lost.
      - A "Let AI play for me" toggle lets a player hand over on purpose (to grab a coffee).
    - [ ] **Play styles**, on the main menu (the five style tunings are in `shared/bot.js`; the menu is not built yet): the player picks a preferred style, saved in the browser. It shows as a little icon on their seat. The same styles drive the computer players, which get one at random or the creator sets it per bot.
@@ -77,9 +77,9 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
      - Each style is a set of weights: attack-odds threshold, border reserve, card priority, continent priority, elimination priority. That is one bot brain, five tunings.
    - [ ] **Tests:** all-bot games for each style (they all must finish); a style head-to-head report (win rates); a takeover-and-return test mid-turn.
 5. **Fair play**
-   - [ ] Only the seated player whose turn it is can act. The server rolls all dice.
-   - [ ] Turn timer: a player who stays quiet is auto-skipped (a bot can play their turn after N misses).
-   - [ ] Rate limits per connection. Names are length-limited and escaped.
+   - [x] Only the seated player whose turn it is can act. The server rolls all dice.
+   - [x] Turn timer: a player who stays quiet is auto-skipped (a bot can play their turn after N misses).
+   - [x] Rate limits per connection. Names are length-limited and escaped.
    - [ ] Empty rooms close after a while. Finished rooms are kept briefly to show the result, then removed.
 6. **UI pass (the big one)**
    - [ ] Full-screen 3D map. The UI floats on it as neon glass panels, with no big side columns.
@@ -94,7 +94,7 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
    - [ ] Credits page: HYG (CC BY-SA 4.0), Three.js (MIT), anything else used.
 7. **Tests**
    - [x] Rules tests in `tests/rules.test.js` (10 checks: setup spacing, illegal moves, cards, 2-, 4-, 9- and 16-way games to total conquest, dealt win target, AI hand-back).
-   - [ ] Room tests: two to sixteen fake clients through a whole game, reconnects, timeouts, bad intents rejected.
+   - [ ] Room tests: two to sixteen fake clients through a whole game, reconnects, timeouts, bad intents rejected. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
    - [x] An all-bot soak test (`run.ps1 soak`): 60 of 60 games finish, with a median of 1,712 turns.
    - [ ] Screenshots at every screen size above.
 8. **Going public (Paul only)**
@@ -110,20 +110,20 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
 
 ## Player wishes (online research, 2026-11-25)
 Paul: look online for features people want and give them to people. I looked at Warzone's feature-request forum, Board Game Arena bug reports, and Steam threads for the big official conquest game. These are forum anecdotes, not surveys. Re-check every round ending in 5.
-- [ ] **Never freeze on a quitter.** The top complaint everywhere is games stuck on a departed player's turn.
+- [ ] **Never freeze on a quitter.** The top complaint everywhere is games stuck on a departed player's turn. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
   - AI takeover (step 4c) covers it. Also show a plain "Skipping in 10 s" so nobody waits blind.
-- [ ] **Fair, server-side timers with a grace period.** Board Game Arena players got booted by a timer that ran out before their turn even showed.
+- [ ] **Fair, server-side timers with a grace period.** Board Game Arena players got booted by a timer that ran out before their turn even showed. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
   - Run the clock on the room and start it only once the turn has reached the client.
   - Add extra time when there are many ships to place.
   - Show "time banks" rather than an instant kick.
-- [ ] **Timer choice per room:** none (friends), 90 s, 3 min, or a long-turn mode (12 or 24 h) where AI covers a missed turn.
+- [ ] **Timer choice per room:** none (friends), 90 s, 3 min, or a long-turn mode (12 or 24 h) where AI covers a missed turn. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
   - Long turns need turn alerts: the browser notification API, a flashing tab title and a sound. Email needs accounts, so skip it.
 - [ ] **No pay-to-play limits, ever.** The big official game's most common complaint is free-tier token caps.
   - Say it on the title screen: "Free. No tokens, no timers on how much you play."
 - [ ] **Solo play against AI with no server.** The rules are shared, so a solo game can run fully in the browser.
   - Offline play is also a frequent ask. Make it work offline as an installable web app.
 - [ ] **Quick play:** one button joins an open room or starts one filled with bots that people can replace.
-- [ ] **Quick chat and emotes.** Players ask for "quick chats". Use preset lines and emotes, with no free text to moderate.
+- [ ] **Quick chat and emotes.** Players ask for "quick chats". Use preset lines and emotes, with no free text to moderate. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
 - [ ] **Finding things on big maps:**
   - search for a sun by name
   - pin suns
@@ -148,9 +148,10 @@ Sources:
 - https://steamcommunity.com/app/1128810/discussions/0/1743393963178028328
 
 ## Bugs and balance
-- [ ] **Styles are lopsided** (soak, 60 games). Win rate per seat, against a fair share of 10.3%:
-  - aggressive 25.9%, territorial 14.7%, balanced 5.2%, card hunter 5.2%, defensive 0.9%
-  - Tune until each is within about 3 points of fair.
+- [ ] **Styles are uneven** (soak). Win rate per seat, against a fair share of about 10%:
+  - Round 1: aggressive 25.9%, territorial 14.7%, balanced 5.2%, card hunter 5.2%, defensive 0.9%.
+  - Round 2, after tuning, 80 games: defensive 16.5%, aggressive 12.7%, territorial 9.6%, balanced 7.0%, card hunter 5.1%.
+  - Hand-tuning is noisy, swinging several points between 50 and 80 games. Next: an automatic tuner (`TUNE=` env in `tests/soak.js`), running many seeds and nudging each style toward the fair share.
 - [ ] **Games are long:** a median of 1,712 turns from one home sun to total conquest. At "fast" (0.15 s a move) a computer-only game takes hours. Consider a faster pace for computer-only games, or a bigger home start.
 - [ ] **Card trades snowball:** late games reach stacks of 40,000 ships. Look at capping trade values or the number of cards.
 
@@ -161,3 +162,13 @@ Sources:
   - Added bots with five styles and stalemate boldness (`aggression` in the rules), so every game ends.
   - Fixed: a 2-player game ended early when one player was left standing with unclaimed suns.
   - 10 of 10 tests pass, and 60 of 60 soak games finish.
+- **Round 2 (2026-11-25):**
+  - Retuned the styles: the win-rate spread went from 1–26% to 5–17%. Style quirks are now explicit flags (`saveSets`, `cardEveryTurn`, `spread`), so tuning can't switch them off.
+  - Added the room server: `server/worker.js`, plus a `Room` Durable Object per room and a `Lobby` object.
+    - The server owns the rules and rolls the dice.
+    - Seat tokens let players return.
+    - The AI covers a seat on a disconnect (after 20 s of grace), on a timeout, or by choice, and hands it back when the player returns or acts.
+    - Turn timers get extra time for big placements. Bots run on alarms.
+    - Also: rate limits, emotes, and 4-letter room codes.
+  - Wrangler 4.168 runs locally.
+  - Added `tests/room.int.js`, 12 checks against `wrangler dev`, all passing. 10 of 10 unit tests pass.

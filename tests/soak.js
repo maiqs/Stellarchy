@@ -2,7 +2,9 @@
 import { readFileSync } from "node:fs";
 import { prepareMap, mulberry32 } from "../shared/map.js";
 import { newGame, act, invariants } from "../shared/rules.js";
-import { playTurn, STYLE_KEYS } from "../shared/bot.js";
+import { playTurn, STYLE_KEYS, STYLES } from "../shared/bot.js";
+// TUNE='{"defensive":{"odds":1.6}}' overrides style weights for a run (balance work)
+if (process.env.TUNE) for (const [k, v] of Object.entries(JSON.parse(process.env.TUNE))) Object.assign(STYLES[k], v);
 const MAP = prepareMap(JSON.parse(readFileSync(new URL("../data/star_map.json", import.meta.url))));
 const games = +(process.argv[2] || 60), wins = {}, seatsOf = {}, turns = [];
 for (let gi = 0; gi < games; gi++) {

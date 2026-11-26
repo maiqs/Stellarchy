@@ -1,0 +1,19 @@
+name = "stellarchy"
+main = "server/worker.js"
+compatibility_date = "2026-11-01"
+
+[assets]
+directory = "client"
+binding = "ASSETS"
+
+[[durable_objects.bindings]]
+name = "ROOMS"
+class_name = "Room"
+
+[[durable_objects.bindings]]
+name = "LOBBY"
+class_name = "Lobby"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Room", "Lobby"]
