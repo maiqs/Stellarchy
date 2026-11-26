@@ -455,3 +455,7 @@ Sources:
   - Fixed before shipping: the handler threw on keys aimed at window or document, which have no element target.
   - Not testable here: the preview's simulated Shift+/ sends an empty key. Checked "?" with real events instead.
   - 43 of 43 tests pass.
+- **Round 30 (2026-11-26, code health only):**
+  - Fixed one more `onclick =()` spacing artefact.
+  - Moved setup links into `client/setup.js` (pure: `SETUP_KEYS`, `readSetup`, `setupLink`), with tests that a link round-trips and that hostile links (injection, wrong types, unknown or overlong keys) are dropped.
+  - 46 of 46 unit tests and 29 of 29 room checks pass undisturbed. The browser loads with 0 errors.

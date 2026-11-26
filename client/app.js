@@ -9,6 +9,7 @@ import { LocalRoom } from "./local.js";
 import { EMOTES } from "./shared/emotes.js";
 import { sound } from "./sound.js";
 import { historyChart, highlights, diceLine } from "./results.js";
+import { readSetup, setupLink } from "./setup.js";
 import { PALETTE, HEX } from "./shared/looks.js";
 // the 3D hull for a key, falling back to the first
 const hullInfo = key => HULLS.find(h => h.key === key) || HULLS[0];
@@ -583,7 +584,7 @@ $("hMenu").onclick = () => openDialog(`<div class="dlg"><h2>Menu</h2>
     el.querySelector("#mSpin").onclick = () => { ui.spin = !ui.spin; scene.setAutoRotate(ui.spin); dlg.close(); };
     el.querySelectorAll("#mCam button").forEach(b => b.onclick = () => { store.set("stellarchy_camspeed", +b.dataset.v); applyComfort(); dlg.close(); });
     el.querySelector("#mSound").onclick = () => { store.set("stellarchy_sound", !sound.on); applyComfort(); if (sound.on) sound.turn(); dlg.close(); };
-    el.querySelector("#mCalm").onclick =() => { store.set("stellarchy_calm", !document.body.classList.contains("calm")); applyComfort(); dlg.close(); };
+    el.querySelector("#mCalm").onclick = () => { store.set("stellarchy_calm", !document.body.classList.contains("calm")); applyComfort(); dlg.close(); };
     el.querySelector("#mReg").onclick = () => { const on = !store.get("stellarchy_regions", true); store.set("stellarchy_regions", on); scene.setRegions(on); dlg.close(); };
     el.querySelector("#mSym").onclick = () => { const on = !store.get("stellarchy_symbols", false); store.set("stellarchy_symbols", on); scene.setSymbols(on); dlg.close(); };
     const nb = el.querySelector("#mNotify"); if (nb) nb.onclick = () => { Notification.requestPermission(); dlg.close(); };
@@ -827,21 +828,9 @@ if ("serviceWorker" in navigator && (location.protocol === "https:" || new URLSe
 }
 
 // ---------- shareable setups: a link that opens Play vs AI or Create a room with the same settings ----------
-const SETUP_KEYS = { aiLevel: "s", size: "n", centre: "s", mode: "s", targetPct: "n", fog: "b", cards: "s", hqArmies: "n", flagships: "b", bots: "n", maxSeats: "n", timer: "n", public: "b", pace: "s" };
 function copySetup(kind, o) {
-  const p = new URLSearchParams({ play: kind });
-  for (const k in SETUP_KEYS) if (o[k] !== undefined) p.set(k, String(o[k]));
-  const url = `${location.origin}/?${p}`;
+  const url = setupLink(location.origin, kind, o);
   (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => toast("Setup link copied. Anyone who opens it gets these settings."), () => toast(url));
-}
-// only known keys, with the right kind of value; the dialogs check the values themselves
-function readSetup(p) {
-  const o = {};
-  for (const [k, t] of Object.entries(SETUP_KEYS)) {
-    const v = p.get(k); if (v === null || v.length > 40) continue;
-    if (t === "n" && /^\d+$/.test(v)) o[k] = +v; else if (t === "b" && (v === "true" || v === "false")) o[k] = v === "true"; else if (t === "s" && /^[\w '’-]+$/.test(v)) o[k] = v;
-  }
-  return o;
 }
 {
   const p = new URLSearchParams(location.search), kind = p.get("play");
