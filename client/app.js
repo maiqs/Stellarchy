@@ -130,12 +130,17 @@ async function joinCode(code) {
 const needName = then => { if (me.name) return then(); lookDialog(then); };
 $("mSolo").onclick = () => needName(soloDialog);
 // quick play: straight into a game with AI opponents; people arriving later take over AI seats
-$("mQuick").onclick = () => needName(async () => {
+$("mQuick").onclick = () => needName(() => quickPlay(false));
+async function quickPlay(retried) {
   const r = await fetch("/api/quick", { method: "POST" }).catch(() => null);
   if (!r || !r.ok) { toast("Online play is not reachable right now, so here is a game against the AI.", "err"); return soloDialog(); }
   const { code, joined } = await r.json(); await joinCode(code);
-  if (joined) toast("You took over an AI player in a running game. Good luck!");
-});
+  if (!joined) return;
+  // the free AI seat can go in the moment between asking and joining: if so, ask again once rather than only watching
+  for (let k = 0; k < 30 && room && mySeat === null && !(st && st.seats); k++) await new Promise(res => setTimeout(res, 100));
+  if (room && mySeat === null && !retried) { leaveRoom(); toast("That seat was just taken. Finding another game…"); return quickPlay(true); }
+  toast("You took over an AI player in a running game. Good luck!");
+}
 $("mWatch").onclick = () => { useMap(100); startRoom(new LocalRoom(MAP, { bots: 5, watch: true, mode: "legacy", pace: "fast" }, me)); };
 $("mCreate").onclick = () => needName(createDialog);
 $("mJoin").onsubmit = e => { e.preventDefault(); needName(() => joinCode($("joinCode").value)); };

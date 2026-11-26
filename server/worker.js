@@ -22,8 +22,12 @@ export default {
     // quick play: a running quick room with an AI seat to take over, else a fresh one (4 seats, 100 suns)
     if (p === "/api/quick" && req.method === "POST") {
       const list = await (await env.LOBBY.get(env.LOBBY.idFromName("lobby")).fetch("https://lobby/list")).json();
-      const open = list.rooms.filter(r => r.quick && r.status === "playing" && r.aiSeats > 0 && Date.now() - r.seen < 5 * 60000).sort((a, b) => a.turnNo - b.turnNo)[0];
-      if (open) return Response.json({ code: open.code, joined: true });
+      // the lobby's list can be a few moves stale, so each candidate room is asked directly for a free AI seat
+      const cands = list.rooms.filter(r => r.quick && r.status === "playing" && r.aiSeats > 0 && Date.now() - r.seen < 5 * 60000).sort((a, b) => a.turnNo - b.turnNo).slice(0, 5);
+      for (const c of cands) {
+        const fresh = await env.ROOMS.get(env.ROOMS.idFromName(c.code)).fetch(`https://room/api/rooms/${c.code}`).then(r => r.ok ? r.json() : null).catch(() => null);
+        if (fresh && fresh.status === "playing" && fresh.aiSeats > 0) return Response.json({ code: c.code, joined: true });
+      }
       for (let tries = 0; tries < 6; tries++) {
         const code = newCode(), stub = env.ROOMS.get(env.ROOMS.idFromName(code));
         const r = await stub.fetch("https://room/init", { method: "POST", body: JSON.stringify({ quick: true, maxSeats: 4, size: 100, mode: "legacy", targetPct: 100, pace: "normal", code }) });

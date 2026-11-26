@@ -323,5 +323,6 @@ Sources:
   - Built faster placing:
     - hold a sun to pour ships in, speeding up the longer you hold (a drag still turns the map)
     - a "Spread on borders" button that places one at a time across the suns facing an enemy, most threatened first
-  - Confirmed last round's room test change with a full run.
+  - Fixed: quick play could send you to a room whose last AI seat had just gone, leaving you only watching. The lobby list is a few moves stale, so each candidate room is now asked directly, and the page retries once if a seat vanishes as you join.
+  - Room test: 26 of 26 on an undisturbed run. One run stalled because the dev server reloaded mid-test while files were being edited; it was not the game.
   - 32 of 32 unit tests pass.
