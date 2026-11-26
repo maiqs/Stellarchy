@@ -124,7 +124,7 @@ Paul: look online for features people want and give them to people. I looked at 
   - Offline play is also a frequent ask. Make it work offline as an installable web app.
 - [x] **Quick play:** one button joins an open room or starts one filled with bots that people can replace. *(Round 11: ⚡ Quick play joins a running quick room by taking over an AI player (keeping its colour), or starts a new one: 4 seats, 100 suns, 90 s turns, starting at once. If the server can't be reached it falls back to Play vs AI.)*
 - [x] **Quick chat and emotes.** Players ask for "quick chats". Use preset lines and emotes, with no free text to moderate. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
-- [ ] **Finding things on big maps:** *(Round 3: search by name, plus "My home sun" and "My busiest border", are done; pins and the region list are not.)*
+- [x] **Finding things on big maps:** *(Round 3: search by name, plus "My home sun" and "My busiest border", are done; Round 27: region names float on the map (fading in as you zoom out, with a menu switch), and Find lists every region's bonus, size and leader; tap one to fly there. Pins are not done.)*
   - search for a sun by name
   - pin suns
   - jump to "my borders" and "my home sun"
@@ -422,4 +422,10 @@ Sources:
     - repeat presses reuse the same new room
     - in solo, Play again restarts at once with the same settings
   - Room checks: the rematch room exists, everyone is told, and it keeps the settings and 2 AI players. 29 of 29 room checks pass undisturbed, and 43 of 43 unit tests pass.
-  - Not yet seen in the browser: solo Play again restarting (it needs a finished game).
+  - Solo Play again was checked in round 27: a finished 25-sun game restarted at once with the same settings.
+- **Round 27 (2026-11-26):**
+  - Checked round 26's solo Play again (the AI played my seat on a 25-sun map; it restarted with the same settings). The debug hook now exposes the room.
+  - Regions on the map: each region's name floats at its centre in its own colour, fading in as you zoom out, with a Region names switch in the menu.
+  - Find now lists every region with its bonus, size, and who leads or holds it; tap one to fly there.
+  - Fixed: a lost space (`onclick =()`) from an earlier edit made a pattern miss. Found by counting the hooks after the edit.
+  - 43 of 43 tests pass.

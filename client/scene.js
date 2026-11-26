@@ -222,6 +222,23 @@ export function createScene({ container, labels, map }) {
   const disp = s => s.name === "Sol" ? "Sol (Earth)" : s.name;
   const lbls = S.map(s => { const d = document.createElement("div"); d.className = "lbl" + (s.name === "Sol" ? " sol" : ""); d.textContent = disp(s); labels.appendChild(d); return d; });
   const cnts = S.map(() => { const d = document.createElement("div"); d.className = "cnt"; labels.appendChild(d); return d; });
+  // region names float at each region's centre, in its own colour; they fade in as you zoom out
+  const regionHue = k => (k * 360 / Math.max(1, map.continents.length) + 12) % 360;
+  const regions = map.continents.map((c, k) => {
+    const v = new THREE.Vector3(); for (const i of c.members) v.add(P[i]); if (c.members.length) v.divideScalar(c.members.length);
+    const d = document.createElement("div"); d.className = "rlbl"; d.textContent = c.name; d.style.color = `hsl(${regionHue(k)}, 80%, 72%)`; labels.appendChild(d);
+    return { at: v, el: d };
+  });
+  let showRegions = true;
+  function placeRegions() {
+    for (const r of regions) {
+      v.copy(r.at).project(camera); const dist = camera.position.distanceTo(r.at);
+      const a = showRegions && !replay && v.z < 1 && Math.abs(v.x) < 1.05 && Math.abs(v.y) < 1.05 ? Math.max(0, Math.min(.85, (dist - 22) / 40)) : 0;
+      if (a < .02) { if (r.el._v !== 0) { r.el.style.display = "none"; r.el._v = 0; } continue; }
+      if (r.el._v !== 1) { r.el.style.display = ""; r.el._v = 1; }
+      r.el.style.opacity = a.toFixed(2); r.el.style.transform = `translate(${(v.x + 1) / 2 * W}px, ${(1 - v.y) / 2 * H}px) translate(-50%, -50%)`;
+    }
+  }
   let replay = false, flagAt = new Set(), showAllNames = false, symbols = false, selected = -1, markSet = new Map(), hoverI = -1;
 
   function paint() {
@@ -367,6 +384,7 @@ export function createScene({ container, labels, map }) {
       const fs = Math.round(Math.min(44, Math.max(8, rpx * (txt.length > 2 ? .72 : txt.length > 1 ? .95 : 1.15)))); if (c._fs !== fs) { c.style.fontSize = fs + "px"; c._fs = fs; }
       const colr = mk && mk.text ? "#f4e3b5" : subOf(owner[i]); if (c._c !== colr) { c.style.color = colr; c._c = colr; }
     }
+    placeRegions();
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
@@ -399,6 +417,9 @@ export function createScene({ container, labels, map }) {
     setAutoRotate(on) { controls.autoRotate = on; },
     setAllNames(on) { showAllNames = on; },
     setSymbols(on) { symbols = on; },
+    setRegions(on) { showRegions = on; },
+    regionCentre(k) { return regions[k] ? regions[k].at.clone() : null; },
+    flyTo(vec, dist) { glide(vec, dist); },
     // replay: colours only (who held each sun), no fleets or counts; setBoard() afterwards restores the live board
     showOwners(arr) { replay = true; owner = arr.slice(); armies = new Array(n).fill(0); hqOf = new Array(n).fill(-1); flagAt = new Set(); paint(); buildFleets([]); },
     endReplay() { replay = false; },

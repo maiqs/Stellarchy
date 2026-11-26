@@ -30,7 +30,7 @@ let MAP = mapOf(300), S = MAP.systems, scene = null;
 function useMap(size, centre = "Sol") {
   const m = mapOf(size, centre); if (scene && m === MAP) return;
   if (scene) scene.dispose();
-  MAP = m; S = MAP.systems; scene = createScene({ container: $("stage"), labels: $("labels"), map: MAP }); scene.onPick(onPick); scene.setSymbols(!!store.get("stellarchy_symbols", false)); applyComfort();
+  MAP = m; S = MAP.systems; scene = createScene({ container: $("stage"), labels: $("labels"), map: MAP }); scene.onPick(onPick); scene.setSymbols(!!store.get("stellarchy_symbols", false)); scene.setRegions(store.get("stellarchy_regions", true)); applyComfort();
 }
 
 useMap(300); scene.setAutoRotate(!document.body.classList.contains("calm"));
@@ -570,7 +570,7 @@ function recordResult(g) {
 
 // ---------- top bar ----------
 $("hMenu").onclick = () => openDialog(`<div class="dlg"><h2>Menu</h2>
-  <div class="field"><span>Show</span><div class="seg"><button type="button" id="mNames" aria-pressed="${!!ui.allNames}">All sun names</button><button type="button" id="mSpin" aria-pressed="${!!ui.spin}">Slow rotation</button><button type="button" id="mSym" aria-pressed="${!!store.get("stellarchy_symbols", false)}">Ship symbols on suns</button></div>
+  <div class="field"><span>Show</span><div class="seg"><button type="button" id="mNames" aria-pressed="${!!ui.allNames}">All sun names</button><button type="button" id="mSpin" aria-pressed="${!!ui.spin}">Slow rotation</button><button type="button" id="mSym" aria-pressed="${!!store.get("stellarchy_symbols", false)}">Ship symbols on suns</button><button type="button" id="mReg" aria-pressed="${store.get("stellarchy_regions", true)}">Region names</button></div>
   <p class="hint">Ship symbols put each holder's ship shape (▲ ■ ▬ ● ◓) beside the count, so colour is never the only clue.</p></div>
   <div class="field"><span>Camera speed</span><div class="seg" id="mCam">${[[.5, "Slow"], [1, "Normal"], [1.7, "Fast"]].map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${store.get("stellarchy_camspeed", 1) === v}">${l}</button>`).join("")}</div></div>
   <div class="field"><span>Sound</span><div class="seg"><button type="button" id="mSound" aria-pressed="${sound.on}">${sound.on ? "Sound on" : "Sound off"}</button></div><p class="hint">Quiet cues: your turn, your battles, captures, knock-outs and the win.</p></div>
@@ -582,7 +582,8 @@ $("hMenu").onclick = () => openDialog(`<div class="dlg"><h2>Menu</h2>
     el.querySelectorAll("#mCam button").forEach(b => b.onclick = () => { store.set("stellarchy_camspeed", +b.dataset.v); applyComfort(); dlg.close(); });
     el.querySelector("#mSound").onclick = () => { store.set("stellarchy_sound", !sound.on); applyComfort(); if (sound.on) sound.turn(); dlg.close(); };
     el.querySelector("#mCalm").onclick =() => { store.set("stellarchy_calm", !document.body.classList.contains("calm")); applyComfort(); dlg.close(); };
-    el.querySelector("#mSym").onclick =() => { const on = !store.get("stellarchy_symbols", false); store.set("stellarchy_symbols", on); scene.setSymbols(on); dlg.close(); };
+    el.querySelector("#mReg").onclick = () => { const on = !store.get("stellarchy_regions", true); store.set("stellarchy_regions", on); scene.setRegions(on); dlg.close(); };
+    el.querySelector("#mSym").onclick = () => { const on = !store.get("stellarchy_symbols", false); store.set("stellarchy_symbols", on); scene.setSymbols(on); dlg.close(); };
     const nb = el.querySelector("#mNotify"); if (nb) nb.onclick = () => { Notification.requestPermission(); dlg.close(); };
     el.querySelector("#mHowIn").onclick = () => howDialog();
     el.querySelector("#mLeave").onclick = () => leaveRoom(); el.querySelector("#mBack").onclick = () => dlg.close();
@@ -594,7 +595,8 @@ $("hCards").onclick = openCards;
 $("hFind").onclick = () => {
   const g = st && st.game, k = seatIx();
   openDialog(`<div class="dlg"><h2>Find a sun</h2><input id="fQ" placeholder="Name, e.g. Sirius" autocomplete="off">
-    <div class="seg">${k >= 0 && g ? `<button type="button" id="fHome">My home sun</button><button type="button" id="fBorder">My busiest border</button>` : ""}<button type="button" id="fSol">Sol</button></div><div class="rooms" id="fList"></div></div>`, el => {
+    <div class="seg">${k >= 0 && g ? `<button type="button" id="fHome">My home sun</button><button type="button" id="fBorder">My busiest border</button>` : ""}<button type="button" id="fSol">${esc(disp(S[0]))}</button></div><div class="rooms" id="fList"></div>${regionList(g, k)}</div>`, el => {
+      el.querySelectorAll("[data-region]").forEach(b => b.onclick = () => { dlg.close(); const c = scene.regionCentre(+b.dataset.region); if (c) scene.flyTo(c, 45); });
       const list = el.querySelector("#fList"), go = i => { dlg.close(); selectSun(i); scene.focus(i, 22); render(); };
       const show = q => { q = q.trim().toLowerCase(); const hits = q ? S.map((s, i) => [s, i]).filter(([s]) => s.name.toLowerCase().includes(q) || (s.members || []).some(m => m.toLowerCase().includes(q))).slice(0, 12) : [];
         list.innerHTML = hits.map(([s, i]) => `<div class="roomrow"><div class="grow"><div>${esc(disp(s))}</div><div class="mini">${s.name === "Sol" ? "home" : s.distLy.toFixed(1) + " ly"} · ${esc(g ? nameOf(g.owner[i]) : "")}</div></div><button class="btn small" data-go="${i}" type="button">Go</button></div>`).join("");
@@ -614,7 +616,7 @@ async function share() {
 // a /r/CODE link opens that room directly
 const linked = location.pathname.match(/^\/r\/([A-Za-z0-9]{4})$/);
 if (linked) needName(() => joinCode(linked[1]));
-window.stellarchy = { get MAP() { return MAP; }, get scene() { return scene; }, get state() { return st; }, ui };   // for debugging and tests (getters: the map and scene change with room size)
+window.stellarchy = { get MAP() { return MAP; }, get scene() { return scene; }, get state() { return st; }, get room() { return room; }, ui };   // for debugging and tests (getters: the map and scene change with room size)
 // keep floating cards clear of the action bar, whatever its height
 new ResizeObserver(() => document.documentElement.style.setProperty("--barh", $("bar").offsetHeight + "px")).observe($("bar"));
 
@@ -860,4 +862,17 @@ function howDialog() {
     <h3>Fair dice</h3>
     <p class="hint">Online, every die is rolled by the server, so nobody can tamper with their own rolls. The AI never gets better dice, and only Admiral AI get extra ships, as the setup says. Your own roll average is on the results screen.</p>
     <div class="row end"><button class="btn go" id="howOk" type="button">Got it</button></div></div>`, el => el.querySelector("#howOk").onclick = () => dlg.close());
+}
+
+// ---------- regions list (in Find): each region's bonus, who leads it, and a tap to fly there ----------
+function regionList(g, me) {
+  if (!MAP.continents.length) return "";
+  const rows = MAP.continents.map((c, k) => {
+    const cnt = new Map(); if (g) for (const i of c.members) { const o = g.owner[i]; if (o >= 0) cnt.set(o, (cnt.get(o) || 0) + 1); }
+    let lead = -1, n = 0; for (const [o, m] of cnt) if (m > n) { n = m; lead = o; }
+    const all = lead >= 0 && n === c.members.length;
+    return `<button type="button" class="roomrow regionrow" data-region="${k}"><div class="grow"><div><b>${esc(c.name)}</b> <span class="mini">+${c.bonus} a turn · ${c.members.length} suns</span></div>
+      <div class="mini">${lead < 0 ? "Nobody yet" : `${all ? "Held by" : "Led by"} <span style="color:${esc(lookOf(lead).main)}">${esc(nameOf(lead))}${lead === me ? " (you)" : ""}</span>${all ? " ★" : ` · ${n} of ${c.members.length}`}`}</div></div></button>`;
+  }).join("");
+  return `<p class="eyebrow">Regions · hold all of one for its bonus</p><div class="rooms">${rows}</div>`;
 }
