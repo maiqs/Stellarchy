@@ -1,0 +1,2 @@
+Star photos: 2MASS colour images (Two Micron All Sky Survey: University of Massachusetts and IPAC/Caltech, funded by NASA and the NSF), cutouts made with the CDS hips2fits service (Strasbourg).
+The Sun: NASA/SDO and the AIA, EVE and HMI science teams (public domain).

@@ -469,3 +469,9 @@ Sources:
   - The caption gives its magnitude and whether you can see it by eye. The Sol card shows the Sun itself.
   - It's also on the sun card (behind "tap for the science" on phones).
   - Tested against published magnitudes (Sirius, Tau Ceti, Vega, Altair, Procyon within 0.4). 48 of 48 tests pass.
+- **Real telescope photos on cards (Paul: "the actual pictures", public domain/CC0, or CC BY with credit):**
+  - Every sun's card shows its 2MASS survey photo: a real NASA-funded infrared image of its patch of sky, fetched by `tools/fetch_sky.mjs` (polite, resumable) from the CDS hips2fits service.
+  - Famous close-ups: Hubble's Alpha Centauri A and B, Sirius A and B, and Fomalhaut's ring (CC BY 4.0, credited exactly as ESA/Hubble gives them), plus NASA's SDO Sun on the Sol card (public domain).
+  - Credits are on each card, in Credits, and in the README. The drawn sky stays as the fallback.
+  - The service worker caches photos when first seen, not at install (about 25 MB).
+  - Map suns now carry `gi`, their place in the 3,000-star list, so every map size and centre finds the same photo.

@@ -28,7 +28,7 @@ const clientDir = at("client/"), files = [], hash = createHash("sha256");
 (function walk(rel) {
   for (const f of readdirSync(new URL(rel, clientDir)).sort()) {
     const r = rel + f, st = statSync(new URL(r, clientDir));
-    if (st.isDirectory()) walk(r + "/");
+    if (st.isDirectory()) { if (r !== "sky") walk(r + "/"); }   // star photos (~25 MB) are cached when first seen, not at install
     else if (!/^(sw\.js|.*\.txt|.*\.md)$/.test(f)) { files.push("/" + r); hash.update(r); hash.update(readFileSync(new URL(r, clientDir))); }
   }
 })("");

@@ -21,8 +21,9 @@ export const centreOf = (stars, name) => { const i = stars.systems.findIndex(s =
 export function buildMap(stars, size, centre = "Sol") {
   const c = centreOf(stars, centre), origin = stars.systems[c];
   const N = Math.min(clampSize(size), stars.systems.length, c === 0 ? Infinity : OFF_SOL_MAX);
-  const ordered = c === 0 ? stars.systems : stars.systems.map((s, i) => [s, (s.x - origin.x) ** 2 + (s.y - origin.y) ** 2 + (s.z - origin.z) ** 2, i]).sort((a, b) => a[1] - b[1] || a[2] - b[2]).map(p => p[0]);
-  const systems = ordered.slice(0, N).map((s, id) => ({ id, ...s }));
+  // gi = the star's place in the 3,000-star list, stable across map sizes and centres (its photo is sky/s<gi>.jpg)
+  const ordered = (c === 0 ? stars.systems.map((s, i) => [s, 0, i]) : stars.systems.map((s, i) => [s, (s.x - origin.x) ** 2 + (s.y - origin.y) ** 2 + (s.z - origin.z) ** 2, i]).sort((a, b) => a[1] - b[1] || a[2] - b[2]));
+  const systems = ordered.slice(0, N).map(([s, , gi], id) => ({ id, gi, ...s }));
   const d2 = (a, b) => { const dx = a.x - b.x, dy = a.y - b.y, dz = a.z - b.z; return dx * dx + dy * dy + dz * dz; };
 
   // ---- lanes ----

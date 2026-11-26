@@ -265,3 +265,7 @@ body.calm *, body.calm *::before, body.calm *::after { animation: none !importan
 .sky { margin: 2px 0 0; display: grid; gap: 2px; }
 .sky svg { width: 100%; height: auto; border-radius: 6px; background: radial-gradient(ellipse at 50% 40%, #0d1630, #04060b 75%); border: 1px solid var(--line); }
 .sky figcaption { font: 500 .62rem var(--mono); color: var(--muted); letter-spacing: .04em; }
+.sky img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: #04060b; display: block; }
+.sky.photo svg, .sky.photo.noimg img { display: none; }
+.sky.photo.noimg svg { display: block; }
+.sky .cr { display: block; opacity: .7; font-size: .56rem; margin-top: 1px; }

@@ -23,3 +23,12 @@ Stellarchy's sounds are synthesised in the browser (client/sound.js); there are 
 ## Testing notes
 - Run `.\run.ps1 room` with nothing else using the dev server. Syncing files (which reloads assets) or driving pages against it mid-run stalls its games.
 - The service worker only runs locally with `?sw` in the address. After trying it, unregister it in the browser, or it keeps serving cached files on localhost.
+
+## Image credits
+- Star photos (`client/sky/s*.jpg`): 2MASS, the Two Micron All Sky Survey (University of Massachusetts and IPAC/Caltech, funded by NASA and the NSF), cut out with the CDS hips2fits service. To refetch, run `node tools/fetch_sky.mjs`; it is polite and resumable.
+- `client/sky/famous/`:
+  - Alpha Centauri: ESA/Hubble & NASA, potw1635a
+  - Sirius: NASA, ESA, H. Bond (STScI) and M. Barstow (University of Leicester), heic0516a
+  - Fomalhaut: NASA, ESA and P. Kalas (UC Berkeley), heic0821a
+  - All three are CC BY 4.0 via esahubble.org.
+- The Sun: NASA/SDO and the AIA, EVE and HMI science teams (public domain).

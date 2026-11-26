@@ -8,5 +8,5 @@ self.addEventListener("fetch", e => {
   if (e.request.method !== "GET" || url.origin !== location.origin || url.pathname.startsWith("/api/")) return;
   // /r/CODE links open the page itself
   const key = e.request.mode === "navigate" ? "/" : url.pathname;
-  e.respondWith(caches.open(CACHE).then(async c => (await c.match(key)) || fetch(e.request).then(r => { if (r.ok && FILES.includes(key)) c.put(key, r.clone()); return r; })));
+  e.respondWith(caches.open(CACHE).then(async c => (await c.match(key)) || fetch(e.request).then(r => { if (r.ok && (FILES.includes(key) || key.startsWith("/sky/"))) c.put(key, r.clone()); return r; })));
 });

@@ -238,6 +238,7 @@ async function roomsDialog() {
 function creditsDialog() {
   openDialog(`<div class="dlg"><h2>Credits</h2>
     <p class="hint">Star positions: <a href="https://github.com/astronexus/HYG-Database" target="_blank" rel="noopener">HYG Database v4.1</a> by David Nash (astronexus), licensed CC BY-SA 4.0. The map data stays shareable under that licence.</p>
+    <p class="hint">Star photos: 2MASS, the Two Micron All Sky Survey (University of Massachusetts and IPAC/Caltech, funded by NASA and the NSF), cutouts made with the <a href="https://alasky.cds.unistra.fr/hips-image-services/hips2fits" target="_blank" rel="noopener">CDS hips2fits</a> service. Hubble images of Alpha Centauri (ESA/Hubble &amp; NASA), Sirius (NASA, ESA, H. Bond (STScI) and M. Barstow (University of Leicester)) and Fomalhaut (NASA, ESA and P. Kalas (UC Berkeley)) are licensed CC BY 4.0 by <a href="https://esahubble.org/copyright/" target="_blank" rel="noopener">ESA/Hubble</a>. The Sun: NASA/SDO and the AIA, EVE and HMI science teams (public domain).</p>
     <p class="hint">3D: <a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> (MIT). Fonts: Chakra Petch and IBM Plex (SIL Open Font License).</p>
     <p class="hint">Stellarchy is free. No account, no tokens, no limits on play.</p>
     <div class="row end"><button class="btn" id="crClose" type="button">Close</button></div></div>`, el => el.querySelector("#crClose").onclick = () => dlg.close());

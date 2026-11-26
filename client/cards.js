@@ -55,6 +55,13 @@ export const lightText = s => s.lum >= 0.001 ? `${s.lum >= 10 ? Math.round(s.lum
 // is where it sits in our sky. Brightness comes from luminosity and distance (apparent magnitude).
 const TRUE_COLOR = { O: "#9bb0ff", B: "#aabfff", A: "#cad7ff", F: "#f8f7ff", G: "#fff4ea", K: "#ffd2a1", M: "#ffb07a", L: "#d8743f", T: "#b4512f", Y: "#8a3b2a", D: "#e8eeff" };
 const LY_PER_PC = 3.26156;
+// telescope close-ups for the famous few (licences: NASA public domain; ESA/Hubble CC BY 4.0, credited exactly as given)
+const FAMOUS = {
+  "Sol": { src: "sky/famous/sun.jpg", alt: "The Sun photographed by NASA's Solar Dynamics Observatory", caption: "The Sun from NASA's Solar Dynamics Observatory (26 Nov 2026).", credit: "NASA/SDO and the AIA, EVE and HMI science teams (public domain)" },
+  "Alpha Centauri": { src: "sky/famous/alpha-centauri.jpg", alt: "Hubble image of Alpha Centauri A and B", caption: "Hubble: Alpha Centauri A and B.", credit: "ESA/Hubble & NASA (CC BY 4.0)" },
+  "Sirius": { src: "sky/famous/sirius.jpg", alt: "Hubble image of Sirius A with its faint companion Sirius B", caption: "Hubble: Sirius A, with the white dwarf Sirius B as the small dot at lower left.", credit: "NASA, ESA, H. Bond (STScI), and M. Barstow (University of Leicester) (CC BY 4.0)" },
+  "Fomalhaut": { src: "sky/famous/fomalhaut.jpg", alt: "Hubble image of Fomalhaut and its debris ring", caption: "Hubble: Fomalhaut's debris ring (the marked 'planet' later proved to be a dust cloud).", credit: "NASA, ESA and P. Kalas (University of California, Berkeley, USA) (CC BY 4.0)" },
+};
 export function apparentMag(s) {
   if (s.name === "Sol") return -26.74;
   const L = Math.max(s.lum || 0, 1e-6), dpc = Math.max(.01, s.distLy / LY_PER_PC);
@@ -85,5 +92,13 @@ export function skyWindow(map, i) {
   body += dotFor(s, W / 2, H / 2, true);
   const m = apparentMag(s), eye = m <= 6 ? "you can see it with your own eyes" : m <= 10 ? "binoculars or a small telescope" : "too faint without a telescope";
   return svg(W, H, body, `From Earth: magnitude ${m.toFixed(1)}, ${eye}`);
-  function svg(w, h, inner, caption) { return `<figure class="sky"><svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(caption)}">${inner}</svg><figcaption>${esc(caption)}</figcaption></figure>`; }
+  // a real photo when there is one (famous close-ups first, else the star's 2MASS survey image); the drawn sky stays as the fallback
+  function svg(w, h, inner, caption) {
+    const fam = FAMOUS[s.name], src = fam ? fam.src : (s.gi > 0 ? `sky/s${s.gi}.jpg` : null);
+    const credit = fam ? fam.credit : "2MASS (UMass, IPAC/Caltech; NASA, NSF) via CDS hips2fits";
+    const alt = fam ? fam.alt : s.name + " in the 2MASS infrared sky survey";
+    const photo = src ? `<img src="${src}" loading="lazy" alt="${esc(alt)}" onerror="this.parentNode.classList.add('noimg')">` : "";
+    const text = fam ? fam.caption + " " + caption.replace(/^Our Sun, from Earth: /, "") : caption;
+    return `<figure class="sky${src ? " photo" : ""}">${photo}<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(caption)}">${inner}</svg><figcaption>${esc(text)}${src ? `<span class="cr">${esc(credit)}</span>` : ""}</figcaption></figure>`;
+  }
 }
