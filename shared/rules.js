@@ -269,11 +269,27 @@ export const aggression = g => Math.min(8, Math.floor((g.stall ? g.stall.quiet :
 // history for the end-of-game graph: suns held by each seat, sampled once per round of turns.
 // Kept to at most 120 samples by dropping every other one when full (the step doubles each time).
 export const HISTORY_MAX = 120;
+// Each sample also carries the replay: which suns changed hands since the previous sample (d: [[sun, owner], ...]),
+// on top of the board at the first sample (base). Dropping a sample folds its changes into the next one.
 export function recordHistory(g, force = false) {
   const h = g.hist || (g.hist = { step: 1, samples: [] });
   if (!force && g.turnNo % (g.seats.length * h.step) !== 0) return;
-  h.samples.push({ turn: g.turnNo, held: g.seats.map((_, k) => ownedBy(g, k)) });
-  if (h.samples.length > HISTORY_MAX) { h.samples = h.samples.filter((_, i) => i % 2 === 0); h.step *= 2; }
+  if (!h.base) { h.base = g.owner.slice(); h.last = g.owner.slice(); }
+  const d = []; for (let i = 0; i < g.owner.length; i++) if (g.owner[i] !== h.last[i]) { d.push([i, g.owner[i]]); h.last[i] = g.owner[i]; }
+  h.samples.push({ turn: g.turnNo, held: g.seats.map((_, k) => ownedBy(g, k)), d });
+  if (h.samples.length > HISTORY_MAX) {
+    const kept = [];
+    h.samples.forEach((s, i) => {
+      if (i % 2 === 0) { if (i > 0) { const m = new Map(h.samples[i - 1].d); for (const [a, o] of s.d) m.set(a, o); s.d = [...m]; } kept.push(s); }
+    });
+    h.samples = kept; h.step *= 2;
+  }
+}
+// the board (owners only) at replay sample t: the base plus every change up to and including t
+export function replayOwners(hist, t) {
+  const o = hist.base.slice();
+  for (let k = 0; k <= t && k < hist.samples.length; k++) for (const [i, w] of hist.samples[k].d) o[i] = w;
+  return o;
 }
 
 // ---- truces (a player wish: light diplomacy with no free-text chat) ----

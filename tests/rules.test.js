@@ -172,3 +172,14 @@ test("highlights: the biggest battle and knock-outs are recorded", () => {
   assert.equal(g.kos.reduce((a, b) => a + b, 0), 4, "everyone but the winner was knocked out by someone");
   assert.ok(g.best.some(b => b && b.ld > 0 && b.to >= 0 && b.turn > 0));
 });
+
+test("replay: rebuilding the board from the history matches the real board", async () => {
+  const { replayOwners } = await import("../shared/rules.js");
+  const rng = mulberry32(71), g = newGame(MAP, { mode: "legacy", seats: seats(6) }, rng);
+  runGame(MAP, g, rng);   // long enough that samples were thinned (steps doubled)
+  const h = g.hist; assert.ok(h.step > 1 || h.samples.length > 20);
+  assert.deepEqual(replayOwners(h, h.samples.length - 1), g.owner, "the last frame is the final board");
+  const mid = replayOwners(h, h.samples.length >> 1);
+  const held = g.seats.map((_, k) => mid.filter(o => o === k).length);
+  assert.deepEqual(held, h.samples[h.samples.length >> 1].held, "a middle frame matches that sample's counts");
+});

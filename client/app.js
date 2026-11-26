@@ -2,7 +2,7 @@
 // The server (or LocalRoom for solo play) owns the game; this page only shows it and sends intents.
 import { prepareMap, specClass } from "./shared/map.js";
 import { buildMap, clampSize, SIZE_STEPS } from "./shared/mapgen.js";
-import { hqChoices, mustTrade, isSet, connected, cardKind, ownedBy, target, effPct, setValue, reinforcementsFor } from "./shared/rules.js";
+import { hqChoices, mustTrade, isSet, connected, cardKind, ownedBy, target, effPct, setValue, reinforcementsFor, replayOwners } from "./shared/rules.js";
 import { STYLES, STYLE_KEYS } from "./shared/bot.js";
 import { createScene, HULLS, fleetOf, CLASSES } from "./scene.js";
 import { LocalRoom } from "./local.js";
@@ -93,6 +93,7 @@ function startRoom(r) {
   setTimeout(() => showHints(), 600);
 }
 function leaveRoom() {
+  if (ui.replay) { clearTimeout(ui.replay.timer); ui.replay = null; scene.endReplay(); }
   if (room) room.close(); room = null; st = null; mySeat = null;
   history.replaceState(null, "", "/"); $("hud").hidden = true; $("title").hidden = false; dlg.open && dlg.close();
   scene.clearBoard(); scene.setMarks(new Map()); scene.select(-1); scene.setAutoRotate(!document.body.classList.contains("calm")); scene.home();
@@ -257,7 +258,7 @@ function onState(m) {
   if (m.code && !prev) { $("hCode").hidden = false; $("hCode").textContent = m.code; }
   const g = m.game, k = seatIx();
   if (g) {
-    scene.setBoard(g, lookOf, m.rev !== ui.lastRev ? m.events : []);
+    if (!ui.replay) scene.setBoard(g, lookOf, m.rev !== ui.lastRev ? m.events : []);   // a replay keeps the screen until it is closed
     // a new turn or phase clears selections
     const key = `${g.turnNo}:${g.phase}:${!!g.advance}`;
     if (key !== ui.lastTurnKey) { ui.lastTurnKey = key; if (!g.advance) ui.adv = null; ui.fort = null; if (g.phase !== "reinforce") ui.pending = {}; if (myTurn() && g.phase === "reinforce") applyPlan(g, k); if (g.phase !== "attack" && g.phase !== "fortify") selectSun(-1); }
@@ -350,6 +351,7 @@ function renderMarks() {
 
 const PHASES = [["reinforce", "Reinforce"], ["attack", "Attack"], ["fortify", "Fortify"]];
 function renderBar() {
+  if (ui.replay) return renderReplayBar();
   const bar = $("bar"), g = st.game, k = seatIx();
   bar.classList.toggle("mine", !!myTurn());
   if (!g) {   // the room's lobby
@@ -364,6 +366,7 @@ function renderBar() {
   if (st.status === "over" || g.status === "over") {
     bar.innerHTML = `<div class="big" style="color:${esc(lookOf(g.winner).main)}">${esc(nameOf(g.winner))} rules the stars</div><div class="row"><button class="btn go" id="bAgain" type="button">${st.local ? (mySeat ? "Play again" : "Watch another war") : "Back to menu"}</button><button class="btn" id="bWin" type="button">Results</button></div>`;
     $("bAgain").onclick = () => { const local = st.local, watching = !mySeat; leaveRoom(); if (local) $(watching ? "mWatch" : "mSolo").click(); }; $("bWin").onclick = winDialog;
+    return;   // (this return was lost in round 9, so the end-of-game bar never showed)
   }
   if (!myTurn()) {
     const k2 = g.turn, away = turnSeat.away, me2 = k >= 0 ? st.seats[k] : null;
@@ -535,7 +538,8 @@ function winDialog() {
     ${highlights(g)}
     <div class="standings">${order.map((o, r) => `<span class="${o.j === k ? "me" : ""}" style="--pc:${esc(lookOf(o.j).main)}"><b>${r + 1}</b><span class="swatch s" style="--sw-main:${esc(lookOf(o.j).main)};--sw-sub:${esc(lookOf(o.j).sub)}"></span>${esc(nameOf(o.j))}</span>`).join("")}</div>
     ${rec && k >= 0 ? `<p class="hint">Your record: <b>${rec.wins}</b> win${rec.wins === 1 ? "" : "s"} in ${rec.games} game${rec.games === 1 ? "" : "s"}${rec.fastest ? ` · fastest win ${rec.fastest} turns` : ""}</p>` : ""}
-    <div class="row"><button class="btn" id="wClose" type="button">Look at the map</button><button class="btn go" id="wMenu" type="button">Menu</button></div></div>`, el => {
+    <div class="row"><button class="btn" id="wClose" type="button">Look at the map</button>${g.hist && g.hist.base ? `<button class="btn" id="wReplay" type="button">▶ Watch the replay</button>` : ""}<button class="btn go" id="wMenu" type="button">Menu</button></div></div>`, el => {
+      if (el.querySelector("#wReplay")) el.querySelector("#wReplay").onclick = () => { dlg.close(); startReplay(); };
       el.querySelector("#wClose").onclick = () => dlg.close(); el.querySelector("#wMenu").onclick = () => leaveRoom();
     });
 }
@@ -773,4 +777,30 @@ function highlights(g) {
     if (k >= 0) out.push(`<li><span>📈</span>Closest rival: ${name(k)} held <b>${peak}</b> suns at turn ${turn}.</li>`);
   }
   return out.length ? `<ul class="moments">${out.join("")}</ul>` : "";
+}
+
+// ---------- replay: the whole war again, who held what, with a timeline you can scrub ----------
+function startReplay() {
+  const h = st && st.game && st.game.hist; if (!h || !h.base) return;
+  scene.setMarks(new Map()); selectSun(-1);
+  ui.replay = { t: 0, n: h.samples.length, playing: true, timer: 0 };
+  showFrame(); tickReplay();
+}
+function showFrame() { const r = ui.replay, h = st.game.hist; scene.showOwners(replayOwners(h, r.t)); renderBar(); }
+function tickReplay() {
+  const r = ui.replay; if (!r) return; clearTimeout(r.timer);
+  if (!r.playing) return;
+  r.timer = setTimeout(() => { if (!ui.replay) return; if (r.t < r.n - 1) { r.t++; showFrame(); tickReplay(); } else { r.playing = false; renderBar(); } }, Math.max(60, 9000 / r.n));   // about 9 s end to end
+}
+function endReplay() { const r = ui.replay; if (!r) return; clearTimeout(r.timer); ui.replay = null; scene.endReplay(); scene.setBoard(st.game, lookOf, []); render(); }
+function renderReplayBar() {
+  const r = ui.replay, h = st.game.hist, s = h.samples[r.t], lead = s.held.indexOf(Math.max(...s.held));
+  const bar = $("bar"); bar.classList.remove("mine");
+  bar.innerHTML = `<p class="eyebrow">Replay · turn ${s.turn}</p>
+    <div class="big" style="color:${esc(lookOf(lead).main)};font-size:1.1rem">${esc(nameOf(lead))} leads with ${s.held[lead]} suns</div>
+    <div class="stepper"><button class="btn" id="rPlay" type="button" aria-label="${r.playing ? "Pause" : "Play"}">${r.playing ? "❚❚" : "▶"}</button>
+      <input type="range" id="rRange" min="0" max="${r.n - 1}" value="${r.t}" aria-label="Replay position"><button class="btn" id="rExit" type="button">Done</button></div>`;
+  $("rRange").oninput = e => { r.t = +e.target.value; r.playing = false; clearTimeout(r.timer); showFrame(); };
+  $("rPlay").onclick = () => { if (!r.playing && r.t >= r.n - 1) r.t = 0; r.playing = !r.playing; renderBar(); if (r.playing) { showFrame(); tickReplay(); } };
+  $("rExit").onclick = endReplay;
 }

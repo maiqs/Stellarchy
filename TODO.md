@@ -131,7 +131,7 @@ Paul: look online for features people want and give them to people. I looked at 
   - a region list showing bonuses and who holds what
 - [ ] **Bigger games:** Warzone players ask for 60–100 players. Consider up to 32 seats on maps of 500 suns or more.
 - [x] **Fog of war as a room option.** It's a Warzone staple: you see only your suns and their neighbours. *(Round 12: an option in Play vs AI and Create room. It's applied per viewer on the server and in solo play (`shared/fog.js`). Fogged suns are dim slate; battles out of sight are hidden; totals still show. Off during home-sun choice, after the game ends, and for players who are out.)*
-- [ ] **End-of-game screen:** *(Round 9: the graph of suns held over time and the standings are done; Round 18: best moments are done (biggest battle, most knock-outs, closest rival's peak). A scrubbable replay is not.)*
+- [x] **End-of-game screen:** *(Round 9: the graph of suns held over time and the standings are done; Round 18: best moments are done (biggest battle, most knock-outs, closest rival's peak). Round 19: the replay is done. ▶ Watch the replay plays the war (owners over time) in about 9 s, with play, pause, a scrub slider and the leader per frame.)*
   - a graph of systems held over time
   - each player's best moment
   - a replay you can scrub through
@@ -186,6 +186,7 @@ Sources:
   - https://forums.sorcererking.com/377297/reply/2555466
 
 ## Bugs and balance
+- [x] **The end-of-game bar never showed (round 19):** a lost `return` (from round 9's Watch another war edit) let the waiting bar overwrite "X rules the stars". Restored and checked in a watched war.
 - [x] **Hidden information leaked (round 8):** every update carried the whole deck in draw order and every player's hand, readable in the browser's developer tools. Now each viewer gets only their own hand (others as counts) and a deck count. Room checks cover it.
 - [x] **Big maps never end (top bug, round 4):** a 6-player game on 1,000 suns had not finished after 12,000 turns, at about 11 ms a turn. Fixes to try:
   - **Fixed in round 5:** card income was the cause. Sets had reached about 9,000 ships each and swamped what territory earns. Sets are now capped at 40 ships (`TRADE_CAP` in `shared/rules.js`). Every big test game ends: 1,000 suns in 580–690 turns, 3,000 suns in 631.
@@ -343,3 +344,8 @@ Sources:
   - Plan while you wait (a player wish): tap your suns during others' turns, and the waiting bar shows "Planned 3 of about 5", with a Clear plan button. The plan becomes your placement when your turn starts, capped at the real count, still for you to confirm.
   - Best moments on the results screen: the biggest battle (ships destroyed, where, when), the most knock-outs, and the closest rival's peak. The rules record them. Online they're sent only at the end, since mid-game they would show where battles happened under fog.
   - 34 of 34 tests pass.
+- **Round 19 (2026-11-26):**
+  - Replay: the history now stores the opening board plus which suns changed hands at each sample (folded when thinned). ▶ Watch the replay on the results screen plays the war in about 9 s, with play/pause, a scrub slider and the leader per frame, and Done brings back the live map. A test checks that the rebuilt board matches the real one.
+  - Fixed: the end-of-game bar never appeared, because a `return` was lost in round 9.
+  - Checked best moments in a finished war, for example "Warden Kepler destroyed 69 ships at Epsilon Eridani and took it".
+  - 35 of 35 tests pass.

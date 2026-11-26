@@ -219,7 +219,7 @@ export function createScene({ container, labels, map }) {
   const disp = s => s.name === "Sol" ? "Sol (Earth)" : s.name;
   const lbls = S.map(s => { const d = document.createElement("div"); d.className = "lbl" + (s.name === "Sol" ? " sol" : ""); d.textContent = disp(s); labels.appendChild(d); return d; });
   const cnts = S.map(() => { const d = document.createElement("div"); d.className = "cnt"; labels.appendChild(d); return d; });
-  let flagAt = new Set(), showAllNames = false, symbols = false, selected = -1, markSet = new Map(), hoverI = -1;
+  let replay = false, flagAt = new Set(), showAllNames = false, symbols = false, selected = -1, markSet = new Map(), hoverI = -1;
 
   function paint() {
     const col = new THREE.Color();
@@ -356,7 +356,7 @@ export function createScene({ container, labels, map }) {
       const l = lbls[i], showL = on && (showAllNames || dist < 26 || S[i].name === "Sol" || i === selected || i === hoverI || hqOf[i] >= 0 || flagAt.has(i) || (markSet.size <= 30 && markSet.has(i)));
       if (!showL) { if (l._v !== 0) { l.style.display = "none"; l._v = 0; } } else { if (l._v !== 1) { l.style.display = ""; l._v = 1; } l.style.transform = `translate(${x}px, ${y + rpx + 3}px) translate(-50%, 0)`; }
       const c = cnts[i], mk = markSet.get(i), txt = mk && mk.text ? mk.text : (symbols && owner[i] >= 0 ? glyphOf(owner[i]) : "") + armies[i];
-      if (!on || rpx < 5 || (owner[i] < 0 && !(mk && mk.text))) { if (c._v !== 0) { c.style.display = "none"; c._v = 0; } continue; }
+      if (!on || rpx < 5 || replay || (owner[i] < 0 && !(mk && mk.text))) { if (c._v !== 0) { c.style.display = "none"; c._v = 0; } continue; }
       if (c._v !== 1) { c.style.display = ""; c._v = 1; }
       c.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
       if (c.textContent !== txt) c.textContent = txt;
@@ -395,6 +395,9 @@ export function createScene({ container, labels, map }) {
     setAutoRotate(on) { controls.autoRotate = on; },
     setAllNames(on) { showAllNames = on; },
     setSymbols(on) { symbols = on; },
+    // replay: colours only (who held each sun), no fleets or counts; setBoard() afterwards restores the live board
+    showOwners(arr) { replay = true; owner = arr.slice(); armies = new Array(n).fill(0); hqOf = new Array(n).fill(-1); flagAt = new Set(); paint(); buildFleets([]); },
+    endReplay() { replay = false; },
     setCameraSpeed(k) { controls.rotateSpeed = k; controls.zoomSpeed = 1.1 * k; controls.panSpeed = k; },
     setCalm(on) { calm = on; if (on) controls.autoRotate = false; controls.enableDamping = !on; },   // colour-blind help: each holder's ship symbol beside the count
     screenOf,
