@@ -227,6 +227,6 @@ Sources:
   - Fixed the top bug: big maps never ended because card sets reached about 9,000 ships each. Sets are now capped at 40, and 1,000- and 3,000-sun games end in about 600 turns.
   - The median game length fell to 781 turns, from 1,712.
   - Applied the tuner's style changes that keep each style's character: balanced elimination 3.2, aggressive region focus 2.1, territorial odds 1.42.
-  - Gave the tuner identity rules and started a second run.
+  - Gave the tuner identity rules. The second run skipped every candidate, because territorial claimed less than defensive. Fixed (territorial claim 6.5) and started a third run.
   - Online research (round ending in 5) added to Player wishes: fog-of-war replays, configurable rooms, non-binding truces, colour-blind support, orientation, and a local record as a stand-in for ranked play.
   - 28 of 28 tests pass, including full games on 1,000 and 3,000 suns.

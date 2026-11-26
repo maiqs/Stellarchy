@@ -41,6 +41,7 @@ if (!isMainThread) {
     const err = STYLE_KEYS.reduce((a, k) => a + (rate[k] - fair) ** 2, 0);
     return { err, rate, fair };
   }
+  if (!keepsIdentity(pick(STYLES))) { console.log("the current styles break the identity rules; fix shared/bot.js first"); process.exit(1); }
   const fmt = r => STYLE_KEYS.map(k => `${k} ${(100 * r.rate[k]).toFixed(1)}%`).join("  ") + `  (fair ${(100 * r.fair).toFixed(1)}%)`;
 // each style must keep its character: aggressive attacks at the lowest odds, defensive holds the most,
 // the card hunter values cards most, and territorial values claiming suns most
