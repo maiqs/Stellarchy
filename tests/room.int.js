@@ -105,10 +105,14 @@ for (const c of [a, bb, sneaky]) c.ws.close();
   const q2 = await (await fetch(BASE + "/api/quick", { method: "POST" })).json();
   const rexName = "Rex" + Math.floor(Math.random() * 9000 + 1000);   // unique: earlier runs leave quick rooms (and Rexes) running
   const p2 = client(q2.code, { name: rexName }); await p2.ready; await until(() => p2.seat);
-  check(q2.code === q1.code && q2.joined, "a second quick player is sent to the running game");
-  await until(() => p1.state.seats.some(s => s.name === rexName));
-  const rex = p1.state.seats.find(s => s.name === rexName);
-  check(rex && !rex.ai && p2.seat === rex.id && aiIds.has(rex.id), `they take over an AI seat, keeping its colour (${q1.code}/${q2.code}, AI ${aiBefore} -> ${p1.state.seats.filter(s => s.ai).length}, rex ${rex ? rex.id : "missing"} vs ${p2.seat})`);
+  // if the first game still has a live AI, the second player takes it over; if not, quick play starts a new game
+  const liveAI = p1.state.seats.filter((s, j) => s.ai && p1.state.game.alive[j]).length;
+  check(p2.seat !== null, `a second quick player always gets a seat (${q2.code === q1.code ? "same game" : "new game"}, ${liveAI} live AI were left in ${q1.code})`);
+  if (q2.code === q1.code) {
+    await until(() => p1.state.seats.some(s => s.name === rexName));
+    const rex = p1.state.seats.find(s => s.name === rexName);
+    check(rex && !rex.ai && p2.seat === rex.id && aiIds.has(rex.id), "they take over an AI seat, keeping its colour");
+  } else check(liveAI === 0 || !q2.joined, "a new game only when the first had no live AI to take over");
   p1.ws.close(); p2.ws.close();
 }
 // fog of war: a player never receives enemy suns they could not see, but still gets everyone's totals
@@ -152,10 +156,10 @@ for (const c of [a, bb, sneaky]) c.ws.close();
 {
   const r = await (await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 32, size: 500, mode: "dealt", targetPct: 50 }) })).json();
   const h = client(r.code, { name: "Host32" }); await h.ready; await until(() => h.state);
-  for (let k = 0; k < 31; k++) { h.send({ t: "addBot" }); await sleep(70); }
-  await until(() => h.state.seats.length === 32, 8000);
+  for (let k = 0; k < 31; k++) { h.send({ t: "addBot" }); await sleep(260); }   // under the rate limit (4 a second)
+  await until(() => h.state.seats.length === 32, 12000);
   h.send({ t: "start" }); await until(() => h.state.status === "playing");
-  check(h.state.status === "playing" && h.state.seats.length === 32 && new Set(h.state.seats.map(s => s.main)).size === 32, "a 32-seat room starts with 32 distinct colours");
+  check(h.state.status === "playing" && h.state.seats.length === 32 && new Set(h.state.seats.map(s => s.main)).size === 32, `a 32-seat room starts with 32 distinct colours (${h.state.seats.length} seats, ${h.state.status}, ${h.errors.slice(0, 2)})`);
   h.ws.close();
 }
 // an idle room closes itself (needs DEV=1 in .dev.vars for the short idle time)

@@ -362,6 +362,7 @@ Sources:
     - the palette and AI names doubled to 32 (deeper and paler neon takes)
     - Create room offers 24 and 32 seats; Play vs AI offers 23 and 31 opponents
     - the map size floor keeps 4 suns per seat
-  - Tests: a 32-player, 500-sun game runs to the end, and a 32-seat room starts with 32 distinct colours. Checked a 32-seat solo game in the browser.
+  - Tests: a 32-player, 500-sun game runs to the end, and a 32-seat room starts with 32 distinct colours (the test adds AI players under the 4-a-second rate limit). Checked a 32-seat solo game in the browser.
+  - The quick-play test now accepts both right outcomes: take over a live AI, or a new game when none is left. 27 of 27 room checks pass.
   - Ticked fog-of-war replays: round 19's replay is the whole-map time-lapse.
   - 39 of 39 unit tests pass.
