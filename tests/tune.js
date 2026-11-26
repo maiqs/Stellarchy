@@ -21,7 +21,7 @@ if (!isMainThread) {
       const ss = Array.from({ length: n }, (_, i) => ({ id: "s" + i, name: "P" + i, style: STYLE_KEYS[(i + gi) % STYLE_KEYS.length], ai: true }));
       ss.forEach(s => seats[s.style] = (seats[s.style] || 0) + 1);
       const g = newGame(MAP, { mode: gi % 3 === 0 ? "dealt" : "legacy", targetPct: 100, seats: ss }, rng);
-      while (g.status === "playing" && g.turnNo < 8000) playTurn(MAP, g, act, g.turn, g.seats[g.turn].style, rng);
+      while (g.status === "playing" && g.turnNo < 8000) playTurn(MAP, g, g.turn, g.seats[g.turn].style, rng);
       if (g.status === "over") { const st = g.seats[g.winner].style; wins[st] = (wins[st] || 0) + 1; }
     }
     parentPort.postMessage({ wins, seats });

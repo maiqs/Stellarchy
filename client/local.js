@@ -1,15 +1,12 @@
 // Solo play with no server: a stand-in for the room that speaks the same messages
 // ("welcome", "state", "error"), so the game screen cannot tell the difference.
 import { newGame, act } from "./shared/rules.js";
-import { botIntent, STYLE_KEYS } from "./shared/bot.js";
+import { botStep, STYLE_KEYS } from "./shared/bot.js";
+import { HULL_KEYS, PACES, freeLook, BOT_NAMES } from "./shared/looks.js";
+export { PACES };
 import { mulberry32 } from "./shared/map.js";
 import { EMOTES, botEmotes } from "./shared/emotes.js";
 
-const PALETTE = ["#ff4d5a", "#3e9bff", "#f5d90a", "#3fcf6a", "#b06bff", "#ff8a2a", "#22d3c5", "#ff6fb5", "#9dff3a", "#ffffff", "#5b6bff", "#ff3df2", "#00e5ff", "#ffb3a7", "#c9a227", "#7cffc4"];
-const PSUB = ["#ffe066", "#ffffff", "#ff4d5a", "#0b0f18", "#3fcf6a", "#3e9bff", "#ff6fb5", "#22d3c5", "#b06bff", "#ff4d5a", "#f5d90a", "#ffffff", "#ff8a2a", "#3e9bff", "#0b0f18", "#b06bff"];
-const BOT_NAMES = ["Unit Ceres", "Overmind Vega", "Captain Null", "Admiral Byte", "Warden Kepler", "The Archivist", "Marshal Orbit", "Sentinel Nine", "Lady Parsec", "Echo Prime", "Count Quasar", "Vector Seven", "Doctor Nebula", "Baron Redshift", "Queen Corona"];
-const HULLS = ["triangle", "brick", "tube", "orb", "saucer"];
-export const PACES = { slow: 900, normal: 450, fast: 150, instant: 25 };
 
 export class LocalRoom {
   // opts: {bots, mode, targetPct, pace, watch (computer-only game)}; me: {name, main, sub, hull, style}
@@ -19,11 +16,10 @@ export class LocalRoom {
     this.pace = PACES[opts.pace] ? opts.pace : "normal";
     const seats = [];
     if (!opts.watch) seats.push({ id: "me", name: me.name || "Stellarch", main: me.main, sub: me.sub, hull: me.hull, style: me.style || "balanced", ai: false, away: false, online: true });
-    const used = new Set(seats.map(s => s.main.toLowerCase()));
     const bots = Math.max(1, Math.min(15, opts.bots | 0));
     for (let b = 0; b < bots + (opts.watch ? 1 : 0); b++) {
-      const c = PALETTE.findIndex(x => !used.has(x.toLowerCase())); used.add(PALETTE[c].toLowerCase());
-      seats.push({ id: "ai_" + b, name: BOT_NAMES[b], main: PALETTE[c], sub: PSUB[c], hull: HULLS[(b + 1) % 5], style: STYLE_KEYS[b % STYLE_KEYS.length], ai: true, away: false, online: true });
+      const f = freeLook(seats);
+      seats.push({ id: "ai_" + b, name: BOT_NAMES[b], main: f.main, sub: f.sub, hull: HULL_KEYS[(b + 1) % 5], style: STYLE_KEYS[b % STYLE_KEYS.length], ai: true, away: false, online: true });
     }
     this.seats = seats;
     this.g = newGame(map, { mode: opts.mode, targetPct: opts.targetPct, seats }, this.rng);
@@ -56,13 +52,10 @@ export class LocalRoom {
                 seats: this.seats.map(s => ({ ...s })), game: this.g, events, log: this.log.slice(-20), deadline: 0, warnAt: 0, now: Date.now() });
     clearTimeout(this.timer);
     const k = this.g.turn, st = this.seats[k];
-    if (this.g.status === "playing" && (st.ai || st.away)) this.timer = setTimeout(() => this.botStep(), PACES[this.pace]);
+    if (this.g.status === "playing" && (st.ai || st.away)) this.timer = setTimeout(() => this.aiMove(), PACES[this.pace]);
   }
-  botStep() {
-    const g = this.g, k = g.turn;
-    const it = botIntent(this.map, g, k, this.seats[k].style, this.rng);
-    let r = it ? act(this.map, g, k, it, this.rng) : { ok: false };
-    if (!r.ok) r = act(this.map, g, k, g.advance ? { t: "advance", n: 0 } : g.phase === "attack" ? { t: "endAttack" } : { t: "endTurn" }, this.rng);
+  aiMove() {
+    const k = this.g.turn, r = botStep(this.map, this.g, k, this.seats[k].style, this.rng);   // never stalls
     this.commit(r.ok ? r.events : []);
   }
 }

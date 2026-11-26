@@ -15,7 +15,7 @@ function runGame(map, g, rng, maxTurns = 6000) {
 
   while (g.status === "playing" && g.turnNo < maxTurns) {
     const seat = g.turn;
-    playTurn(map, g, act, seat, g.seats[seat].style, rng);
+    playTurn(map, g, seat, g.seats[seat].style, rng);
 
     const errs = invariants(map, g); if (errs.length) throw new Error(errs.join("; "));
   }

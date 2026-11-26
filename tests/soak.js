@@ -13,7 +13,7 @@ for (let gi = 0; gi < games; gi++) {
   const seats = Array.from({ length: k }, (_, i) => ({ id: "s" + i, name: "P" + i, style: STYLE_KEYS[(i + gi) % STYLE_KEYS.length], ai: true }));
   seats.forEach(s => seatsOf[s.style] = (seatsOf[s.style] || 0) + 1);
   const g = newGame(MAP, { mode: "legacy", seats }, rng);
-  while (g.status === "playing" && g.turnNo < 8000) { playTurn(MAP, g, act, g.turn, g.seats[g.turn].style, rng); }
+  while (g.status === "playing" && g.turnNo < 8000) { playTurn(MAP, g, g.turn, g.seats[g.turn].style, rng); }
   const e = invariants(MAP, g); if (e.length) throw new Error(e.join("; "));
   if (g.status !== "over") { console.log(`game ${gi} (${k} seats) hit the cap`); continue; }
   turns.push(g.turnNo); const st = g.seats[g.winner].style; wins[st] = (wins[st] || 0) + 1;

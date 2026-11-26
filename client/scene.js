@@ -345,7 +345,6 @@ export function createScene({ container, labels, map }) {
     setAllNames(on) { showAllNames = on; },
     setSymbols(on) { symbols = on; },   // colour-blind help: each holder's ship symbol beside the count
     screenOf,
-    stop() { running = false; },
     dispose() { running = false; removeEventListener("resize", resize); renderer.dispose(); renderer.domElement.remove(); labels.innerHTML = ""; scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); },
   };
 }

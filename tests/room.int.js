@@ -73,7 +73,7 @@ while (Date.now() - t0 < 240000) {
   }
   const me = players().find(p => p.seat === seatId && p.ws.readyState === 1);
   if (me && !st.seats[k].away) {
-    const it = botIntent(MAP, g, k, "balanced", rng);
+    const it = botIntent(MAP, me.state.game, k, "balanced", rng);   // from that player's own view: only they can see their cards
     if (it) { const rev = st.rev; me.send({ t: "intent", intent: it }); await until(() => a.state.rev > rev, 3000); await sleep(70); continue; }   // paced like a person, under the rate limit
   }
   await sleep(40);
@@ -85,7 +85,7 @@ while (Date.now() - t0 < 240000) {
   check(g.cards.every((h, k) => k === mine || h.every(x => x === -1)), "other players' hands are sent as counts only");
   check(a.board.diffs > 10 && a.board.fulls <= 3, `the board arrives as changes (${a.board.fulls} full, ${a.board.diffs} diffs, ${a.resyncs || 0} resyncs)`);
 }
-console.log("  errors:", JSON.stringify([...new Set([...a.errors, ...bb.errors])]).slice(0, 300), "elapsed", Math.round((Date.now() - t0) / 1000) + "s");
+{ const g = a.state.game; console.log("  errors:", JSON.stringify([...new Set([...a.errors, ...bb.errors])]).slice(0, 300), "elapsed", Math.round((Date.now() - t0) / 1000) + "s", "| end:", g.status, "turn", g.turnNo, "seat", g.turn, g.phase, "advance", JSON.stringify(g.advance), "seats", JSON.stringify(a.state.seats.map(s => [s.name, s.ai, s.away, s.online]))); }
 check(coveredByAI, "a dropped player's seat is played by the AI (after the grace period)");
 check(a.state.status === "over", `game finished (turn ${a.state.game.turnNo}, ${a.state.game.status})`);
 const sneaky = client(code, { name: "Late" }); await sneaky.ready; await until(() => sneaky.state);

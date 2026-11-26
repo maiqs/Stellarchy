@@ -7,12 +7,13 @@ import { STYLES, STYLE_KEYS } from "./shared/bot.js";
 import { createScene, HULLS, fleetOf, CLASSES } from "./scene.js";
 import { LocalRoom } from "./local.js";
 import { EMOTES } from "./shared/emotes.js";
+import { PALETTE, HEX } from "./shared/looks.js";
+// the 3D hull for a key, falling back to the first
+const hullInfo = key => HULLS.find(h => h.key === key) || HULLS[0];
 import { CARD_NAMES, CARD_COLOR, STAR_FACTS, SUN_WORDS, surfaceTemp, disp, lightText } from "./cards.js";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const HEX = /^#[0-9a-fA-F]{6}$/;
-const PALETTE = ["#ff4d5a", "#3e9bff", "#f5d90a", "#3fcf6a", "#b06bff", "#ff8a2a", "#22d3c5", "#ff6fb5", "#9dff3a", "#ffffff", "#5b6bff", "#ff3df2", "#00e5ff", "#ffb3a7", "#c9a227", "#7cffc4"];
 const SUBS = ["#ffffff", "#0b0f18", "#ffe066", "#ff4d5a", "#3e9bff", "#3fcf6a", "#b06bff", "#ff8a2a"];
 // Okabe-Ito colours: told apart by people with the common kinds of colour blindness
 const CB_SAFE = ["#e69f00", "#56b4e9", "#009e73", "#f0e442", "#0072b2", "#d55e00", "#cc79a7", "#ffffff"];
@@ -38,7 +39,7 @@ if (!me || !HEX.test(me.main)) { const k = Math.floor(Math.random() * PALETTE.le
 const saveMe = () => { store.set("stellarchy_profile", me); renderYou(); document.documentElement.style.setProperty("--me", me.main); };
 saveMe();
 function renderYou() {
-  const h = HULLS.find(x => x.key === me.hull) || HULLS[0], st = STYLES[me.style] || STYLES.balanced, rec = store.get("stellarchy_record", null);
+  const h = hullInfo(me.hull), st = STYLES[me.style] || STYLES.balanced, rec = store.get("stellarchy_record", null);
   $("youCard").innerHTML = `<span class="swatch" style="--sw-main:${me.main};--sw-sub:${me.sub}"></span><span class="who"><b>${esc(me.name || "Name your Stellarch")}</b><span>${h.glyph} ${h.name} ships · ${esc(st.name)} style${rec && rec.games ? ` · ${rec.wins} win${rec.wins === 1 ? "" : "s"} of ${rec.games}` : ""}</span></span><span class="edit">Edit</span>`;
 }
 $("youCard").addEventListener("click", () => lookDialog());
@@ -53,7 +54,7 @@ function lookDialog(after) {
   const d = { ...me };
   const draw = () => openDialog(`<form class="dlg" method="dialog">
     <h2>Your Stellarch</h2>
-    <div class="preview"><span class="swatch" style="--sw-main:${d.main};--sw-sub:${d.sub}"></span><div><b>${esc(d.name || "Stellarch")}</b><div class="hint">${HULLS.find(h => h.key === d.hull).name} ships · ${esc(STYLES[d.style].name)}</div></div></div>
+    <div class="preview"><span class="swatch" style="--sw-main:${d.main};--sw-sub:${d.sub}"></span><div><b>${esc(d.name || "Stellarch")}</b><div class="hint">${hullInfo(d.hull).name} ships · ${esc(STYLES[d.style].name)}</div></div></div>
     <label class="field"><span>Name</span><input id="lName" maxlength="24" value="${esc(d.name)}" placeholder="Stellarch of Sol" autocomplete="nickname"></label>
     <div class="field"><span>Main colour</span><div class="palette">${PALETTE.map(c => `<button type="button" data-main="${c}" style="--c:${c}" aria-label="${c}" aria-pressed="${c === d.main}"></button>`).join("")}</div></div>
     <div class="field"><span>Colour-blind-safe colours</span><div class="palette">${CB_SAFE.map(c => `<button type="button" data-main="${c}" style="--c:${c}" aria-label="${c} (colour-blind safe)" aria-pressed="${c === d.main}"></button>`).join("")}</div></div>
@@ -418,7 +419,7 @@ function renderPlayers() {
     const cards = g && g.cards[k] ? g.cards[k].length : 0;
     return `<div class="prow ${g && g.turn === k && g.status === "playing" ? "turn" : ""} ${out ? "out" : ""}" style="--pc:${esc(s.main)}">
       <span class="swatch s" style="--sw-main:${esc(s.main)};--sw-sub:${esc(s.sub)}"></span>
-      <span class="nm"><span class="glyph" title="${esc((HULLS.find(h => h.key === s.hull) || HULLS[0]).name)} ships">${(HULLS.find(h => h.key === s.hull) || HULLS[0]).glyph}</span> ${esc(s.name)}${tag ? `<small>${tag}</small>` : ""}</span>
+      <span class="nm"><span class="glyph" title="${esc(hullInfo(s.hull).name)} ships">${hullInfo(s.hull).glyph}</span> ${esc(s.name)}${tag ? `<small>${tag}</small>` : ""}</span>
       <span class="st">${g ? `${sys} ☀ · ${ships}${cards ? ` · ${cards}▤` : ""}` : ""}${!g && isCreator && s.id !== mySeat ? `<button class="btn small ghost" data-rm="${esc(s.id)}" type="button" aria-label="Remove">✕</button>` : ""}</span>
       ${g ? `<span class="bar-track"><i style="width:${(100 * sys / total).toFixed(1)}%"></i></span>` : ""}</div>`;
   }).join("") + (mySeat ? `<button class="btn small ghost" id="pLook" type="button">Edit my look</button>` : `<p class="hint">You're watching.</p>`);
@@ -442,7 +443,7 @@ function renderSunCard() {
   el.hidden = false;
   el.innerHTML = `<p class="eyebrow">${esc(cont ? cont.name : "")}${cont ? ` · +${cont.bonus} for holding all ${cont.members.length}` : ""}</p>
     <h3><span class="swatch s" style="--sw-main:${o < 0 ? "#eef2ff" : esc(lookOf(o).main)};--sw-sub:${o < 0 ? "#05070c" : esc(lookOf(o).sub)}"></span>${esc(disp(s))}</h3>
-    <dl><dt>Held by</dt><dd>${o >= 0 ? (HULLS.find(h => h.key === lookOf(o).hull) || HULLS[0]).glyph + " " : ""}${esc(nameOf(o))}${g && g.hq.indexOf(i) >= 0 ? " ★ home" : ""}</dd><dt>Ships</dt><dd>${a} ${a ? `(${fleet})` : ""}</dd>
+    <dl><dt>Held by</dt><dd>${o >= 0 ? hullInfo(lookOf(o).hull).glyph + " " : ""}${esc(nameOf(o))}${g && g.hq.indexOf(i) >= 0 ? " ★ home" : ""}</dd><dt>Ships</dt><dd>${a} ${a ? `(${fleet})` : ""}</dd>
     <dt>Sun</dt><dd><span class="sundot" style="color:${CARD_COLOR[kind]};background:${CARD_COLOR[kind]}"></span>${esc((s.spect || "").trim() || "type unknown")}${c ? ` · ${SUN_WORDS[c] || ""}` : ""}</dd>
     <dt>Surface</dt><dd>${surfaceTemp(s)}</dd><dt>Light</dt><dd>${lightText(s)}</dd><dt>From Earth</dt><dd>${s.name === "Sol" ? "home" : s.distLy.toFixed(1) + " ly"}</dd></dl>
     ${STAR_FACTS[s.name] ? `<p class="fact">${esc(STAR_FACTS[s.name])}</p>` : ""}`;

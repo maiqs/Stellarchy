@@ -6,17 +6,14 @@ import STARS from "../data/stars.json";
 import { buildMap, clampSize } from "../shared/mapgen.js";
 import { prepareMap, mulberry32 } from "../shared/map.js";
 import { newGame, act, MAX_SEATS, SUNS_PER_SEAT } from "../shared/rules.js";
-import { botIntent, STYLE_KEYS } from "../shared/bot.js";
+import { botStep, STYLE_KEYS } from "../shared/bot.js";
+import { HULL_KEYS as HULLS, PACES, freeLook, botName } from "../shared/looks.js";
+export { PACES };
 import { EMOTES, botEmotes } from "../shared/emotes.js";
 
 // maps are built per size and kept for reuse (the same size always gives the same map)
 const MAPS = new Map();
 export const mapFor = size => { size = clampSize(size); if (!MAPS.has(size)) MAPS.set(size, prepareMap(buildMap(STARS, size))); return MAPS.get(size); };
-export const HULLS = ["triangle", "brick", "tube", "orb", "saucer"];
-const PALETTE = ["#ff4d5a", "#3e9bff", "#f5d90a", "#3fcf6a", "#b06bff", "#ff8a2a", "#22d3c5", "#ff6fb5", "#9dff3a", "#ffffff", "#5b6bff", "#ff3df2", "#00e5ff", "#ffb3a7", "#c9a227", "#7cffc4"];
-const PSUB = ["#ffe066", "#ffffff", "#ff4d5a", "#0b0f18", "#3fcf6a", "#3e9bff", "#ff6fb5", "#22d3c5", "#b06bff", "#ff4d5a", "#f5d90a", "#ffffff", "#ff8a2a", "#3e9bff", "#0b0f18", "#b06bff"];
-const BOT_NAMES = ["Unit Ceres", "Overmind Vega", "Captain Null", "Admiral Byte", "Warden Kepler", "The Archivist", "Marshal Orbit", "Sentinel Nine", "Lady Parsec", "Echo Prime", "Count Quasar", "Vector Seven", "Doctor Nebula", "Baron Redshift", "Queen Corona", "Pilot Zero"];
-export const PACES = { slow: 900, normal: 450, fast: 150, instant: 25 };
 export const TIMERS = [0, 90, 180, 43200, 86400];   // seconds per turn: none, 90 s, 3 min, 12 h, 24 h
 const GRACE_MS = 20000;        // a dropped connection gets this long before the AI covers the seat
 const SKIP_WARN_MS = 10000;    // "AI takes over in 10 s" is shown this long before a timer runs out
@@ -159,12 +156,8 @@ export class Room {
   }
 
   // ---- seats ----
-  freeLook() {
-    const used = new Set(this.s.seats.map(x => x.main.toLowerCase())), k = PALETTE.findIndex(c => !used.has(c.toLowerCase()));
-    const i = k < 0 ? this.s.seats.length % 16 : k; return { main: PALETTE[i], sub: PSUB[i] };
-  }
   addHuman(m) {
-    const id = "p_" + rid(), f = this.freeLook(), used = new Set(this.s.seats.map(x => x.main.toLowerCase()));
+    const id = "p_" + rid(), f = freeLook(this.s.seats), used = new Set(this.s.seats.map(x => x.main.toLowerCase()));
     const main = HEX.test(m.main) && !used.has(m.main.toLowerCase()) ? m.main : f.main, sub = main === m.main && HEX.test(m.sub) ? m.sub : f.sub;
     this.s.seats.push({ id, name: cleanName(m.name) || "Stellarch", main, sub, hull: HULLS.includes(m.hull) ? m.hull : HULLS[this.s.seats.length % 5],
                         style: STYLE_KEYS.includes(m.style) ? m.style : "balanced", ai: false, away: false, online: true });
@@ -172,8 +165,8 @@ export class Room {
     this.log(`${this.s.seats.at(-1).name} joined`); return id;
   }
   addBot(style) {
-    const used = new Set(this.s.seats.map(x => x.name)), f = this.freeLook();
-    const name = BOT_NAMES.find(b => !used.has(b)) || "Bot " + (this.s.seats.length + 1);
+    const f = freeLook(this.s.seats);
+    const name = botName(this.s.seats);
     this.s.seats.push({ id: "ai_" + rid(), name, main: f.main, sub: f.sub, hull: HULLS[this.s.seats.length % 5],
                         style: STYLE_KEYS.includes(style) ? style : STYLE_KEYS[Math.floor(Math.random() * STYLE_KEYS.length)], ai: true, away: false, online: true });
   }
@@ -212,12 +205,7 @@ export class Room {
     if (st && !st.ai && !st.away && s.deadline && now >= s.deadline) { st.away = true; st.autoAway = true; this.log(`${st.name} ran out of time: the AI is playing for them`); }
     this.syncGameSeats();
     if (this.controlledByAI(k)) {
-      const it = botIntent(this.map, g, k, s.seats[k].style, this.rng());
-      let r = it ? act(this.map, g, k, it, this.rng()) : { ok: false };
-      if (!r.ok) {   // never stall
-        const fb = g.advance ? { t: "advance", n: 0 } : g.phase === "attack" ? { t: "endAttack" } : { t: "endTurn" };
-        r = act(this.map, g, k, fb, this.rng());
-      }
+      const r = botStep(this.map, g, k, s.seats[k].style, this.rng());   // falls back to moving the turn on, so it never stalls
       if (r.ok) this.afterEvents(r.events);
     }
     await this.commit();

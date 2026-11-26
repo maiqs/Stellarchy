@@ -2,7 +2,7 @@
 // botIntent() returns the next single intent for the seat whose turn it is, so the room can
 // play it at the chosen pace and hand the seat back to a returning human between any two steps.
 import { hops } from "./map.js";
-import { hqChoices, isSet, cardKind, connected, mustTrade, aggression as stallAggression } from "./rules.js";
+import { act, hqChoices, isSet, cardKind, connected, mustTrade, aggression as stallAggression } from "./rules.js";
 
 export const STYLES = {
   balanced:    { name: "Balanced",    blurb: "A bit of everything.",
@@ -127,19 +127,22 @@ function chooseFortify(map, g, seat, S) {
   return dst === undefined ? null : { t: "fortify", from: src, to: dst, n: g.armies[src] - 1 };
 }
 
+// one computer move for the seat whose turn it is; if the planned move is refused it falls back to
+// moving the turn on (advance 0, stop attacking, end the turn), so a computer seat never stalls
+export function botStep(map, g, seat, styleKey, rng) {
+  const it = botIntent(map, g, seat, styleKey, rng);
+  const r = it ? act(map, g, seat, it, rng) : { ok: false, error: "no move" };
+  if (r.ok) return r;
+  const fb = g.advance ? { t: "advance", n: 0 } : g.phase === "attack" ? { t: "endAttack" } : g.phase === "fortify" ? { t: "endTurn" } : null;
+  return fb ? act(map, g, seat, fb, rng) : r;
+}
+
 // play the seat's whole turn at once (tests and fast-forward); returns all events
-export function playTurn(map, g, act, seat, styleKey, rng, aggression) {
+export function playTurn(map, g, seat, styleKey, rng) {
   const all = [];
   for (let guard = 0; guard < 400 && g.status === "playing" && g.turn === seat; guard++) {
-    const it = botIntent(map, g, seat, styleKey, rng, aggression);
-    if (!it) break;
-    const r = act(map, g, seat, it, rng);
-    if (!r.ok) {   // never stall: fall back to moving the turn on
-      const fb = g.advance ? { t: "advance", n: 0 } : g.phase === "attack" ? { t: "endAttack" } : g.phase === "fortify" ? { t: "endTurn" } : null;
-      if (!fb) throw new Error(`bot stuck: ${JSON.stringify(it)} -> ${r.error}`);
-      const r2 = act(map, g, seat, fb, rng); if (!r2.ok) throw new Error(`bot stuck: ${r2.error}`);
-      all.push(...r2.events); continue;
-    }
+    const r = botStep(map, g, seat, styleKey, rng);
+    if (!r.ok) throw new Error(`bot stuck in ${g.phase}: ${r.error}`);
     all.push(...r.events);
   }
   return all;

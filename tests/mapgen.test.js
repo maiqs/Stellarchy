@@ -37,13 +37,13 @@ test("the same size always gives the same map", () => {
 
 for (const [n, k] of [[10, 2], [25, 4], [200, 6], [1000, 6], [3000, 8]]) test(`a ${k}-way game on ${n} suns runs to total conquest`, () => {
   const m = prepareMap(buildMap(STARS, n)), rng = mulberry32(n + k), g = newGame(m, { mode: "legacy", seats: seats(k) }, rng);
-  while (g.status === "playing" && g.turnNo < 12000) { playTurn(m, g, act, g.turn, g.seats[g.turn].style, rng); }
+  while (g.status === "playing" && g.turnNo < 12000) { playTurn(m, g, g.turn, g.seats[g.turn].style, rng); }
   assert.deepEqual(invariants(m, g), []);
   assert.equal(g.status, "over", `stopped at turn ${g.turnNo}`);
 });
 
 test("a 3,000-sun game stays consistent for 300 turns", () => {
   const m = prepareMap(buildMap(STARS, 3000)), rng = mulberry32(3), g = newGame(m, { mode: "dealt", targetPct: 60, seats: seats(8).map(s => ({ ...s, ai: false })) }, rng);
-  while (g.status === "playing" && g.turnNo < 300) playTurn(m, g, act, g.turn, g.seats[g.turn].style, rng);
+  while (g.status === "playing" && g.turnNo < 300) playTurn(m, g, g.turn, g.seats[g.turn].style, rng);
   assert.deepEqual(invariants(m, g), []);
 });

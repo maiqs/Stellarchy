@@ -260,3 +260,9 @@ Sources:
   - Big maps default to a 65% win target. Watching an AI war now uses 100 suns, with "Watch another war" at the end.
   - Fixed: after the tips had been seen once, every later dialog (the results included) was pushed to the bottom of the screen.
   - 29 of 29 tests pass.
+- **Round 10 (2026-11-26, code health only):**
+  - `shared/looks.js` now holds the palette, highlights, AI names, hull keys, speed presets, `freeLook` and `botName`. They were copied in three places (server, solo, page).
+  - `botStep` in `shared/bot.js` is the one "computer move that never stalls" used by the server, solo play and `playTurn` (which lost its unused `act` argument).
+  - The page has a `hullInfo` helper. Removed unused `needsAction` and `scene.stop`.
+  - Fixed the room test's stall at turn 40–47 (seen twice): it planned each human's move from another player's view, which since round 8 can't see their cards.
+  - 29 of 29 unit tests and 17 of 17 room checks pass. The browser loads with no errors.

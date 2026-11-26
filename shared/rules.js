@@ -222,8 +222,6 @@ function nextTurn(map, g, ev) {
   ev.push({ t: "turn", seat: nx, turnNo: g.turnNo });
 }
 
-// what the seat must still do before the turn can move on (for timeouts and AI hand-over)
-export function needsAction(g) { return g.status === "playing" ? { seat: g.turn, phase: g.phase, advance: !!g.advance } : null; }
 
 // a check used by tests: every rule that must always hold
 export function invariants(map, g) {
