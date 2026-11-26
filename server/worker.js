@@ -61,10 +61,20 @@ export default {
 
 // the lobby: public rooms report in; anything quiet for 15 minutes (or finished for 2) drops off the list
 export class Lobby {
-  constructor(ctx) { this.ctx = ctx; this.rooms = null; ctx.blockConcurrencyWhile(async () => { this.rooms = (await ctx.storage.get("rooms")) || {}; }); }
+  constructor(ctx) { this.ctx = ctx; this.rooms = null; this.savedAt = 0; this.tidiedAt = 0; ctx.blockConcurrencyWhile(async () => { this.rooms = (await ctx.storage.get("rooms")) || {}; }); }
+  // round 41 (launch load): the list lives in memory and is written to storage at most every 10 s, not on every report
+  async save() {
+    const now = Date.now();
+    if (now - this.savedAt >= 10000) { this.savedAt = now; await this.ctx.storage.put("rooms", this.rooms); }
+    else if (!this.saveDue) { this.saveDue = true; await this.ctx.storage.setAlarm(this.savedAt + 10000); }
+  }
+  async alarm() { this.saveDue = false; this.savedAt = Date.now(); await this.ctx.storage.put("rooms", this.rooms); }
   async fetch(req) {
     const url = new URL(req.url), now = Date.now();
-    for (const [c, r] of Object.entries(this.rooms)) if (now - r.seen > 15 * 60000 || (r.status === "over" && now - r.seen > 2 * 60000)) delete this.rooms[c];
+    if (now - this.tidiedAt > 5000) {   // drop rooms quiet for 15 minutes (or finished for 2), at most every 5 s
+      this.tidiedAt = now;
+      for (const [c, r] of Object.entries(this.rooms)) if (now - r.seen > 15 * 60000 || (r.status === "over" && now - r.seen > 2 * 60000)) delete this.rooms[c];
+    }
     // launch protection: at most PER_VISITOR new rooms per visitor per 10 min, and GLOBAL a minute in all
     if (url.pathname === "/allow") {
       const ip = url.searchParams.get("ip") || "unknown", win = 10 * 60000;
@@ -79,7 +89,7 @@ export class Lobby {
     if (url.pathname === "/report") {
       const r = await req.json();
       if (r.public) this.rooms[r.code] = { ...r, seen: now }; else delete this.rooms[r.code];
-      await this.ctx.storage.put("rooms", this.rooms); return new Response("ok");
+      await this.save(); return new Response("ok");
     }
     const list = Object.values(this.rooms).sort((a, b) => (a.status === "lobby" ? 0 : 1) - (b.status === "lobby" ? 0 : 1) || b.seen - a.seen).slice(0, 50);
     return Response.json({ rooms: list });

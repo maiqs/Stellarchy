@@ -200,6 +200,12 @@ for (const c of [a, bb, sneaky]) c.ws.close();
   check(h.state.seats.find(x => x.id === h.seat).away, "after the bank, the AI covers the turn");
   h.ws.close();
 }
+// launch load (round 41): a public game tells the lobby only when the listing changes, not every few moves
+{
+  const { code: lc } = await (await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ allAI: true, maxSeats: 4, size: 100, pace: "instant", public: true }) })).json();
+  let s; for (let k = 0; k < 240; k++) { s = await (await fetch(BASE + `/api/rooms/${lc}`)).json(); if (s.status === "over") break; await sleep(500); }
+  check(s.status === "over" && s.calls && s.calls.report <= 15, `a public game of ${s.turnNo} turns and ${s.calls && s.calls.alarm} AI moves sent the lobby ${s.calls && s.calls.report} reports`);
+}
 // an idle room closes itself (needs DEV=1 in .dev.vars for the short idle time)
 {
   const r = await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 2, public: true, idleMs: 1500 }) });

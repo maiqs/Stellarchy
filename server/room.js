@@ -23,6 +23,7 @@ const SKIP_WARN_MS = 10000;    // "AI takes over in 10 s" is shown this long bef
 // with up to DELIVERY_MS forgiven for a slow connection; then each player has a one-off time bank per game.
 export const DELIVERY_MS = 10000, BANK_MS = 30000;
 const MAX_LOG = 60;
+const REPORT_EVERY_MS = 60000;   // a listed room re-reports at most once a minute unless what the list shows changes
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const cleanName = s => safeName(String(s ?? "").replace(/[\u0000-\u001f\u007f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 24));   // offensive names become "Stellarch"
@@ -38,8 +39,10 @@ export class Room {
   get map() { return mapFor(this.s.opts.size || 300, this.s.opts.centre || "Sol"); }
 
   // ---- HTTP: create (from the Worker) and the WebSocket upgrade ----
+  // what counts against the Durable Objects request allowance: fetches, alarms and incoming WebSocket messages (round 41)
+  count(kind) { if (this.s) { const c = this.s.calls = this.s.calls || { fetch: 0, alarm: 0, ws: 0, report: 0 }; c[kind]++; } }
   async fetch(req) {
-    const url = new URL(req.url);
+    const url = new URL(req.url); this.count("fetch");
     if (url.pathname === "/init" && req.method === "POST") {
       if (this.s) return new Response("exists", { status: 409 });
       const o = await req.json();
@@ -69,7 +72,7 @@ export class Room {
       return Response.json({ ok: true });
     }
     if (!this.s) return new Response("no such room", { status: 404 });
-    if (req.headers.get("Upgrade") !== "websocket") return Response.json(this.summary());
+    if (req.headers.get("Upgrade") !== "websocket") return Response.json(this.env.DEV ? { ...this.summary(), calls: this.s.calls } : this.summary());
     const pair = new WebSocketPair();
     this.ctx.acceptWebSocket(pair[1]);
     pair[1].serializeAttachment({ seat: null, bucket: 20, last: Date.now() });
@@ -83,12 +86,19 @@ export class Room {
              names: s.seats.map(x => x.name).slice(0, 6), turnNo: s.game ? s.game.turnNo : 0,
              quick: !!s.opts.quick, fog: !!s.opts.fog, centre: s.opts.centre || "Sol", aiSeats: s.game ? s.seats.filter((x, j) => x.ai && s.game.alive[j]).length : 0 };
   }
-  async report() {   // tell the lobby about this room (public rooms only show there)
+  // tell the lobby about this room. Round 41 (launch load): private rooms never report (one last report removes a room
+  // that was listed), and listed rooms report only when what the list shows changes, or once a minute to stay listed.
+  async report() {
+    const s = this.s; if (!s.public && !s.listed) return;
+    const sum = this.summary(), key = JSON.stringify({ ...sum, updated: 0, turnNo: 0 }), now = Date.now();
+    if (key === this.lastReport && now - (this.lastReportAt || 0) < REPORT_EVERY_MS) return;
+    this.lastReport = key; this.lastReportAt = now; s.listed = !!s.public; this.count("report");
     try { await this.env.LOBBY.get(this.env.LOBBY.idFromName("lobby")).fetch("https://lobby/report", { method: "POST", body: JSON.stringify(this.summary()) }); } catch (e) {}
   }
 
   // ---- WebSocket messages ----
   async webSocketMessage(ws, raw) {
+    this.count("ws");
     if (!this.s) { try { ws.close(1000, "room closed"); } catch (e) {} return; }
     const a = ws.deserializeAttachment() || {};
     this.s.lastSeen = Date.now();   // people, not computer moves, keep a room alive
@@ -281,6 +291,7 @@ export class Room {
   }
 
   async alarm() {
+    this.count("alarm");
     const s = this.s; if (!s) return;
     if (await this.cleanupDue()) return;
     if (s.status !== "playing") { await this.schedule(); return; }
@@ -315,7 +326,7 @@ export class Room {
   async cleanupDue() {
     const at = this.cleanupAt(); if (!at || Date.now() < at) return false;
     const code = this.s.code;
-    try { await this.env.LOBBY.get(this.env.LOBBY.idFromName("lobby")).fetch("https://lobby/report", { method: "POST", body: JSON.stringify({ code, public: false }) }); } catch (e) {}
+    if (this.s.listed) try { await this.env.LOBBY.get(this.env.LOBBY.idFromName("lobby")).fetch("https://lobby/report", { method: "POST", body: JSON.stringify({ code, public: false }) }); } catch (e) {}
     await this.ctx.storage.deleteAlarm(); await this.ctx.storage.deleteAll(); this.s = null;
     return true;
   }
@@ -365,7 +376,7 @@ export class Room {
     if (s.lastEventsRev !== s.rev) s.lastEvents = [];
     await this.save(); await this.schedule();
     this.sendState();
-    if (s.rev % 10 === 1 || s.status !== "playing") await this.report();
+    await this.report();   // it decides whether the lobby needs to hear
   }
 }
 
