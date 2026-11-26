@@ -785,3 +785,15 @@ function renderReplayBar() {
 
 // what the results screen needs from the page
 function resultsView() { return { seats: st.seats, n: MAP.n, lookOf, nameOf, sunName: i => disp(S[i]) }; }
+
+// ---------- offline and installable: a service worker caches the game (solo play needs no server) ----------
+// On a real (https) site it is always on; on a local dev server only with ?sw, so caching never hides fresh code.
+if ("serviceWorker" in navigator && (location.protocol === "https:" || new URLSearchParams(location.search).has("sw"))) {
+  navigator.serviceWorker.register("/sw.js").catch(() => {});
+  let reloaded = false; const hadController = !!navigator.serviceWorker.controller;   // a first install is not an update
+  navigator.serviceWorker.addEventListener("controllerchange", () => {   // a new version took over
+    if (reloaded || !hadController) return;
+    if (!room) { reloaded = true; location.reload(); }
+    else promptToast("A new version of Stellarchy is ready.", "Reload", () => { reloaded = true; location.reload(); });
+  });
+}

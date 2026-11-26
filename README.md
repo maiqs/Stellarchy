@@ -19,3 +19,7 @@ A free-to-play browser game (formerly Three Hundred Suns): a neon 3D war for Sol
 
 ## Sound
 Stellarchy's sounds are synthesised in the browser (client/sound.js); there are no audio files.
+
+## Testing notes
+- Run `.\run.ps1 room` with nothing else using the dev server. Syncing files (which reloads assets) or driving pages against it mid-run stalls its games.
+- The service worker only runs locally with `?sw` in the address. After trying it, unregister it in the browser, or it keeps serving cached files on localhost.

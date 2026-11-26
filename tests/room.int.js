@@ -131,7 +131,7 @@ for (const c of [a, bb, sneaky]) c.ws.close();
 }
 // a full 16-seat room: 8 people and 8 AI players through a whole game, one person dropping out partway
 {
-  const r = await (await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 16, size: 100, mode: "dealt", targetPct: 40, pace: "instant", cards: "fixed" }) })).json();
+  const r = await (await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 16, size: 100, mode: "dealt", targetPct: 30, pace: "instant", cards: "fixed" }) })).json();
   const people = [];
   for (let k = 0; k < 8; k++) { const c = client(r.code, { name: "P" + k }); await c.ready; await until(() => c.seat); people.push(c); }
   const host = people[0]; for (let k = 0; k < 8; k++) { host.send({ t: "addBot" }); await sleep(80); }

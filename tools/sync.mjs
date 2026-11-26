@@ -20,3 +20,19 @@ for (const [pkg, f] of fonts) copy(`node_modules/${pkg}/files/${f}`, `client/fon
 copy("node_modules/@fontsource/chakra-petch/LICENSE", "client/fonts/OFL-chakra-petch.txt");
 copy("node_modules/@fontsource/ibm-plex-sans/LICENSE", "client/fonts/OFL-ibm-plex.txt");
 console.log("synced shared/, data/, three.js and fonts into client/");
+
+// service worker: every file the page needs, and a version that changes whenever any of them does
+import { readdirSync, statSync } from "node:fs";
+import { createHash } from "node:crypto";
+const clientDir = at("client/"), files = [], hash = createHash("sha256");
+(function walk(rel) {
+  for (const f of readdirSync(new URL(rel, clientDir)).sort()) {
+    const r = rel + f, st = statSync(new URL(r, clientDir));
+    if (st.isDirectory()) walk(r + "/");
+    else if (!/^(sw\.js|.*\.txt|.*\.md)$/.test(f)) { files.push("/" + r); hash.update(r); hash.update(readFileSync(new URL(r, clientDir))); }
+  }
+})("");
+files.unshift("/");
+const version = hash.digest("hex").slice(0, 12);
+writeFileSync(at("client/sw.js"), readFileSync(at("tools/sw.src.js"), "utf8").replace("__VERSION__", version).replace("__FILES__", JSON.stringify(files)));
+console.log(`service worker ${version}: ${files.length} files`);
