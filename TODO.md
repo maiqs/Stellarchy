@@ -1,0 +1,123 @@
+# Stellarchy: TODO
+
+A free-to-play browser game: a neon 3D war for Sol and the 10 to 3,000 nearest real star systems (a map-size slider), in rooms anyone can join with a link and no account (Paul, 2026-11-25).
+
+It grows out of the claude.ai artifact version (https://claude.ai/artifact/48NmVWuctU1njsyJ3szB9m, source in `reference/claude_ai_version.html`). That version needs a claude.ai sign-in to play, and it stays as it is.
+
+Never call it "Risk" anywhere: in the game, the store page or the code (Hasbro trademark).
+
+## Paul's requirements (2026-11-25)
+- **Free to play:** no paywalls, no ads planned.
+- **Anyone can play:** in a browser, with no account. Pick a name, colours and a hull, then go.
+- **Rooms:** a room code and a share link (`/r/KXQ7`), public rooms in a lobby, private rooms by link only.
+- **Gorgeous UI:** keep and push the neon, simulation look. It should feel finished, not like a debug panel.
+- **Any screen size:** phone (portrait and landscape), tablet, laptop, ultrawide. Touch and mouse both feel natural.
+- **Intuitive:** a new player understands their turn without reading rules. Show what to do next, not a wall of buttons.
+
+## Plan
+Host it on Cloudflare's free plan. Workers serves the page, and each room is one Durable Object that owns the game.
+
+1. **Tools**
+   - [x] Node.js 26.13.1 LTS: the portable zip from nodejs.org (hash checked) in `Documents	ools
+ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
+   - [ ] Wrangler (Cloudflare's CLI, via npm).
+   - [ ] Run everything locally with `wrangler dev`. No account and nothing public until Paul says go.
+2. **Project layout**
+   - [ ] `client/`: the page (Three.js, the same r128 neon renderer to start).
+   - [ ] `server/`: the Worker plus the `Room` Durable Object.
+   - [x] `shared/`: the rules (`rules.js`), the map helpers (`map.js`) and the bots (`bot.js`), used by both.
+   - [ ] `data/star_map.json`: 301 systems, lanes and continents. HYG v4.1, CC BY-SA 4.0, credited.
+   - [x] `run.ps1`: test, soak and dev.
+3. **Server owns the game**
+   - [ ] Clients send intents (`place`, `attack`, `move`, `fortify`, `trade`, `endTurn`). The room checks them, rolls the dice, and broadcasts the state and the fx events over WebSocket.
+   - [ ] A late joiner gets the full state on connect.
+   - [ ] Reconnect keeps your seat: a per-browser player token in localStorage, no account.
+   - [ ] Bots run in the room on alarms, so a game keeps going when every tab closes.
+4. **Rooms and lobby**
+   - [ ] Create a room (public or private, seats 2–16, start mode, win %, an all-computer game option). Get a code and a copy-link button.
+   - [ ] The lobby lists open public rooms only: seats free, started or not.
+   - [ ] Join by code or link. The creator can add or remove bots and start the game.
+   - [ ] A spectator mode for full or running rooms.
+4b. **Map size slider (Paul, 2026-11-25): 10 to 3,000 suns**
+   - [ ] **Data:** rebuild the star file with the 3,000 nearest systems, sorted by distance from Sol. The C# builder in `../star_diplomacy/tools` has a 16 pc cap; lift it to about 35 pc. The file is about 400 KB raw and about 100 KB gzipped.
+     - Beyond about 20 pc, HYG misses many faint red dwarfs, so big maps lean toward brighter stars. Say so on the credits or info page.
+   - [ ] **Map built per room:** port the lane and continent code to `shared/` in JS. A room of size N takes the first N systems and builds:
+     - lanes within 7 ly, plus a minimum of 2 links per star, plus spanning connectivity
+     - about N÷20 continents, clamped 1–40, with bonuses
+     - the same map every time for the same N
+   - [ ] **The slider:** a log scale snapping to 10, 25, 50, 100, 200, 300, 500, 1000, 2000 and 3000. It shows the estimated game length, about 1–2 minutes per sun per player.
+   - [ ] **Rules that bend with size:**
+     - minimum suns = 4 per seat, so the slider's floor rises with player count
+     - HQ spacing shrinks on small maps (4 jumps at 100 or more suns, 2 at 10)
+     - small maps have no continents
+   - [ ] **Big maps (1,000+):**
+     - stars drawn as one InstancedMesh
+     - names and army counts only near the camera, or on hover or select
+     - fleets capped per star
+     - the server sends changes, not the whole board
+     - win-% presets lower by default
+   - [ ] **Tests:**
+     - every size from 10 to 3,000 builds a connected map
+     - all-bot games finish at 10, 300 and 3,000
+     - 60 fps on a mid phone at 3,000
+4c. **AI seats and play styles (Paul, 2026-11-25)**
+   - [ ] **All-AI games** default to total conquest (100%). Human games keep the win-% choice.
+   - [ ] **AI takes over a seat** when its player steps away: they disconnect, or miss a turn timer.
+     - The seat keeps the player's name, colours and token. The seat row shows a small "AI" badge ("Ana (AI playing)").
+     - The bot plays in that player's preferred style.
+   - [ ] **The player can return** to their seat at any time with the same browser token, or a rejoin link. They take control back at once.
+     - If the bot is mid-turn, it finishes its current attack and hands over. No turn is lost.
+     - A "Let AI play for me" toggle lets a player hand over on purpose (to grab a coffee).
+   - [ ] **Play styles**, on the main menu (the five style tunings are in `shared/bot.js`; the menu is not built yet): the player picks a preferred style, saved in the browser. It shows as a little icon on their seat. The same styles drive the computer players, which get one at random or the creator sets it per bot.
+     - **Aggressive:** attacks at lower odds, chases eliminations, keeps few ships at home.
+     - **Defensive:** stacks the borders, attacks only at strong odds, holds its continents.
+     - **Card hunter:** takes one system every turn to earn a card, saves for big trades, and targets weak players holding many cards.
+     - **Territorial (expansion):** grabs as many systems as possible and goes for continent bonuses.
+     - **Balanced:** the current bot, as the default.
+     - Each style is a set of weights: attack-odds threshold, border reserve, card priority, continent priority, elimination priority. That is one bot brain, five tunings.
+   - [ ] **Tests:** all-bot games for each style (they all must finish); a style head-to-head report (win rates); a takeover-and-return test mid-turn.
+5. **Fair play**
+   - [ ] Only the seated player whose turn it is can act. The server rolls all dice.
+   - [ ] Turn timer: a player who stays quiet is auto-skipped (a bot can play their turn after N misses).
+   - [ ] Rate limits per connection. Names are length-limited and escaped.
+   - [ ] Empty rooms close after a while. Finished rooms are kept briefly to show the result, then removed.
+6. **UI pass (the big one)**
+   - [ ] Full-screen 3D map. The UI floats on it as neon glass panels, with no big side columns.
+   - [ ] One clear action bar at the bottom: "YOUR TURN: place 7 ships" → "Attack or end" → "Fortify". Big touch targets.
+   - [ ] Tap a star to select it; neighbours light up as targets. Drag or tap to attack, with a dice animation and the result inline.
+   - [ ] Collapsible drawers: players, cards, log. Hidden by default on phones.
+   - [ ] Responsive layout: portrait phone, landscape phone, tablet, desktop. Test at 360×640, 390×844, 768×1024, 1366×768, 1920×1080, 3440×1440.
+   - [ ] First-game hints: three short coach marks, dismissable, shown once.
+   - [ ] A title screen with a slowly turning star map, plus Play / Create room / Join by code.
+   - [ ] Settings: bot speed, camera sensitivity, reduced motion, colour-blind-friendly outlines.
+   - [ ] Performance: cap the pixel ratio on phones and keep 60 fps on a mid phone. Fall back to fewer effects.
+   - [ ] Credits page: HYG (CC BY-SA 4.0), Three.js (MIT), anything else used.
+7. **Tests**
+   - [x] Rules tests in `tests/rules.test.js` (10 checks: setup spacing, illegal moves, cards, 2-, 4-, 9- and 16-way games to total conquest, dealt win target, AI hand-back).
+   - [ ] Room tests: two to sixteen fake clients through a whole game, reconnects, timeouts, bad intents rejected.
+   - [x] An all-bot soak test (`run.ps1 soak`): 60 of 60 games finish, with a median of 1,712 turns.
+   - [ ] Screenshots at every screen size above.
+8. **Going public (Paul only)**
+   - [ ] Paul makes a free Cloudflare account and signs in himself. Then `wrangler deploy` happens only on his go.
+   - [ ] Check the free plan's current limits (Workers requests, Durable Object requests and storage) against about 300 players.
+   - [ ] A small friends test (5–10 people) before sharing widely.
+
+## Open for Paul
+- A domain? The free one is `<name>.workers.dev`; a custom domain costs money, so skip it unless he wants one.
+- Name: **Stellarchy** (agreed with Paul, 2026-11-25). Players are "Stellarchs"; "Stellarch" alone belongs to another game (stellarch.io). Run a proper trademark search before going public.
+- Should rooms have chat? (It needs moderation; the default is no chat, just quick emotes.)
+
+## Bugs and balance
+- [ ] **Styles are lopsided** (soak, 60 games). Win rate per seat, against a fair share of 10.3%:
+  - aggressive 25.9%, territorial 14.7%, balanced 5.2%, card hunter 5.2%, defensive 0.9%
+  - Tune until each is within about 3 points of fair.
+- [ ] **Games are long:** a median of 1,712 turns from one home sun to total conquest. At "fast" (0.15 s a move) a computer-only game takes hours. Consider a faster pace for computer-only games, or a bigger home start.
+- [ ] **Card trades snowball:** late games reach stacks of 40,000 ships. Look at capping trade values or the number of cards.
+
+## Round log
+- **Round 1 (2026-11-25):**
+  - Set up the project and installed Node.
+  - Added the shared rules engine (setup, reinforce, cards, attack, advance, fortify, win) as one pure state machine.
+  - Added bots with five styles and stalemate boldness (`aggression` in the rules), so every game ends.
+  - Fixed: a 2-player game ended early when one player was left standing with unclaimed suns.
+  - 10 of 10 tests pass, and 60 of 60 soak games finish.

@@ -1,0 +1,8606 @@
+{
+  "source": "HYG Database v4.1 (astronexus, CC BY-SA 4.0). Coordinates: equatorial x/y/z in light years, Sol at origin.",
+  "laneLengthLy": 7,
+  "systems": [
+    {
+      "id": 0,
+      "name": "Sol",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "distLy": 0,
+      "stars": 1,
+      "spect": "G2V",
+      "lum": 1,
+      "sc": true,
+      "members": [
+        "Sol"
+      ],
+      "lanes": 3,
+      "con": "",
+      "continent": 0
+    },
+    {
+      "id": 1,
+      "name": "Alpha Centauri",
+      "x": -1.615,
+      "y": -1.351,
+      "z": -3.772,
+      "distLy": 4.32,
+      "stars": 3,
+      "spect": "G2V",
+      "lum": 1.98408,
+      "sc": true,
+      "members": [
+        "Toliman",
+        "Rigil Kentaurus",
+        "Proxima Centauri"
+      ],
+      "lanes": 3,
+      "con": "Cen",
+      "continent": 0
+    },
+    {
+      "id": 2,
+      "name": "Barnard's Star",
+      "x": -0.057,
+      "y": -5.925,
+      "z": 0.486,
+      "distLy": 5.95,
+      "stars": 1,
+      "spect": "sdM4",
+      "lum": 0.00044,
+      "sc": false,
+      "members": [
+        "Barnard's Star"
+      ],
+      "lanes": 3,
+      "con": "Oph",
+      "continent": 0
+    },
+    {
+      "id": 3,
+      "name": "Luhman 16",
+      "x": -3.705,
+      "y": 1.18,
+      "z": -5.221,
+      "distLy": 6.51,
+      "stars": 2,
+      "spect": "L7.5+T0.5",
+      "lum": 0,
+      "sc": true,
+      "members": [
+        "Luhman 16 (added: not in HYG)"
+      ],
+      "lanes": 3,
+      "con": "",
+      "continent": 0
+    },
+    {
+      "id": 4,
+      "name": "WISE 0855-0714",
+      "x": -5.106,
+      "y": 5.325,
+      "z": -0.938,
+      "distLy": 7.44,
+      "stars": 1,
+      "spect": "Y4",
+      "lum": 0,
+      "sc": false,
+      "members": [
+        "WISE 0855-0714 (added: not in HYG)"
+      ],
+      "lanes": 5,
+      "con": "",
+      "continent": 0
+    },
+    {
+      "id": 5,
+      "name": "Wolf 359",
+      "x": -7.446,
+      "y": 2.118,
+      "z": 0.953,
+      "distLy": 7.8,
+      "stars": 1,
+      "spect": "M6",
+      "lum": 2E-05,
+      "sc": false,
+      "members": [
+        "Wolf 359"
+      ],
+      "lanes": 4,
+      "con": "Leo",
+      "continent": 0
+    },
+    {
+      "id": 6,
+      "name": "Lalande 21185",
+      "x": -6.517,
+      "y": 1.645,
+      "z": 4.878,
+      "distLy": 8.31,
+      "stars": 1,
+      "spect": "M2V",
+      "lum": 0.0057,
+      "sc": false,
+      "members": [
+        "Lalande 21185"
+      ],
+      "lanes": 3,
+      "con": "UMa",
+      "continent": 0
+    },
+    {
+      "id": 7,
+      "name": "Luyten 726-8",
+      "x": 7.405,
+      "y": 3.415,
+      "z": -2.642,
+      "distLy": 8.57,
+      "stars": 2,
+      "spect": "dM5.5e",
+      "lum": 0.00011,
+      "sc": true,
+      "members": [
+        "Luyten 726-8",
+        "Gliese 65B"
+      ],
+      "lanes": 4,
+      "con": "Cet",
+      "continent": 1
+    },
+    {
+      "id": 8,
+      "name": "Sirius",
+      "x": -1.612,
+      "y": 8.078,
+      "z": -2.474,
+      "distLy": 8.6,
+      "stars": 2,
+      "spect": "A0m...",
+      "lum": 22.82698,
+      "sc": true,
+      "members": [
+        "Sirius",
+        "Gliese 244B"
+      ],
+      "lanes": 5,
+      "con": "CMa",
+      "continent": 0
+    },
+    {
+      "id": 9,
+      "name": "Ross 154",
+      "x": 1.911,
+      "y": -8.651,
+      "z": -3.914,
+      "distLy": 9.69,
+      "stars": 1,
+      "spect": "M3.5Ve",
+      "lum": 0.00055,
+      "sc": false,
+      "members": [
+        "Ross 154"
+      ],
+      "lanes": 2,
+      "con": "Sgr",
+      "continent": 2
+    },
+    {
+      "id": 10,
+      "name": "Ross 248",
+      "x": 7.38,
+      "y": -0.584,
+      "z": 7.193,
+      "distLy": 10.33,
+      "stars": 1,
+      "spect": "dM6  e",
+      "lum": 0.00011,
+      "sc": false,
+      "members": [
+        "Ross 248"
+      ],
+      "lanes": 4,
+      "con": "And",
+      "continent": 3
+    },
+    {
+      "id": 11,
+      "name": "Epsilon Eridani",
+      "x": 6.194,
+      "y": 8.289,
+      "z": -1.724,
+      "distLy": 10.49,
+      "stars": 1,
+      "spect": "K2V",
+      "lum": 0.29295,
+      "sc": true,
+      "members": [
+        "Epsilon Eridani"
+      ],
+      "lanes": 5,
+      "con": "Eri",
+      "continent": 1
+    },
+    {
+      "id": 12,
+      "name": "Lacaille 9352",
+      "x": 8.42,
+      "y": -2.027,
+      "z": -6.258,
+      "distLy": 10.68,
+      "stars": 1,
+      "spect": "M2/M3V",
+      "lum": 0.01073,
+      "sc": false,
+      "members": [
+        "Lacaille 9352"
+      ],
+      "lanes": 7,
+      "con": "PsA",
+      "continent": 1
+    },
+    {
+      "id": 13,
+      "name": "Ross 128",
+      "x": -10.926,
+      "y": 0.585,
+      "z": 0.154,
+      "distLy": 10.94,
+      "stars": 1,
+      "spect": "M4.5V",
+      "lum": 0.00035,
+      "sc": false,
+      "members": [
+        "Ross 128"
+      ],
+      "lanes": 4,
+      "con": "Vir",
+      "continent": 0
+    },
+    {
+      "id": 14,
+      "name": "EZ Aquarii",
+      "x": 10.013,
+      "y": -3.716,
+      "z": -2.922,
+      "distLy": 11.08,
+      "stars": 1,
+      "spect": "M5  e",
+      "lum": 9E-05,
+      "sc": false,
+      "members": [
+        "EZ Aquarii"
+      ],
+      "lanes": 4,
+      "con": "Aqr",
+      "continent": 1
+    },
+    {
+      "id": 15,
+      "name": "61 Cygni",
+      "x": 6.456,
+      "y": -6.078,
+      "z": 7.116,
+      "distLy": 11.37,
+      "stars": 2,
+      "spect": "K5V",
+      "lum": 0.12858,
+      "sc": true,
+      "members": [
+        "61 Cygni"
+      ],
+      "lanes": 4,
+      "con": "Cyg",
+      "continent": 3
+    },
+    {
+      "id": 16,
+      "name": "Procyon",
+      "x": -4.792,
+      "y": 10.359,
+      "z": 1.044,
+      "distLy": 11.46,
+      "stars": 2,
+      "spect": "F5IV-V",
+      "lum": 7.44102,
+      "sc": true,
+      "members": [
+        "Procyon",
+        "Gliese 280B"
+      ],
+      "lanes": 6,
+      "con": "CMi",
+      "continent": 0
+    },
+    {
+      "id": 17,
+      "name": "Struve 2398",
+      "x": 1.092,
+      "y": -5.783,
+      "z": 10.043,
+      "distLy": 11.64,
+      "stars": 2,
+      "spect": "K5",
+      "lum": 0.00432,
+      "sc": true,
+      "members": [
+        "Struve 2398",
+        "Struve 2398 B"
+      ],
+      "lanes": 4,
+      "con": "Dra",
+      "continent": 3
+    },
+    {
+      "id": 18,
+      "name": "Groombridge 34",
+      "x": 8.386,
+      "y": 0.674,
+      "z": 8.131,
+      "distLy": 11.7,
+      "stars": 2,
+      "spect": "M1V",
+      "lum": 0.00693,
+      "sc": true,
+      "members": [
+        "Groombridge 34",
+        "Gliese 15B"
+      ],
+      "lanes": 3,
+      "con": "And",
+      "continent": 3
+    },
+    {
+      "id": 19,
+      "name": "Epsilon Indi",
+      "x": 5.651,
+      "y": -3.153,
+      "z": -9.884,
+      "distLy": 11.81,
+      "stars": 1,
+      "spect": "K5V",
+      "lum": 0.15205,
+      "sc": true,
+      "members": [
+        "Epsilon Indi"
+      ],
+      "lanes": 5,
+      "con": "Ind",
+      "continent": 1
+    },
+    {
+      "id": 20,
+      "name": "Gliese 1111",
+      "x": -6.42,
+      "y": 8.38,
+      "z": 5.328,
+      "distLy": 11.83,
+      "stars": 1,
+      "spect": "M6.5",
+      "lum": 1E-05,
+      "sc": false,
+      "members": [
+        "Gliese 1111"
+      ],
+      "lanes": 5,
+      "con": "Cnc",
+      "continent": 0
+    },
+    {
+      "id": 21,
+      "name": "Tau Ceti",
+      "x": 10.287,
+      "y": 5.021,
+      "z": -3.269,
+      "distLy": 11.91,
+      "stars": 1,
+      "spect": "G8V",
+      "lum": 0.46644,
+      "sc": true,
+      "members": [
+        "Tau Ceti"
+      ],
+      "lanes": 6,
+      "con": "Cet",
+      "continent": 1
+    },
+    {
+      "id": 22,
+      "name": "YZ Ceti",
+      "x": 10.939,
+      "y": 3.581,
+      "z": -3.519,
+      "distLy": 12.03,
+      "stars": 1,
+      "spect": "M5.5Ve",
+      "lum": 0.00017,
+      "sc": false,
+      "members": [
+        "YZ Ceti"
+      ],
+      "lanes": 8,
+      "con": "Cet",
+      "continent": 1
+    },
+    {
+      "id": 23,
+      "name": "HIP 82724",
+      "x": -1.574,
+      "y": -5.359,
+      "z": -10.684,
+      "distLy": 12.06,
+      "stars": 1,
+      "spect": "Mp",
+      "lum": 0.00022,
+      "sc": false,
+      "members": [
+        "HIP 82724"
+      ],
+      "lanes": 4,
+      "con": "Ara",
+      "continent": 2
+    },
+    {
+      "id": 24,
+      "name": "Luyten's Star",
+      "x": -4.597,
+      "y": 11.464,
+      "z": 1.13,
+      "distLy": 12.4,
+      "stars": 1,
+      "spect": "M5",
+      "lum": 0.00146,
+      "sc": false,
+      "members": [
+        "Luyten's Star"
+      ],
+      "lanes": 6,
+      "con": "CMi",
+      "continent": 0
+    },
+    {
+      "id": 25,
+      "name": "Teegarden's Star",
+      "x": 8.711,
+      "y": 8.195,
+      "z": 3.629,
+      "distLy": 12.5,
+      "stars": 1,
+      "spect": "M7.0V",
+      "lum": 0,
+      "sc": false,
+      "members": [
+        "Teegarden's Star (added: not in HYG)"
+      ],
+      "lanes": 2,
+      "con": "",
+      "continent": 1
+    },
+    {
+      "id": 26,
+      "name": "Kapteyn's Star",
+      "x": 1.888,
+      "y": 8.823,
+      "z": -9.029,
+      "distLy": 12.76,
+      "stars": 1,
+      "spect": "M0V",
+      "lum": 0.00381,
+      "sc": false,
+      "members": [
+        "Kapteyn's Star"
+      ],
+      "lanes": 2,
+      "con": "Pic",
+      "continent": 0
+    },
+    {
+      "id": 27,
+      "name": "Lacaille 8760",
+      "x": 7.599,
+      "y": -6.533,
+      "z": -8.077,
+      "distLy": 12.87,
+      "stars": 1,
+      "spect": "M1/M2V",
+      "lum": 0.0286,
+      "sc": false,
+      "members": [
+        "Lacaille 8760"
+      ],
+      "lanes": 6,
+      "con": "Mic",
+      "continent": 2
+    },
+    {
+      "id": 28,
+      "name": "SCR 1845-6357",
+      "x": 1.119,
+      "y": -5.616,
+      "z": -11.722,
+      "distLy": 13.05,
+      "stars": 2,
+      "spect": "M8.5V+T6",
+      "lum": 0,
+      "sc": true,
+      "members": [
+        "SCR 1845-6357 (added: not in HYG)"
+      ],
+      "lanes": 6,
+      "con": "",
+      "continent": 2
+    },
+    {
+      "id": 29,
+      "name": "Kruger 60",
+      "x": 6.419,
+      "y": -2.725,
+      "z": 11.029,
+      "distLy": 13.05,
+      "stars": 2,
+      "spect": "M2V",
+      "lum": 0.00246,
+      "sc": true,
+      "members": [
+        "Kruger 60",
+        "Gliese 860B"
+      ],
+      "lanes": 5,
+      "con": "Cep",
+      "continent": 3
+    },
+    {
+      "id": 30,
+      "name": "Ross 614",
+      "x": -1.719,
+      "y": 13.334,
+      "z": -0.661,
+      "distLy": 13.46,
+      "stars": 2,
+      "spect": "M4.5Ve",
+      "lum": 0.00055,
+      "sc": true,
+      "members": [
+        "Ross 614",
+        "Gliese 234B"
+      ],
+      "lanes": 5,
+      "con": "Mon",
+      "continent": 4
+    },
+    {
+      "id": 31,
+      "name": "HIP 82725",
+      "x": -1.765,
+      "y": -6.011,
+      "z": -11.985,
+      "distLy": 13.52,
+      "stars": 1,
+      "spect": "",
+      "lum": 0.00031,
+      "sc": false,
+      "members": [
+        "HIP 82725"
+      ],
+      "lanes": 5,
+      "con": "Ara",
+      "continent": 2
+    },
+    {
+      "id": 32,
+      "name": "Van Maanen's Star",
+      "x": 13.526,
+      "y": 2.947,
+      "z": 1.306,
+      "distLy": 13.9,
+      "stars": 1,
+      "spect": "DG",
+      "lum": 0.00018,
+      "sc": false,
+      "members": [
+        "Van Maanen's Star"
+      ],
+      "lanes": 5,
+      "con": "Psc",
+      "continent": 1
+    },
+    {
+      "id": 33,
+      "name": "Gliese 1061",
+      "x": 5.866,
+      "y": 8.074,
+      "z": -9.811,
+      "distLy": 14,
+      "stars": 1,
+      "spect": "M4.5",
+      "lum": 0.0001,
+      "sc": false,
+      "members": [
+        "Gliese 1061"
+      ],
+      "lanes": 2,
+      "con": "Hor",
+      "continent": 0
+    },
+    {
+      "id": 34,
+      "name": "Wolf 1061",
+      "x": -5.21,
+      "y": -12.626,
+      "z": -3.069,
+      "distLy": 14,
+      "stars": 1,
+      "spect": "M4",
+      "lum": 0.00146,
+      "sc": false,
+      "members": [
+        "Wolf 1061"
+      ],
+      "lanes": 2,
+      "con": "Oph",
+      "continent": 2
+    },
+    {
+      "id": 35,
+      "name": "Gliese 473",
+      "x": -13.726,
+      "y": -2.008,
+      "z": 2.202,
+      "distLy": 14.05,
+      "stars": 2,
+      "spect": "dM5.5eJ",
+      "lum": 0.00018,
+      "sc": true,
+      "members": [
+        "Gliese 473",
+        "Gliese 473B"
+      ],
+      "lanes": 2,
+      "con": "Vir",
+      "continent": 5
+    },
+    {
+      "id": 36,
+      "name": "Gliese 1",
+      "x": 11.249,
+      "y": 0.265,
+      "z": -8.589,
+      "distLy": 14.15,
+      "stars": 1,
+      "spect": "M2V",
+      "lum": 0.00618,
+      "sc": false,
+      "members": [
+        "Gliese 1"
+      ],
+      "lanes": 4,
+      "con": "Scl",
+      "continent": 1
+    },
+    {
+      "id": 37,
+      "name": "Gliese 3522",
+      "x": -10.136,
+      "y": 10.231,
+      "z": 2.146,
+      "distLy": 14.56,
+      "stars": 1,
+      "spect": "k",
+      "lum": 0.00076,
+      "sc": false,
+      "members": [
+        "Gliese 3522"
+      ],
+      "lanes": 5,
+      "con": "Cnc",
+      "continent": 0
+    },
+    {
+      "id": 38,
+      "name": "TZ Arietis",
+      "x": 12.284,
+      "y": 7.108,
+      "z": 3.29,
+      "distLy": 14.57,
+      "stars": 1,
+      "spect": "dM8  e",
+      "lum": 0.00021,
+      "sc": false,
+      "members": [
+        "TZ Arietis"
+      ],
+      "lanes": 2,
+      "con": "Ari",
+      "continent": 1
+    },
+    {
+      "id": 39,
+      "name": "Gliese 3618",
+      "x": -6.675,
+      "y": 2.281,
+      "z": -12.827,
+      "distLy": 14.64,
+      "stars": 1,
+      "spect": "m",
+      "lum": 5E-05,
+      "sc": false,
+      "members": [
+        "Gliese 3618"
+      ],
+      "lanes": 3,
+      "con": "Car",
+      "continent": 6
+    },
+    {
+      "id": 40,
+      "name": "Gliese 3622",
+      "x": -13.765,
+      "y": 4.459,
+      "z": -2.901,
+      "distLy": 14.76,
+      "stars": 1,
+      "spect": "M6.5",
+      "lum": 1E-05,
+      "sc": false,
+      "members": [
+        "Gliese 3622"
+      ],
+      "lanes": 2,
+      "con": "Sex",
+      "continent": 0
+    },
+    {
+      "id": 41,
+      "name": "Gliese 687",
+      "x": -0.56,
+      "y": -5.422,
+      "z": 13.725,
+      "distLy": 14.77,
+      "stars": 1,
+      "spect": "M3.5Vvar",
+      "lum": 0.00391,
+      "sc": false,
+      "members": [
+        "Gliese 687"
+      ],
+      "lanes": 4,
+      "con": "Dra",
+      "continent": 7
+    },
+    {
+      "id": 42,
+      "name": "Gliese 674",
+      "x": -1.379,
+      "y": -10.025,
+      "z": -10.812,
+      "distLy": 14.81,
+      "stars": 1,
+      "spect": "K5",
+      "lum": 0.00318,
+      "sc": false,
+      "members": [
+        "Gliese 674"
+      ],
+      "lanes": 7,
+      "con": "Ara",
+      "continent": 2
+    },
+    {
+      "id": 43,
+      "name": "LP 145-141",
+      "x": -6.377,
+      "y": 0.398,
+      "z": -13.604,
+      "distLy": 15.03,
+      "stars": 1,
+      "spect": "DC:",
+      "lum": 0.00046,
+      "sc": false,
+      "members": [
+        "LP 145-141"
+      ],
+      "lanes": 3,
+      "con": "Mus",
+      "continent": 6
+    },
+    {
+      "id": 44,
+      "name": "Gliese 876",
+      "x": 14.197,
+      "y": -4.254,
+      "z": -3.768,
+      "distLy": 15.29,
+      "stars": 1,
+      "spect": "M5",
+      "lum": 0.00165,
+      "sc": false,
+      "members": [
+        "Gliese 876"
+      ],
+      "lanes": 4,
+      "con": "Aqr",
+      "continent": 1
+    },
+    {
+      "id": 45,
+      "name": "Gliese 1002",
+      "x": 15.181,
+      "y": 0.446,
+      "z": -2.01,
+      "distLy": 15.33,
+      "stars": 1,
+      "spect": "M5-5.5",
+      "lum": 6E-05,
+      "sc": false,
+      "members": [
+        "Gliese 1002"
+      ],
+      "lanes": 7,
+      "con": "Cet",
+      "continent": 1
+    },
+    {
+      "id": 46,
+      "name": "Gliese 1245",
+      "x": 5.24,
+      "y": -9.66,
+      "z": 10.767,
+      "distLy": 15.38,
+      "stars": 2,
+      "spect": "M5.5 V e",
+      "lum": 0.00013,
+      "sc": true,
+      "members": [
+        "Gliese 1245",
+        "Gliese 1245B"
+      ],
+      "lanes": 2,
+      "con": "Cyg",
+      "continent": 3
+    },
+    {
+      "id": 47,
+      "name": "Gliese 412",
+      "x": -11.143,
+      "y": 2.702,
+      "z": 10.891,
+      "distLy": 15.81,
+      "stars": 2,
+      "spect": "M2Vvar",
+      "lum": 0.00611,
+      "sc": true,
+      "members": [
+        "Gliese 412",
+        "Gliese 412B"
+      ],
+      "lanes": 3,
+      "con": "UMa",
+      "continent": 8
+    },
+    {
+      "id": 48,
+      "name": "Groombridge 1618",
+      "x": -9.192,
+      "y": 4.716,
+      "z": 12.077,
+      "distLy": 15.89,
+      "stars": 1,
+      "spect": "K8V",
+      "lum": 0.04738,
+      "sc": false,
+      "members": [
+        "Groombridge 1618"
+      ],
+      "lanes": 2,
+      "con": "UMa",
+      "continent": 8
+    },
+    {
+      "id": 49,
+      "name": "Gliese 388",
+      "x": -13.625,
+      "y": 6.382,
+      "z": 5.438,
+      "distLy": 16,
+      "stars": 1,
+      "spect": "M4.5Ve",
+      "lum": 0.00364,
+      "sc": false,
+      "members": [
+        "Gliese 388"
+      ],
+      "lanes": 4,
+      "con": "Leo",
+      "continent": 8
+    },
+    {
+      "id": 50,
+      "name": "Gliese 832",
+      "x": 8.507,
+      "y": -6.32,
+      "z": -12.195,
+      "distLy": 16.16,
+      "stars": 1,
+      "spect": "M1V",
+      "lum": 0.00735,
+      "sc": false,
+      "members": [
+        "Gliese 832"
+      ],
+      "lanes": 3,
+      "con": "Gru",
+      "continent": 2
+    },
+    {
+      "id": 51,
+      "name": "40 Eridani",
+      "x": 7.109,
+      "y": 14.458,
+      "z": -2.165,
+      "distLy": 16.26,
+      "stars": 3,
+      "spect": "K1V",
+      "lum": 0.36997,
+      "sc": true,
+      "members": [
+        "40 Eridani",
+        "Gliese 166B",
+        "Gliese 166C"
+      ],
+      "lanes": 3,
+      "con": "Eri",
+      "continent": 4
+    },
+    {
+      "id": 52,
+      "name": "Gliese 1005",
+      "x": 15.588,
+      "y": 1.054,
+      "z": -4.519,
+      "distLy": 16.26,
+      "stars": 1,
+      "spect": "M:",
+      "lum": 0.00055,
+      "sc": false,
+      "members": [
+        "Gliese 1005"
+      ],
+      "lanes": 7,
+      "con": "Cet",
+      "continent": 1
+    },
+    {
+      "id": 53,
+      "name": "Gliese 682",
+      "x": -1.184,
+      "y": -11.791,
+      "z": -11.572,
+      "distLy": 16.56,
+      "stars": 1,
+      "spect": "M5",
+      "lum": 0.00095,
+      "sc": false,
+      "members": [
+        "Gliese 682"
+      ],
+      "lanes": 10,
+      "con": "Sco",
+      "continent": 2
+    },
+    {
+      "id": 54,
+      "name": "70 Ophiuchi",
+      "x": 0.394,
+      "y": -16.559,
+      "z": 0.723,
+      "distLy": 16.58,
+      "stars": 2,
+      "spect": "K0V SB",
+      "lum": 0.63975,
+      "sc": true,
+      "members": [
+        "70 Ophiuchi",
+        "Gliese 702B"
+      ],
+      "lanes": 3,
+      "con": "Oph",
+      "continent": 9
+    },
+    {
+      "id": 55,
+      "name": "Gliese 873",
+      "x": 11.346,
+      "y": -3.751,
+      "z": 11.676,
+      "distLy": 16.71,
+      "stars": 1,
+      "spect": "M4.5Ve",
+      "lum": 0.00175,
+      "sc": false,
+      "members": [
+        "Gliese 873"
+      ],
+      "lanes": 4,
+      "con": "Lac",
+      "continent": 3
+    },
+    {
+      "id": 56,
+      "name": "Altair",
+      "x": 7.683,
+      "y": -14.636,
+      "z": 2.579,
+      "distLy": 16.73,
+      "stars": 1,
+      "spect": "A7IV-V",
+      "lum": 11.37627,
+      "sc": true,
+      "members": [
+        "Altair"
+      ],
+      "lanes": 2,
+      "con": "Aql",
+      "continent": 9
+    },
+    {
+      "id": 57,
+      "name": "Gliese 1116",
+      "x": -11.255,
+      "y": 11.428,
+      "z": 5.763,
+      "distLy": 17.05,
+      "stars": 2,
+      "spect": "m",
+      "lum": 8E-05,
+      "sc": true,
+      "members": [
+        "Gliese 1116",
+        "Gliese 1116B"
+      ],
+      "lanes": 3,
+      "con": "Cnc",
+      "continent": 0
+    },
+    {
+      "id": 58,
+      "name": "HIP 67593",
+      "x": -14.067,
+      "y": -7.405,
+      "z": 7.003,
+      "distLy": 17.37,
+      "stars": 1,
+      "spect": "",
+      "lum": 0.00012,
+      "sc": false,
+      "members": [
+        "HIP 67593"
+      ],
+      "lanes": 3,
+      "con": "Boo",
+      "continent": 5
+    },
+    {
+      "id": 59,
+      "name": "Gliese 445",
+      "x": -3.417,
+      "y": 0.184,
+      "z": 17.112,
+      "distLy": 17.45,
+      "stars": 1,
+      "spect": "M4",
+      "lum": 0.00119,
+      "sc": false,
+      "members": [
+        "Gliese 445"
+      ],
+      "lanes": 2,
+      "con": "Cam",
+      "continent": 7
+    },
+    {
+      "id": 60,
+      "name": "Gliese 3379",
+      "x": -0.005,
+      "y": 17.488,
+      "z": 0.827,
+      "distLy": 17.51,
+      "stars": 1,
+      "spect": "M4",
+      "lum": 0.00074,
+      "sc": false,
+      "members": [
+        "Gliese 3379"
+      ],
+      "lanes": 5,
+      "con": "Ori",
+      "continent": 4
+    },
+    {
+      "id": 61,
+      "name": "Gliese 526",
+      "x": -15.217,
+      "y": -7.564,
+      "z": 4.519,
+      "distLy": 17.58,
+      "stars": 1,
+      "spect": "M3V",
+      "lum": 0.01045,
+      "sc": false,
+      "members": [
+        "Gliese 526"
+      ],
+      "lanes": 4,
+      "con": "Boo",
+      "continent": 5
+    },
+    {
+      "id": 62,
+      "name": "HIP 58910",
+      "x": -8.445,
+      "y": -0.177,
+      "z": -15.888,
+      "distLy": 17.99,
+      "stars": 1,
+      "spect": "F0Ib-II",
+      "lum": 0.02484,
+      "sc": false,
+      "members": [
+        "HIP 58910"
+      ],
+      "lanes": 3,
+      "con": "Cru",
+      "continent": 6
+    },
+    {
+      "id": 63,
+      "name": "Gliese 169.1",
+      "x": 3.543,
+      "y": 8.682,
+      "z": 15.592,
+      "distLy": 18.19,
+      "stars": 2,
+      "spect": "",
+      "lum": 0.00155,
+      "sc": true,
+      "members": [
+        "Gliese 169.1",
+        "Gliese 169.1B"
+      ],
+      "lanes": 2,
+      "con": "Cam",
+      "continent": 3
+    },
+    {
+      "id": 64,
+      "name": "HIP 33226",
+      "x": -3.609,
+      "y": 14.801,
+      "z": 9.995,
+      "distLy": 18.22,
+      "stars": 1,
+      "spect": "K:...",
+      "lum": 0.00301,
+      "sc": false,
+      "members": [
+        "HIP 33226"
+      ],
+      "lanes": 2,
+      "con": "Gem",
+      "continent": 10
+    },
+    {
+      "id": 65,
+      "name": "HIP 83609",
+      "x": -3.597,
+      "y": -14.795,
+      "z": -10.18,
+      "distLy": 18.32,
+      "stars": 1,
+      "spect": "G0",
+      "lum": 0.00548,
+      "sc": false,
+      "members": [
+        "HIP 83609"
+      ],
+      "lanes": 6,
+      "con": "Sco",
+      "continent": 2
+    },
+    {
+      "id": 66,
+      "name": "Gliese 205",
+      "x": 2.287,
+      "y": 18.271,
+      "z": -1.183,
+      "distLy": 18.45,
+      "stars": 1,
+      "spect": "M1V",
+      "lum": 0.01808,
+      "sc": false,
+      "members": [
+        "Gliese 205"
+      ],
+      "lanes": 7,
+      "con": "Ori",
+      "continent": 4
+    },
+    {
+      "id": 67,
+      "name": "Gliese 754",
+      "x": 4.489,
+      "y": -12.2,
+      "z": -13.256,
+      "distLy": 18.56,
+      "stars": 1,
+      "spect": "M4.5",
+      "lum": 0.00036,
+      "sc": false,
+      "members": [
+        "Gliese 754"
+      ],
+      "lanes": 5,
+      "con": "Tel",
+      "continent": 2
+    },
+    {
+      "id": 68,
+      "name": "HIP 103039",
+      "x": 12.186,
+      "y": -13.005,
+      "z": -5.44,
+      "distLy": 18.63,
+      "stars": 1,
+      "spect": "",
+      "lum": 0.00078,
+      "sc": false,
+      "members": [
+        "HIP 103039"
+      ],
+      "lanes": 2,
+      "con": "Cap",
+      "continent": 2
+    },
+    {
+      "id": 69,
+      "name": "Gliese 229",
+      "x": -0.803,
+      "y": 17.397,
+      "z": -6.988,
+      "distLy": 18.77,
+      "stars": 1,
+      "spect": "M1/M2V",
+      "lum": 0.01585,
+      "sc": false,
+      "members": [
+        "Gliese 229"
+      ],
+      "lanes": 3,
+      "con": "Lep",
+      "continent": 4
+    },
+    {
+      "id": 70,
+      "name": "Sigma Draconis",
+      "x": 2.559,
+      "y": -6.001,
+      "z": 17.6,
+      "distLy": 18.77,
+      "stars": 1,
+      "spect": "K0V",
+      "lum": 0.39084,
+      "sc": true,
+      "members": [
+        "Sigma Draconis"
+      ],
+      "lanes": 4,
+      "con": "Dra",
+      "continent": 7
+    },
+    {
+      "id": 71,
+      "name": "Gliese 251",
+      "x": -3.722,
+      "y": 15.264,
+      "z": 10.309,
+      "distLy": 18.79,
+      "stars": 1,
+      "spect": "dM4",
+      "lum": 0.00286,
+      "sc": false,
+      "members": [
+        "Gliese 251"
+      ],
+      "lanes": 2,
+      "con": "Gem",
+      "continent": 10
+    },
+    {
+      "id": 72,
+      "name": "Gliese 338",
+      "x": -8.618,
+      "y": 7.599,
+      "z": 15.075,
+      "distLy": 18.95,
+      "stars": 2,
+      "spect": "M0V",
+      "lum": 0.05544,
+      "sc": true,
+      "members": [
+        "Gliese 338",
+        "Gliese 338B"
+      ],
+      "lanes": 2,
+      "con": "UMa",
+      "continent": 8
+    },
+    {
+      "id": 73,
+      "name": "Gliese 213",
+      "x": 1.444,
+      "y": 18.509,
+      "z": 4.112,
+      "distLy": 19.01,
+      "stars": 1,
+      "spect": "M5",
+      "lum": 0.0007,
+      "sc": false,
+      "members": [
+        "Gliese 213"
+      ],
+      "lanes": 3,
+      "con": "Ori",
+      "continent": 4
+    },
+    {
+      "id": 74,
+      "name": "Gliese 693",
+      "x": -0.601,
+      "y": -10.251,
+      "z": -16.006,
+      "distLy": 19.02,
+      "stars": 1,
+      "spect": "M5",
+      "lum": 0.00148,
+      "sc": false,
+      "members": [
+        "Gliese 693"
+      ],
+      "lanes": 6,
+      "con": "Pav",
+      "continent": 2
+    },
+    {
+      "id": 75,
+      "name": "Gliese 570",
+      "x": -12.678,
+      "y": -12.401,
+      "z": -6.956,
+      "distLy": 19.05,
+      "stars": 2,
+      "spect": "K4V",
+      "lum": 0.17216,
+      "sc": true,
+      "members": [
+        "Gliese 570B",
+        "Gliese 570"
+      ],
+      "lanes": 3,
+      "con": "Lib",
+      "continent": 2
+    },
+    {
+      "id": 76,
+      "name": "Gliese 752",
+      "x": 6.28,
+      "y": -18.004,
+      "z": 1.725,
+      "distLy": 19.15,
+      "stars": 2,
+      "spect": "M3.5V",
+      "lum": 0.00675,
+      "sc": true,
+      "members": [
+        "Gliese 752",
+        "Gliese 752B"
+      ],
+      "lanes": 2,
+      "con": "Aql",
+      "continent": 9
+    },
+    {
+      "id": 77,
+      "name": "Gliese 300",
+      "x": -9.763,
+      "y": 14.937,
+      "z": -7.048,
+      "distLy": 19.19,
+      "stars": 1,
+      "spect": "M4",
+      "lum": 0.00044,
+      "sc": false,
+      "members": [
+        "Gliese 300"
+      ],
+      "lanes": 2,
+      "con": "Pup",
+      "continent": 4
+    },
+    {
+      "id": 78,
+      "name": "Gliese 588",
+      "x": -8.736,
+      "y": -11.615,
+      "z": -12.757,
+      "distLy": 19.34,
+      "stars": 1,
+      "spect": "M0",
+      "lum": 0.00578,
+      "sc": false,
+      "members": [
+        "Gliese 588"
+      ],
+      "lanes": 2,
+      "con": "Lup",
+      "continent": 2
+    },
+    {
+      "id": 79,
+      "name": "36 Ophiuchi",
+      "x": -3.35,
+      "y": -16.976,
+      "z": -8.666,
+      "distLy": 19.35,
+      "stars": 2,
+      "spect": "K2:III:",
+      "lum": 0.86048,
+      "sc": true,
+      "members": [
+        "36 Ophiuchi",
+        "Guniibuu B"
+      ],
+      "lanes": 6,
+      "con": "Oph",
+      "continent": 2
+    },
+    {
+      "id": 80,
+      "name": "Eta Cassiopeiae",
+      "x": 10.106,
+      "y": 2.199,
+      "z": 16.433,
+      "distLy": 19.42,
+      "stars": 2,
+      "spect": "G0V SB",
+      "lum": 1.30586,
+      "sc": true,
+      "members": [
+        "Eta Cassiopeiae",
+        "Gliese 34B"
+      ],
+      "lanes": 3,
+      "con": "Cas",
+      "continent": 3
+    },
+    {
+      "id": 81,
+      "name": "YZ Canis Minoris",
+      "x": -8.551,
+      "y": 17.404,
+      "z": 1.204,
+      "distLy": 19.43,
+      "stars": 1,
+      "spect": "M4.5Ve",
+      "lum": 0.00103,
+      "sc": false,
+      "members": [
+        "YZ Canis Minoris"
+      ],
+      "lanes": 3,
+      "con": "CMi",
+      "continent": 4
+    },
+    {
+      "id": 82,
+      "name": "Gliese 664",
+      "x": -3.307,
+      "y": -17.103,
+      "z": -8.703,
+      "distLy": 19.47,
+      "stars": 1,
+      "spect": "K5V",
+      "lum": 0.0912,
+      "sc": true,
+      "members": [
+        "Gliese 664"
+      ],
+      "lanes": 6,
+      "con": "Oph",
+      "continent": 2
+    },
+    {
+      "id": 83,
+      "name": "Gliese 661",
+      "x": -2.825,
+      "y": -13.328,
+      "z": 13.945,
+      "distLy": 19.5,
+      "stars": 2,
+      "spect": "K5",
+      "lum": 0.00829,
+      "sc": true,
+      "members": [
+        "Gliese 661",
+        "Gliese 661B"
+      ],
+      "lanes": 2,
+      "con": "Her",
+      "continent": 5
+    },
+    {
+      "id": 84,
+      "name": "Gliese 908",
+      "x": 19.456,
+      "y": -0.917,
+      "z": 0.817,
+      "distLy": 19.5,
+      "stars": 1,
+      "spect": "M2V",
+      "lum": 0.00797,
+      "sc": false,
+      "members": [
+        "Gliese 908"
+      ],
+      "lanes": 5,
+      "con": "Psc",
+      "continent": 1
+    },
+    {
+      "id": 85,
+      "name": "Gliese 783",
+      "x": 8.585,
+      "y": -13.321,
+      "z": -11.557,
+      "distLy": 19.62,
+      "stars": 2,
+      "spect": "K2V",
+      "lum": 0.23544,
+      "sc": true,
+      "members": [
+        "Gliese 783",
+        "Gliese 783B"
+      ],
+      "lanes": 4,
+      "con": "Sgr",
+      "continent": 2
+    },
+    {
+      "id": 86,
+      "name": "82 Eridani",
+      "x": 9.26,
+      "y": 11.029,
+      "z": -13.462,
+      "distLy": 19.71,
+      "stars": 1,
+      "spect": "G8V",
+      "lum": 0.62864,
+      "sc": true,
+      "members": [
+        "82 Eridani"
+      ],
+      "lanes": 2,
+      "con": "Eri",
+      "continent": 6
+    },
+    {
+      "id": 87,
+      "name": "Gliese 555",
+      "x": -15.088,
+      "y": -12.032,
+      "z": -4.285,
+      "distLy": 19.77,
+      "stars": 1,
+      "spect": "M4",
+      "lum": 0.00095,
+      "sc": false,
+      "members": [
+        "Gliese 555"
+      ],
+      "lanes": 3,
+      "con": "Lib",
+      "continent": 2
+    },
+    {
+      "id": 88,
+      "name": "Delta Pavonis",
+      "x": 4.285,
+      "y": -6.809,
+      "z": -18.226,
+      "distLy": 19.92,
+      "stars": 1,
+      "spect": "G5IV-Vvar",
+      "lum": 1.23595,
+      "sc": true,
+      "members": [
+        "Delta Pavonis"
+      ],
+      "lanes": 2,
+      "con": "Pav",
+      "continent": 2
+    },
+    {
+      "id": 89,
+      "name": "Gliese 3323",
+      "x": 4.978,
+      "y": 19.229,
+      "z": -2.42,
+      "distLy": 20.01,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00047,
+      "sc": false,
+      "members": [
+        "Gliese 3323"
+      ],
+      "lanes": 4,
+      "con": "Eri",
+      "continent": 4
+    },
+    {
+      "id": 90,
+      "name": "Gliese 1221",
+      "x": -0.34,
+      "y": -6.555,
+      "z": 18.928,
+      "distLy": 20.03,
+      "stars": 1,
+      "spect": "DXP9",
+      "lum": 7E-05,
+      "sc": false,
+      "members": [
+        "Gliese 1221"
+      ],
+      "lanes": 6,
+      "con": "Dra",
+      "continent": 7
+    },
+    {
+      "id": 91,
+      "name": "Gliese 3454",
+      "x": -8.16,
+      "y": 18.237,
+      "z": 2.482,
+      "distLy": 20.13,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00017,
+      "sc": false,
+      "members": [
+        "Gliese 3454"
+      ],
+      "lanes": 2,
+      "con": "CMi",
+      "continent": 4
+    },
+    {
+      "id": 92,
+      "name": "Gliese 896",
+      "x": 18.812,
+      "y": -2.321,
+      "z": 6.875,
+      "distLy": 20.16,
+      "stars": 2,
+      "spect": "M6Ve",
+      "lum": 0.00355,
+      "sc": true,
+      "members": [
+        "Gliese 896",
+        "Gliese 896B"
+      ],
+      "lanes": 3,
+      "con": "Peg",
+      "continent": 1
+    },
+    {
+      "id": 93,
+      "name": "Gliese 644",
+      "x": -5.555,
+      "y": -19.206,
+      "z": -2.93,
+      "distLy": 20.21,
+      "stars": 3,
+      "spect": "M3Ve",
+      "lum": 0.01139,
+      "sc": true,
+      "members": [
+        "Gliese 644",
+        "Gliese 644B",
+        "Gliese 644C"
+      ],
+      "lanes": 5,
+      "con": "Oph",
+      "continent": 9
+    },
+    {
+      "id": 94,
+      "name": "Gliese 784",
+      "x": 7.861,
+      "y": -11.889,
+      "z": -14.335,
+      "distLy": 20.22,
+      "stars": 1,
+      "spect": "M0V",
+      "lum": 0.0217,
+      "sc": false,
+      "members": [
+        "Gliese 784"
+      ],
+      "lanes": 3,
+      "con": "Tel",
+      "continent": 2
+    },
+    {
+      "id": 95,
+      "name": "Gliese 1128",
+      "x": -6.029,
+      "y": 4.109,
+      "z": -18.895,
+      "distLy": 20.26,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00026,
+      "sc": false,
+      "members": [
+        "Gliese 1128"
+      ],
+      "lanes": 4,
+      "con": "Car",
+      "continent": 6
+    },
+    {
+      "id": 96,
+      "name": "Gliese 3877",
+      "x": -12.812,
+      "y": -12.442,
+      "z": -9.562,
+      "distLy": 20.26,
+      "stars": 1,
+      "spect": "dM8",
+      "lum": 1E-05,
+      "sc": false,
+      "members": [
+        "Gliese 3877"
+      ],
+      "lanes": 3,
+      "con": "Hya",
+      "continent": 2
+    },
+    {
+      "id": 97,
+      "name": "Gliese 581",
+      "x": -12.948,
+      "y": -15.355,
+      "z": -2.724,
+      "distLy": 20.27,
+      "stars": 1,
+      "spect": "M5",
+      "lum": 0.00199,
+      "sc": false,
+      "members": [
+        "Gliese 581"
+      ],
+      "lanes": 2,
+      "con": "Lib",
+      "continent": 2
+    },
+    {
+      "id": 98,
+      "name": "Gliese 268",
+      "x": -4.832,
+      "y": 15.317,
+      "z": 12.789,
+      "distLy": 20.53,
+      "stars": 1,
+      "spect": "M5Ve",
+      "lum": 0.00076,
+      "sc": false,
+      "members": [
+        "Gliese 268"
+      ],
+      "lanes": 3,
+      "con": "Aur",
+      "continent": 10
+    },
+    {
+      "id": 99,
+      "name": "Gliese 2097",
+      "x": -18.712,
+      "y": -5.635,
+      "z": 7.429,
+      "distLy": 20.91,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00033,
+      "sc": false,
+      "members": [
+        "Gliese 2097"
+      ],
+      "lanes": 5,
+      "con": "Com",
+      "continent": 5
+    },
+    {
+      "id": 100,
+      "name": "Gliese 223.2",
+      "x": 0.444,
+      "y": 21.009,
+      "z": -1.532,
+      "distLy": 21.07,
+      "stars": 1,
+      "spect": "DZ9",
+      "lum": 6E-05,
+      "sc": false,
+      "members": [
+        "Gliese 223.2"
+      ],
+      "lanes": 6,
+      "con": "Ori",
+      "continent": 4
+    },
+    {
+      "id": 101,
+      "name": "Gliese 625",
+      "x": -4.974,
+      "y": -11.36,
+      "z": 17.26,
+      "distLy": 21.25,
+      "stars": 1,
+      "spect": "M2",
+      "lum": 0.00328,
+      "sc": false,
+      "members": [
+        "Gliese 625"
+      ],
+      "lanes": 4,
+      "con": "Dra",
+      "continent": 5
+    },
+    {
+      "id": 102,
+      "name": "Gliese 1156",
+      "x": -20.858,
+      "y": -1.734,
+      "z": 4.116,
+      "distLy": 21.33,
+      "stars": 1,
+      "spect": "dM   e",
+      "lum": 0.00011,
+      "sc": false,
+      "members": [
+        "Gliese 1156"
+      ],
+      "lanes": 2,
+      "con": "Vir",
+      "continent": 5
+    },
+    {
+      "id": 103,
+      "name": "Gliese 892",
+      "x": 11.336,
+      "y": -2.343,
+      "z": 17.94,
+      "distLy": 21.35,
+      "stars": 1,
+      "spect": "K3Vvar",
+      "lum": 0.2208,
+      "sc": true,
+      "members": [
+        "Gliese 892"
+      ],
+      "lanes": 3,
+      "con": "Cas",
+      "continent": 3
+    },
+    {
+      "id": 104,
+      "name": "Gliese 408",
+      "x": -19.346,
+      "y": 5.177,
+      "z": 8.432,
+      "distLy": 21.73,
+      "stars": 1,
+      "spect": "M3",
+      "lum": 0.00376,
+      "sc": false,
+      "members": [
+        "Gliese 408"
+      ],
+      "lanes": 3,
+      "con": "Leo",
+      "continent": 8
+    },
+    {
+      "id": 105,
+      "name": "Gliese 829",
+      "x": 16.511,
+      "y": -12.714,
+      "z": 6.628,
+      "distLy": 21.87,
+      "stars": 1,
+      "spect": "M4",
+      "lum": 0.00289,
+      "sc": false,
+      "members": [
+        "Gliese 829"
+      ],
+      "lanes": 3,
+      "con": "Peg",
+      "continent": 1
+    },
+    {
+      "id": 106,
+      "name": "Xi Bootis",
+      "x": -15.167,
+      "y": -14.068,
+      "z": 7.164,
+      "distLy": 21.89,
+      "stars": 2,
+      "spect": "G8V + K4V",
+      "lum": 0.66292,
+      "sc": true,
+      "members": [
+        "Xi Bootis",
+        "Gliese 566B"
+      ],
+      "lanes": 2,
+      "con": "Boo",
+      "continent": 5
+    },
+    {
+      "id": 107,
+      "name": "Gliese 643",
+      "x": -6.026,
+      "y": -20.816,
+      "z": -3.17,
+      "distLy": 21.9,
+      "stars": 1,
+      "spect": "M4",
+      "lum": 0.0008,
+      "sc": false,
+      "members": [
+        "Gliese 643"
+      ],
+      "lanes": 2,
+      "con": "Oph",
+      "continent": 9
+    },
+    {
+      "id": 108,
+      "name": "Gliese 299",
+      "x": -11.856,
+      "y": 18.263,
+      "z": 3.361,
+      "distLy": 22.04,
+      "stars": 1,
+      "spect": "dM5",
+      "lum": 0.00029,
+      "sc": false,
+      "members": [
+        "Gliese 299"
+      ],
+      "lanes": 2,
+      "con": "Cnc",
+      "continent": 4
+    },
+    {
+      "id": 109,
+      "name": "Gliese 402",
+      "x": -20.905,
+      "y": 6.505,
+      "z": 2.614,
+      "distLy": 22.05,
+      "stars": 1,
+      "spect": "M4:",
+      "lum": 0.00088,
+      "sc": false,
+      "members": [
+        "Gliese 402"
+      ],
+      "lanes": 3,
+      "con": "Leo",
+      "continent": 8
+    },
+    {
+      "id": 110,
+      "name": "Gliese 4285",
+      "x": 8.512,
+      "y": -3.182,
+      "z": -20.241,
+      "distLy": 22.19,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00106,
+      "sc": false,
+      "members": [
+        "Gliese 4285"
+      ],
+      "lanes": 3,
+      "con": "Tuc",
+      "continent": 6
+    },
+    {
+      "id": 111,
+      "name": "HIP 85605",
+      "x": -2.669,
+      "y": -20.01,
+      "z": 9.265,
+      "distLy": 22.21,
+      "stars": 1,
+      "spect": "",
+      "lum": 0.00112,
+      "sc": false,
+      "members": [
+        "HIP 85605"
+      ],
+      "lanes": 3,
+      "con": "Her",
+      "continent": 5
+    },
+    {
+      "id": 112,
+      "name": "Gliese 667",
+      "x": -3.254,
+      "y": -17.973,
+      "z": -12.785,
+      "distLy": 22.3,
+      "stars": 3,
+      "spect": "K4V",
+      "lum": 0.23525,
+      "sc": true,
+      "members": [
+        "Gliese 667",
+        "Gliese 667B",
+        "Gliese 667C"
+      ],
+      "lanes": 5,
+      "con": "Sco",
+      "continent": 2
+    },
+    {
+      "id": 113,
+      "name": "Gliese 880",
+      "x": 20.585,
+      "y": -5.846,
+      "z": 6.361,
+      "distLy": 22.33,
+      "stars": 1,
+      "spect": "M2:",
+      "lum": 0.01377,
+      "sc": false,
+      "members": [
+        "Gliese 880"
+      ],
+      "lanes": 3,
+      "con": "Peg",
+      "continent": 1
+    },
+    {
+      "id": 114,
+      "name": "Gliese 293",
+      "x": -4.041,
+      "y": 7.5,
+      "z": -20.868,
+      "distLy": 22.54,
+      "stars": 1,
+      "spect": "DQ9",
+      "lum": 0.0001,
+      "sc": false,
+      "members": [
+        "Gliese 293"
+      ],
+      "lanes": 3,
+      "con": "Vol",
+      "continent": 6
+    },
+    {
+      "id": 115,
+      "name": "Gliese 809",
+      "x": 7.369,
+      "y": -7.811,
+      "z": 20.327,
+      "distLy": 22.99,
+      "stars": 1,
+      "spect": "M2V",
+      "lum": 0.01646,
+      "sc": false,
+      "members": [
+        "Gliese 809"
+      ],
+      "lanes": 4,
+      "con": "Cep",
+      "continent": 7
+    },
+    {
+      "id": 116,
+      "name": "Gliese 393",
+      "x": -21.252,
+      "y": 8.92,
+      "z": 0.338,
+      "distLy": 23.05,
+      "stars": 1,
+      "spect": "M2",
+      "lum": 0.006,
+      "sc": false,
+      "members": [
+        "Gliese 393"
+      ],
+      "lanes": 2,
+      "con": "Sex",
+      "continent": 8
+    },
+    {
+      "id": 117,
+      "name": "268 G. Cet",
+      "x": 18.064,
+      "y": 14.639,
+      "z": 2.808,
+      "distLy": 23.42,
+      "stars": 2,
+      "spect": "K3V",
+      "lum": 0.21795,
+      "sc": true,
+      "members": [
+        "268 G. Cet",
+        "Gliese 105B"
+      ],
+      "lanes": 2,
+      "con": "Cet",
+      "continent": 11
+    },
+    {
+      "id": 118,
+      "name": "Gliese 3737",
+      "x": -18.132,
+      "y": -3.101,
+      "z": -14.567,
+      "distLy": 23.46,
+      "stars": 1,
+      "spect": "M4",
+      "lum": 0.00036,
+      "sc": false,
+      "members": [
+        "Gliese 3737"
+      ],
+      "lanes": 2,
+      "con": "Cen",
+      "continent": 12
+    },
+    {
+      "id": 119,
+      "name": "Gliese 1286",
+      "x": 23.374,
+      "y": -2.542,
+      "z": -0.981,
+      "distLy": 23.53,
+      "stars": 1,
+      "spect": "M5",
+      "lum": 6E-05,
+      "sc": false,
+      "members": [
+        "Gliese 1286"
+      ],
+      "lanes": 2,
+      "con": "Psc",
+      "continent": 1
+    },
+    {
+      "id": 120,
+      "name": "Gliese 4053",
+      "x": 0.792,
+      "y": -9.556,
+      "z": 21.733,
+      "distLy": 23.75,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00019,
+      "sc": false,
+      "members": [
+        "Gliese 4053"
+      ],
+      "lanes": 6,
+      "con": "Dra",
+      "continent": 7
+    },
+    {
+      "id": 121,
+      "name": "Gliese 1230",
+      "x": 3.889,
+      "y": -21.423,
+      "z": 10.053,
+      "distLy": 23.98,
+      "stars": 2,
+      "spect": "k-m",
+      "lum": 0.00063,
+      "sc": true,
+      "members": [
+        "Gliese 1230",
+        "Gliese 1230B"
+      ],
+      "lanes": 5,
+      "con": "Her",
+      "continent": 5
+    },
+    {
+      "id": 122,
+      "name": "Gliese 3991",
+      "x": -3.837,
+      "y": -17.138,
+      "z": 16.772,
+      "distLy": 24.28,
+      "stars": 1,
+      "spect": "M3",
+      "lum": 0.00095,
+      "sc": false,
+      "members": [
+        "Gliese 3991"
+      ],
+      "lanes": 3,
+      "con": "Her",
+      "continent": 5
+    },
+    {
+      "id": 123,
+      "name": "96 G. Psc",
+      "x": 23.674,
+      "y": 5.073,
+      "z": 2.238,
+      "distLy": 24.31,
+      "stars": 1,
+      "spect": "K2V",
+      "lum": 0.24479,
+      "sc": true,
+      "members": [
+        "96 G. Psc"
+      ],
+      "lanes": 2,
+      "con": "Psc",
+      "continent": 11
+    },
+    {
+      "id": 124,
+      "name": "Gliese 4274",
+      "x": 21.141,
+      "y": -9.511,
+      "z": -7.357,
+      "distLy": 24.32,
+      "stars": 1,
+      "spect": "M4",
+      "lum": 0.00024,
+      "sc": false,
+      "members": [
+        "Gliese 4274"
+      ],
+      "lanes": 6,
+      "con": "Aqr",
+      "continent": 1
+    },
+    {
+      "id": 125,
+      "name": "Beta Hydri",
+      "x": 5.334,
+      "y": 0.602,
+      "z": -23.729,
+      "distLy": 24.33,
+      "stars": 1,
+      "spect": "G2IV",
+      "lum": 3.60745,
+      "sc": true,
+      "members": [
+        "Beta Hydri"
+      ],
+      "lanes": 4,
+      "con": "Hyi",
+      "continent": 6
+    },
+    {
+      "id": 126,
+      "name": "Gliese 109",
+      "x": 16.666,
+      "y": 14.52,
+      "z": 10.554,
+      "distLy": 24.49,
+      "stars": 1,
+      "spect": "M3.5Ve",
+      "lum": 0.00296,
+      "sc": false,
+      "members": [
+        "Gliese 109"
+      ],
+      "lanes": 3,
+      "con": "Ari",
+      "continent": 11
+    },
+    {
+      "id": 127,
+      "name": "HIP 62951",
+      "x": -22.703,
+      "y": -5.448,
+      "z": -7.602,
+      "distLy": 24.55,
+      "stars": 1,
+      "spect": "A2",
+      "lum": 0.01948,
+      "sc": false,
+      "members": [
+        "HIP 62951"
+      ],
+      "lanes": 3,
+      "con": "Crv",
+      "continent": 12
+    },
+    {
+      "id": 128,
+      "name": "Gliese 2005",
+      "x": 21.695,
+      "y": 2.347,
+      "z": -11.19,
+      "distLy": 24.56,
+      "stars": 1,
+      "spect": "M5.5",
+      "lum": 3E-05,
+      "sc": false,
+      "members": [
+        "Gliese 2005"
+      ],
+      "lanes": 2,
+      "con": "Scl",
+      "continent": 1
+    },
+    {
+      "id": 129,
+      "name": "107 Piscium",
+      "x": 20.779,
+      "y": 9.966,
+      "z": 8.51,
+      "distLy": 24.57,
+      "stars": 1,
+      "spect": "K1V",
+      "lum": 0.39628,
+      "sc": true,
+      "members": [
+        "107 Piscium"
+      ],
+      "lanes": 4,
+      "con": "Psc",
+      "continent": 11
+    },
+    {
+      "id": 130,
+      "name": "Gliese 1224",
+      "x": 0.778,
+      "y": -23.618,
+      "z": -6.761,
+      "distLy": 24.58,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00017,
+      "sc": false,
+      "members": [
+        "Gliese 1224"
+      ],
+      "lanes": 2,
+      "con": "Ser",
+      "continent": 9
+    },
+    {
+      "id": 131,
+      "name": "Mu Cassiopeiae",
+      "x": 13.534,
+      "y": 4.156,
+      "z": 20.16,
+      "distLy": 24.64,
+      "stars": 2,
+      "spect": "G5Vp",
+      "lum": 0.42699,
+      "sc": true,
+      "members": [
+        "Mu Cassiopeiae",
+        "Gliese 53B"
+      ],
+      "lanes": 2,
+      "con": "Cas",
+      "continent": 3
+    },
+    {
+      "id": 132,
+      "name": "Gliese 3378",
+      "x": -0.063,
+      "y": 12.484,
+      "z": 21.28,
+      "distLy": 24.67,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00103,
+      "sc": false,
+      "members": [
+        "Gliese 3378"
+      ],
+      "lanes": 3,
+      "con": "Cam",
+      "continent": 10
+    },
+    {
+      "id": 133,
+      "name": "Gliese 879",
+      "x": 20.337,
+      "y": -5.793,
+      "z": -12.992,
+      "distLy": 24.82,
+      "stars": 1,
+      "spect": "K4Vp",
+      "lum": 0.12906,
+      "sc": true,
+      "members": [
+        "Gliese 879"
+      ],
+      "lanes": 5,
+      "con": "PsA",
+      "continent": 1
+    },
+    {
+      "id": 134,
+      "name": "Gliese 3193B",
+      "x": 16.736,
+      "y": 17.007,
+      "z": -7.109,
+      "distLy": 24.9,
+      "stars": 1,
+      "spect": "M3",
+      "lum": 0.00097,
+      "sc": false,
+      "members": [
+        "Gliese 3193B"
+      ],
+      "lanes": 2,
+      "con": "Eri",
+      "continent": 11
+    },
+    {
+      "id": 135,
+      "name": "Gliese 3192",
+      "x": 16.736,
+      "y": 17.007,
+      "z": -7.109,
+      "distLy": 24.9,
+      "stars": 1,
+      "spect": "M3",
+      "lum": 0.00273,
+      "sc": false,
+      "members": [
+        "Gliese 3192"
+      ],
+      "lanes": 2,
+      "con": "Eri",
+      "continent": 11
+    },
+    {
+      "id": 136,
+      "name": "Gliese 514",
+      "x": -22.692,
+      "y": -9.399,
+      "z": 4.498,
+      "distLy": 24.97,
+      "stars": 1,
+      "spect": "M1V",
+      "lum": 0.01225,
+      "sc": false,
+      "members": [
+        "Gliese 514"
+      ],
+      "lanes": 4,
+      "con": "Vir",
+      "continent": 5
+    },
+    {
+      "id": 137,
+      "name": "Vega",
+      "x": 3.133,
+      "y": -19.269,
+      "z": 15.687,
+      "distLy": 25.04,
+      "stars": 1,
+      "spect": "A0Vvar",
+      "lum": 49.93442,
+      "sc": true,
+      "members": [
+        "Vega"
+      ],
+      "lanes": 3,
+      "con": "Lyr",
+      "continent": 5
+    },
+    {
+      "id": 138,
+      "name": "Gliese 673",
+      "x": -3.736,
+      "y": -24.819,
+      "z": 0.925,
+      "distLy": 25.12,
+      "stars": 1,
+      "spect": "K7V",
+      "lum": 0.0498,
+      "sc": false,
+      "members": [
+        "Gliese 673"
+      ],
+      "lanes": 3,
+      "con": "Oph",
+      "continent": 9
+    },
+    {
+      "id": 139,
+      "name": "Fomalhaut",
+      "x": 21.039,
+      "y": -5.869,
+      "z": -12.419,
+      "distLy": 25.13,
+      "stars": 1,
+      "spect": "A3V",
+      "lum": 17.58733,
+      "sc": true,
+      "members": [
+        "Fomalhaut"
+      ],
+      "lanes": 4,
+      "con": "PsA",
+      "continent": 1
+    },
+    {
+      "id": 140,
+      "name": "Gliese 3417",
+      "x": -2.938,
+      "y": 11.369,
+      "z": 22.391,
+      "distLy": 25.28,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00018,
+      "sc": false,
+      "members": [
+        "Gliese 3417"
+      ],
+      "lanes": 2,
+      "con": "Cam",
+      "continent": 10
+    },
+    {
+      "id": 141,
+      "name": "Gliese 1093",
+      "x": -6.126,
+      "y": 23.075,
+      "z": 8.384,
+      "distLy": 25.3,
+      "stars": 1,
+      "spect": "m",
+      "lum": 6E-05,
+      "sc": false,
+      "members": [
+        "Gliese 1093"
+      ],
+      "lanes": 2,
+      "con": "Gem",
+      "continent": 4
+    },
+    {
+      "id": 142,
+      "name": "Gliese 701",
+      "x": 0.565,
+      "y": -25.264,
+      "z": -1.338,
+      "distLy": 25.31,
+      "stars": 1,
+      "spect": "M2V",
+      "lum": 0.00937,
+      "sc": false,
+      "members": [
+        "Gliese 701"
+      ],
+      "lanes": 2,
+      "con": "Ser",
+      "continent": 9
+    },
+    {
+      "id": 143,
+      "name": "Gliese 480.1",
+      "x": -18.097,
+      "y": -3.254,
+      "z": -17.489,
+      "distLy": 25.38,
+      "stars": 1,
+      "spect": "M4",
+      "lum": 0.00067,
+      "sc": false,
+      "members": [
+        "Gliese 480.1"
+      ],
+      "lanes": 4,
+      "con": "Cen",
+      "continent": 12
+    },
+    {
+      "id": 144,
+      "name": "Gliese 915",
+      "x": 18.555,
+      "y": 0.176,
+      "z": -17.405,
+      "distLy": 25.44,
+      "stars": 1,
+      "spect": "DA5",
+      "lum": 0.00032,
+      "sc": false,
+      "members": [
+        "Gliese 915"
+      ],
+      "lanes": 3,
+      "con": "Phe",
+      "continent": 1
+    },
+    {
+      "id": 145,
+      "name": "Gliese 382",
+      "x": -22.834,
+      "y": 11.598,
+      "z": -1.677,
+      "distLy": 25.67,
+      "stars": 1,
+      "spect": "M3",
+      "lum": 0.01067,
+      "sc": false,
+      "members": [
+        "Gliese 382"
+      ],
+      "lanes": 2,
+      "con": "Sex",
+      "continent": 8
+    },
+    {
+      "id": 146,
+      "name": "Gliese 3789",
+      "x": -20.793,
+      "y": -8.802,
+      "z": 12.658,
+      "distLy": 25.89,
+      "stars": 1,
+      "spect": "M4  e",
+      "lum": 0.00091,
+      "sc": false,
+      "members": [
+        "Gliese 3789"
+      ],
+      "lanes": 4,
+      "con": "CVn",
+      "continent": 5
+    },
+    {
+      "id": 147,
+      "name": "Gliese 1087",
+      "x": 0.405,
+      "y": 25.954,
+      "z": 2.437,
+      "distLy": 26.07,
+      "stars": 1,
+      "spect": "DAP9",
+      "lum": 0.00013,
+      "sc": false,
+      "members": [
+        "Gliese 1087"
+      ],
+      "lanes": 3,
+      "con": "Ori",
+      "continent": 4
+    },
+    {
+      "id": 148,
+      "name": "Gliese 793",
+      "x": 6.616,
+      "y": -8.581,
+      "z": 23.721,
+      "distLy": 26.08,
+      "stars": 1,
+      "spect": "M3",
+      "lum": 0.00339,
+      "sc": false,
+      "members": [
+        "Gliese 793"
+      ],
+      "lanes": 5,
+      "con": "Cep",
+      "continent": 7
+    },
+    {
+      "id": 149,
+      "name": "Gliese 257",
+      "x": -4.664,
+      "y": 18.108,
+      "z": -18.242,
+      "distLy": 26.12,
+      "stars": 2,
+      "spect": "M4+...",
+      "lum": 0.00382,
+      "sc": true,
+      "members": [
+        "Gliese 257",
+        "Gliese 257B"
+      ],
+      "lanes": 2,
+      "con": "Pup",
+      "continent": 6
+    },
+    {
+      "id": 150,
+      "name": "Gliese 1276",
+      "x": 24.999,
+      "y": -7.418,
+      "z": -3.101,
+      "distLy": 26.26,
+      "stars": 1,
+      "spect": "DZ9+",
+      "lum": 3E-05,
+      "sc": false,
+      "members": [
+        "Gliese 1276"
+      ],
+      "lanes": 3,
+      "con": "Aqr",
+      "continent": 1
+    },
+    {
+      "id": 151,
+      "name": "Gliese 623",
+      "x": -7.092,
+      "y": -15.957,
+      "z": 19.635,
+      "distLy": 26.28,
+      "stars": 1,
+      "spect": "M3",
+      "lum": 0.00441,
+      "sc": false,
+      "members": [
+        "Gliese 623"
+      ],
+      "lanes": 3,
+      "con": "Her",
+      "continent": 5
+    },
+    {
+      "id": 152,
+      "name": "Chi Draconis",
+      "x": 0.716,
+      "y": -7.768,
+      "z": 25.096,
+      "distLy": 26.28,
+      "stars": 1,
+      "spect": "F7Vvar",
+      "lum": 2.14981,
+      "sc": true,
+      "members": [
+        "Chi Draconis"
+      ],
+      "lanes": 4,
+      "con": "Dra",
+      "continent": 7
+    },
+    {
+      "id": 153,
+      "name": "Gliese 4063",
+      "x": 3.025,
+      "y": -19.884,
+      "z": 16.95,
+      "distLy": 26.3,
+      "stars": 1,
+      "spect": "M3  p",
+      "lum": 0.00153,
+      "sc": false,
+      "members": [
+        "Gliese 4063"
+      ],
+      "lanes": 3,
+      "con": "Lyr",
+      "continent": 5
+    },
+    {
+      "id": 154,
+      "name": "Tabit",
+      "x": 7.872,
+      "y": 24.908,
+      "z": 3.189,
+      "distLy": 26.32,
+      "stars": 1,
+      "spect": "F6V",
+      "lum": 3.00331,
+      "sc": true,
+      "members": [
+        "Tabit"
+      ],
+      "lanes": 2,
+      "con": "Ori",
+      "continent": 4
+    },
+    {
+      "id": 155,
+      "name": "Gliese 686",
+      "x": -2.408,
+      "y": -24.88,
+      "z": 8.408,
+      "distLy": 26.37,
+      "stars": 1,
+      "spect": "M1",
+      "lum": 0.00808,
+      "sc": false,
+      "members": [
+        "Gliese 686"
+      ],
+      "lanes": 2,
+      "con": "Her",
+      "continent": 5
+    },
+    {
+      "id": 156,
+      "name": "Gliese 2034",
+      "x": 7.332,
+      "y": 15.907,
+      "z": -19.908,
+      "distLy": 26.52,
+      "stars": 1,
+      "spect": "DA8",
+      "lum": 0.0001,
+      "sc": false,
+      "members": [
+        "Gliese 2034"
+      ],
+      "lanes": 2,
+      "con": "Cae",
+      "continent": 6
+    },
+    {
+      "id": 157,
+      "name": "Gliese 1123",
+      "x": -4.231,
+      "y": 3.647,
+      "z": -25.922,
+      "distLy": 26.52,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00033,
+      "sc": false,
+      "members": [
+        "Gliese 1123"
+      ],
+      "lanes": 3,
+      "con": "Cha",
+      "continent": 6
+    },
+    {
+      "id": 158,
+      "name": "Gliese 1289",
+      "x": 21.247,
+      "y": -1.569,
+      "z": 15.786,
+      "distLy": 26.52,
+      "stars": 1,
+      "spect": "k",
+      "lum": 0.00054,
+      "sc": false,
+      "members": [
+        "Gliese 1289"
+      ],
+      "lanes": 2,
+      "con": "And",
+      "continent": 3
+    },
+    {
+      "id": 159,
+      "name": "Gliese 493.1",
+      "x": -25.505,
+      "y": -6.901,
+      "z": 2.631,
+      "distLy": 26.56,
+      "stars": 1,
+      "spect": "dM5  e",
+      "lum": 0.00025,
+      "sc": false,
+      "members": [
+        "Gliese 493.1"
+      ],
+      "lanes": 4,
+      "con": "Vir",
+      "continent": 5
+    },
+    {
+      "id": 160,
+      "name": "p Eridani",
+      "x": 13.405,
+      "y": 6.236,
+      "z": -22.081,
+      "distLy": 26.57,
+      "stars": 2,
+      "spect": "K2 V",
+      "lum": 0.54142,
+      "sc": true,
+      "members": [
+        "p Eridani"
+      ],
+      "lanes": 3,
+      "con": "Eri",
+      "continent": 6
+    },
+    {
+      "id": 161,
+      "name": "Gliese 747",
+      "x": 6.528,
+      "y": -21.448,
+      "z": 14.307,
+      "distLy": 26.6,
+      "stars": 2,
+      "spect": "M3.5 J",
+      "lum": 0.00184,
+      "sc": true,
+      "members": [
+        "Gliese 747",
+        "Gliese 747B"
+      ],
+      "lanes": 4,
+      "con": "Lyr",
+      "continent": 5
+    },
+    {
+      "id": 162,
+      "name": "Gliese 518",
+      "x": -24.307,
+      "y": -10.891,
+      "z": 1.713,
+      "distLy": 26.69,
+      "stars": 1,
+      "spect": "DZ9",
+      "lum": 8E-05,
+      "sc": false,
+      "members": [
+        "Gliese 518"
+      ],
+      "lanes": 4,
+      "con": "Vir",
+      "continent": 5
+    },
+    {
+      "id": 163,
+      "name": "Gliese 54",
+      "x": 9.772,
+      "y": 3.099,
+      "z": -24.682,
+      "distLy": 26.73,
+      "stars": 1,
+      "spect": "K",
+      "lum": 0.00703,
+      "sc": false,
+      "members": [
+        "Gliese 54"
+      ],
+      "lanes": 4,
+      "con": "Tuc",
+      "continent": 6
+    },
+    {
+      "id": 164,
+      "name": "Gliese 1151",
+      "x": -17.769,
+      "y": 0.7,
+      "z": 20.013,
+      "distLy": 26.78,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00029,
+      "sc": false,
+      "members": [
+        "Gliese 1151"
+      ],
+      "lanes": 3,
+      "con": "UMa",
+      "continent": 8
+    },
+    {
+      "id": 165,
+      "name": "Gliese 884",
+      "x": 23.922,
+      "y": -6.38,
+      "z": -10.267,
+      "distLy": 26.8,
+      "stars": 1,
+      "spect": "K5/M0V",
+      "lum": 0.04146,
+      "sc": false,
+      "members": [
+        "Gliese 884"
+      ],
+      "lanes": 5,
+      "con": "Aqr",
+      "continent": 1
+    },
+    {
+      "id": 166,
+      "name": "Gliese 48",
+      "x": 8.132,
+      "y": 2.276,
+      "z": 25.503,
+      "distLy": 26.86,
+      "stars": 1,
+      "spect": "M3.5e",
+      "lum": 0.00602,
+      "sc": false,
+      "members": [
+        "Gliese 48"
+      ],
+      "lanes": 3,
+      "con": "Cas",
+      "continent": 3
+    },
+    {
+      "id": 167,
+      "name": "Gliese 1227",
+      "x": 1.232,
+      "y": -12.543,
+      "z": 23.752,
+      "distLy": 26.89,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00026,
+      "sc": false,
+      "members": [
+        "Gliese 1227"
+      ],
+      "lanes": 3,
+      "con": "Dra",
+      "continent": 7
+    },
+    {
+      "id": 168,
+      "name": "Gliese 831",
+      "x": 21.249,
+      "y": -16.112,
+      "z": -4.602,
+      "distLy": 27.06,
+      "stars": 2,
+      "spect": "M4e...",
+      "lum": 0.00105,
+      "sc": true,
+      "members": [
+        "Gliese 831",
+        "Gliese 831B"
+      ],
+      "lanes": 2,
+      "con": "Cap",
+      "continent": 1
+    },
+    {
+      "id": 169,
+      "name": "Mu Herculis",
+      "x": -1.417,
+      "y": -23.952,
+      "z": 12.608,
+      "distLy": 27.11,
+      "stars": 3,
+      "spect": "G5IV",
+      "lum": 2.5849,
+      "sc": true,
+      "members": [
+        "Mu Herculis",
+        "Gliese 695B",
+        "Gliese 695C"
+      ],
+      "lanes": 3,
+      "con": "Her",
+      "continent": 5
+    },
+    {
+      "id": 170,
+      "name": "Gliese 232",
+      "x": -2.682,
+      "y": 24.793,
+      "z": 10.81,
+      "distLy": 27.18,
+      "stars": 1,
+      "spect": "M4.5",
+      "lum": 0.00036,
+      "sc": false,
+      "members": [
+        "Gliese 232"
+      ],
+      "lanes": 3,
+      "con": "Gem",
+      "continent": 4
+    },
+    {
+      "id": 171,
+      "name": "Gliese 618",
+      "x": -9.116,
+      "y": -19.562,
+      "z": -16.578,
+      "distLy": 27.21,
+      "stars": 2,
+      "spect": "M4",
+      "lum": 0.00376,
+      "sc": true,
+      "members": [
+        "Gliese 618",
+        "Gliese 618B"
+      ],
+      "lanes": 3,
+      "con": "Sco",
+      "continent": 2
+    },
+    {
+      "id": 172,
+      "name": "Gar",
+      "x": -26.32,
+      "y": -5.588,
+      "z": 4.624,
+      "distLy": 27.3,
+      "stars": 1,
+      "spect": "M4",
+      "lum": 0.0017,
+      "sc": false,
+      "members": [
+        "Gar"
+      ],
+      "lanes": 5,
+      "con": "Vir",
+      "continent": 5
+    },
+    {
+      "id": 173,
+      "name": "Gliese 438",
+      "x": -16.89,
+      "y": 1.231,
+      "z": -21.551,
+      "distLy": 27.41,
+      "stars": 1,
+      "spect": "K0",
+      "lum": 0.00441,
+      "sc": false,
+      "members": [
+        "Gliese 438"
+      ],
+      "lanes": 3,
+      "con": "Cen",
+      "continent": 12
+    },
+    {
+      "id": 174,
+      "name": "Chara",
+      "x": -20.438,
+      "y": -3.031,
+      "z": 18.188,
+      "distLy": 27.53,
+      "stars": 1,
+      "spect": "G0V",
+      "lum": 1.24968,
+      "sc": true,
+      "members": [
+        "Chara"
+      ],
+      "lanes": 3,
+      "con": "CVn",
+      "continent": 8
+    },
+    {
+      "id": 175,
+      "name": "Gliese 3146",
+      "x": 22.201,
+      "y": 15.048,
+      "z": 6.486,
+      "distLy": 27.59,
+      "stars": 1,
+      "spect": "m",
+      "lum": 3E-05,
+      "sc": false,
+      "members": [
+        "Gliese 3146"
+      ],
+      "lanes": 5,
+      "con": "Ari",
+      "continent": 11
+    },
+    {
+      "id": 176,
+      "name": "Gliese 1154",
+      "x": -27.538,
+      "y": -1.717,
+      "z": 0.299,
+      "distLy": 27.59,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.0002,
+      "sc": false,
+      "members": [
+        "Gliese 1154"
+      ],
+      "lanes": 2,
+      "con": "Vir",
+      "continent": 5
+    },
+    {
+      "id": 177,
+      "name": "Gliese 1057",
+      "x": 18.292,
+      "y": 20.562,
+      "z": 2.299,
+      "distLy": 27.62,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00019,
+      "sc": false,
+      "members": [
+        "Gliese 1057"
+      ],
+      "lanes": 2,
+      "con": "Cet",
+      "continent": 11
+    },
+    {
+      "id": 178,
+      "name": "Gliese 3076",
+      "x": 25.359,
+      "y": 8.17,
+      "z": 7.358,
+      "distLy": 27.64,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00011,
+      "sc": false,
+      "members": [
+        "Gliese 3076"
+      ],
+      "lanes": 3,
+      "con": "Psc",
+      "continent": 11
+    },
+    {
+      "id": 179,
+      "name": "Gliese 745",
+      "x": 7.488,
+      "y": -24.842,
+      "z": 9.902,
+      "distLy": 27.77,
+      "stars": 2,
+      "spect": "M2",
+      "lum": 0.00642,
+      "sc": true,
+      "members": [
+        "Gliese 745",
+        "Gliese 745B"
+      ],
+      "lanes": 4,
+      "con": "Sge",
+      "continent": 5
+    },
+    {
+      "id": 180,
+      "name": "HIP 18899",
+      "x": 13.15,
+      "y": 23.497,
+      "z": -7.292,
+      "distLy": 27.9,
+      "stars": 1,
+      "spect": "",
+      "lum": 0.00437,
+      "sc": false,
+      "members": [
+        "HIP 18899"
+      ],
+      "lanes": 3,
+      "con": "Eri",
+      "continent": 4
+    },
+    {
+      "id": 181,
+      "name": "61 Virginis",
+      "x": -24.955,
+      "y": -8.887,
+      "z": -8.766,
+      "distLy": 27.9,
+      "stars": 1,
+      "spect": "G5V",
+      "lum": 0.80984,
+      "sc": true,
+      "members": [
+        "61 Virginis"
+      ],
+      "lanes": 4,
+      "con": "Vir",
+      "continent": 12
+    },
+    {
+      "id": 182,
+      "name": "Gliese 3517",
+      "x": -19.151,
+      "y": 20.251,
+      "z": -1.7,
+      "distLy": 27.92,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0,
+      "sc": false,
+      "members": [
+        "Gliese 3517"
+      ],
+      "lanes": 2,
+      "con": "Hya",
+      "continent": 13
+    },
+    {
+      "id": 183,
+      "name": "Gliese 185",
+      "x": 6.475,
+      "y": 25.254,
+      "z": -10.142,
+      "distLy": 27.97,
+      "stars": 2,
+      "spect": "M0V",
+      "lum": 0.03438,
+      "sc": true,
+      "members": [
+        "Gliese 185",
+        "Gliese 185B"
+      ],
+      "lanes": 3,
+      "con": "Lep",
+      "continent": 4
+    },
+    {
+      "id": 184,
+      "name": "Gliese 450",
+      "x": -22.844,
+      "y": 0.885,
+      "z": 16.17,
+      "distLy": 28,
+      "stars": 1,
+      "spect": "M1V",
+      "lum": 0.00801,
+      "sc": false,
+      "members": [
+        "Gliese 450"
+      ],
+      "lanes": 5,
+      "con": "UMa",
+      "continent": 8
+    },
+    {
+      "id": 185,
+      "name": "Zeta Tucanae",
+      "x": 11.846,
+      "y": 1.04,
+      "z": -25.356,
+      "distLy": 28.01,
+      "stars": 1,
+      "spect": "F9V",
+      "lum": 1.30497,
+      "sc": true,
+      "members": [
+        "Zeta Tucanae"
+      ],
+      "lanes": 5,
+      "con": "Tuc",
+      "continent": 6
+    },
+    {
+      "id": 186,
+      "name": "Gliese 877",
+      "x": 6.779,
+      "y": -1.952,
+      "z": -27.197,
+      "distLy": 28.1,
+      "stars": 1,
+      "spect": "K",
+      "lum": 0.00439,
+      "sc": false,
+      "members": [
+        "Gliese 877"
+      ],
+      "lanes": 5,
+      "con": "Oct",
+      "continent": 6
+    },
+    {
+      "id": 187,
+      "name": "Gliese 1105",
+      "x": -10.412,
+      "y": 18.364,
+      "z": 18.549,
+      "distLy": 28.1,
+      "stars": 1,
+      "spect": "M4V",
+      "lum": 0.00101,
+      "sc": false,
+      "members": [
+        "Gliese 1105"
+      ],
+      "lanes": 2,
+      "con": "Lyn",
+      "continent": 10
+    },
+    {
+      "id": 188,
+      "name": "Chi Orionis",
+      "x": 0.65,
+      "y": 26.497,
+      "z": 9.792,
+      "distLy": 28.26,
+      "stars": 1,
+      "spect": "G0V",
+      "lum": 1.14604,
+      "sc": true,
+      "members": [
+        "Chi Orionis"
+      ],
+      "lanes": 4,
+      "con": "Ori",
+      "continent": 4
+    },
+    {
+      "id": 189,
+      "name": "HIP 31292",
+      "x": -1.032,
+      "y": 6.953,
+      "z": -27.428,
+      "distLy": 28.31,
+      "stars": 1,
+      "spect": "",
+      "lum": 0.00179,
+      "sc": false,
+      "members": [
+        "HIP 31292"
+      ],
+      "lanes": 3,
+      "con": "Men",
+      "continent": 6
+    },
+    {
+      "id": 190,
+      "name": "Gliese 867",
+      "x": 24.892,
+      "y": -9.213,
+      "z": -9.988,
+      "distLy": 28.36,
+      "stars": 2,
+      "spect": "M0Vpe",
+      "lum": 0.01736,
+      "sc": true,
+      "members": [
+        "Gliese 867",
+        "Gliese 867B"
+      ],
+      "lanes": 4,
+      "con": "Aqr",
+      "continent": 1
+    },
+    {
+      "id": 191,
+      "name": "Gliese 3839",
+      "x": -19.94,
+      "y": -13.584,
+      "z": 14.908,
+      "distLy": 28.36,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00038,
+      "sc": false,
+      "members": [
+        "Gliese 3839"
+      ],
+      "lanes": 3,
+      "con": "Boo",
+      "continent": 5
+    },
+    {
+      "id": 192,
+      "name": "Gliese 183",
+      "x": 7.217,
+      "y": 27.322,
+      "z": -2.847,
+      "distLy": 28.4,
+      "stars": 1,
+      "spect": "K3V",
+      "lum": 0.21478,
+      "sc": true,
+      "members": [
+        "Gliese 183"
+      ],
+      "lanes": 4,
+      "con": "Eri",
+      "continent": 4
+    },
+    {
+      "id": 193,
+      "name": "Gliese 250",
+      "x": -6.401,
+      "y": 27.559,
+      "z": -2.562,
+      "distLy": 28.41,
+      "stars": 2,
+      "spect": "K3V",
+      "lum": 0.16024,
+      "sc": true,
+      "members": [
+        "Gliese 250",
+        "Gliese 250B"
+      ],
+      "lanes": 3,
+      "con": "Mon",
+      "continent": 4
+    },
+    {
+      "id": 194,
+      "name": "Gliese 791.2",
+      "x": 17.117,
+      "y": -22.348,
+      "z": 4.806,
+      "distLy": 28.56,
+      "stars": 1,
+      "spect": "dM6  e",
+      "lum": 0.0004,
+      "sc": false,
+      "members": [
+        "Gliese 791.2"
+      ],
+      "lanes": 2,
+      "con": "Del",
+      "continent": 1
+    },
+    {
+      "id": 195,
+      "name": "Gliese 3667",
+      "x": -26.922,
+      "y": 3.631,
+      "z": 8.976,
+      "distLy": 28.61,
+      "stars": 1,
+      "spect": "DC8",
+      "lum": 0.0002,
+      "sc": false,
+      "members": [
+        "Gliese 3667"
+      ],
+      "lanes": 2,
+      "con": "Leo",
+      "continent": 8
+    },
+    {
+      "id": 196,
+      "name": "Gliese 1103",
+      "x": -13.449,
+      "y": 25.318,
+      "z": -0.001,
+      "distLy": 28.66,
+      "stars": 2,
+      "spect": "m",
+      "lum": 0.00033,
+      "sc": true,
+      "members": [
+        "Gliese 1103",
+        "Gliese 1103B"
+      ],
+      "lanes": 3,
+      "con": "CMi",
+      "continent": 13
+    },
+    {
+      "id": 197,
+      "name": "Gliese 666",
+      "x": -3.502,
+      "y": -19.399,
+      "z": -20.872,
+      "distLy": 28.71,
+      "stars": 2,
+      "spect": "M0V",
+      "lum": 0.46019,
+      "sc": true,
+      "members": [
+        "Gliese 666",
+        "Gliese 666B"
+      ],
+      "lanes": 4,
+      "con": "Ara",
+      "continent": 2
+    },
+    {
+      "id": 198,
+      "name": "Gliese 203",
+      "x": 3.942,
+      "y": 28.055,
+      "z": 4.814,
+      "distLy": 28.74,
+      "stars": 1,
+      "spect": "M5",
+      "lum": 0.00069,
+      "sc": false,
+      "members": [
+        "Gliese 203"
+      ],
+      "lanes": 4,
+      "con": "Ori",
+      "continent": 4
+    },
+    {
+      "id": 199,
+      "name": "Gliese 465",
+      "x": -27.258,
+      "y": -2.97,
+      "z": -9.037,
+      "distLy": 28.87,
+      "stars": 1,
+      "spect": "M4",
+      "lum": 0.0021,
+      "sc": false,
+      "members": [
+        "Gliese 465"
+      ],
+      "lanes": 4,
+      "con": "Crv",
+      "continent": 12
+    },
+    {
+      "id": 200,
+      "name": "Gliese 433",
+      "x": -24.284,
+      "y": 2.611,
+      "z": -15.584,
+      "distLy": 28.97,
+      "stars": 1,
+      "spect": "M2V",
+      "lum": 0.00819,
+      "sc": false,
+      "members": [
+        "Gliese 433"
+      ],
+      "lanes": 3,
+      "con": "Hya",
+      "continent": 12
+    },
+    {
+      "id": 201,
+      "name": "Gliese 4247",
+      "x": 22.206,
+      "y": -12.664,
+      "z": 13.768,
+      "distLy": 29.04,
+      "stars": 1,
+      "spect": "",
+      "lum": 0.0011,
+      "sc": false,
+      "members": [
+        "Gliese 4247"
+      ],
+      "lanes": 2,
+      "con": "Peg",
+      "continent": 1
+    },
+    {
+      "id": 202,
+      "name": "Gliese 318",
+      "x": -15.798,
+      "y": 18.572,
+      "z": -15.799,
+      "distLy": 29.04,
+      "stars": 1,
+      "spect": "DA6",
+      "lum": 0.00122,
+      "sc": false,
+      "members": [
+        "Gliese 318"
+      ],
+      "lanes": 3,
+      "con": "Pyx",
+      "continent": 6
+    },
+    {
+      "id": 203,
+      "name": "Gliese 785",
+      "x": 14.409,
+      "y": -21.506,
+      "z": -13.209,
+      "distLy": 29.06,
+      "stars": 1,
+      "spect": "K3V",
+      "lum": 0.35318,
+      "sc": true,
+      "members": [
+        "Gliese 785"
+      ],
+      "lanes": 2,
+      "con": "Cap",
+      "continent": 2
+    },
+    {
+      "id": 204,
+      "name": "Gliese 424",
+      "x": -11.723,
+      "y": 2.063,
+      "z": 26.542,
+      "distLy": 29.09,
+      "stars": 1,
+      "spect": "M1Vvar",
+      "lum": 0.01307,
+      "sc": false,
+      "members": [
+        "Gliese 424"
+      ],
+      "lanes": 2,
+      "con": "UMa",
+      "continent": 10
+    },
+    {
+      "id": 205,
+      "name": "HIP 94223",
+      "x": 5.915,
+      "y": -18.513,
+      "z": -21.645,
+      "distLy": 29.09,
+      "stars": 1,
+      "spect": "",
+      "lum": 0.00536,
+      "sc": false,
+      "members": [
+        "HIP 94223"
+      ],
+      "lanes": 2,
+      "con": "Tel",
+      "continent": 2
+    },
+    {
+      "id": 206,
+      "name": "Gamma Leporis",
+      "x": 1.823,
+      "y": 26.848,
+      "z": -11.118,
+      "distLy": 29.12,
+      "stars": 2,
+      "spect": "F7V",
+      "lum": 2.792,
+      "sc": true,
+      "members": [
+        "Gamma Leporis",
+        "Gliese 216B"
+      ],
+      "lanes": 3,
+      "con": "Lep",
+      "continent": 4
+    },
+    {
+      "id": 207,
+      "name": "Gliese 3128",
+      "x": 24.669,
+      "y": 14.566,
+      "z": 5.226,
+      "distLy": 29.12,
+      "stars": 1,
+      "spect": "m",
+      "lum": 4E-05,
+      "sc": false,
+      "members": [
+        "Gliese 3128"
+      ],
+      "lanes": 3,
+      "con": "Psc",
+      "continent": 11
+    },
+    {
+      "id": 208,
+      "name": "Gliese 283",
+      "x": -11.782,
+      "y": 25.167,
+      "z": -8.715,
+      "distLy": 29.12,
+      "stars": 2,
+      "spect": "DZQ6",
+      "lum": 0.00046,
+      "sc": true,
+      "members": [
+        "Gliese 283",
+        "Gliese 283B"
+      ],
+      "lanes": 2,
+      "con": "Pup",
+      "continent": 13
+    },
+    {
+      "id": 209,
+      "name": "Gliese 3707",
+      "x": -28.092,
+      "y": -1.237,
+      "z": -7.572,
+      "distLy": 29.12,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00104,
+      "sc": false,
+      "members": [
+        "Gliese 3707"
+      ],
+      "lanes": 2,
+      "con": "Crv",
+      "continent": 12
+    },
+    {
+      "id": 210,
+      "name": "Gliese 3820",
+      "x": -23.773,
+      "y": -13.611,
+      "z": -9.882,
+      "distLy": 29.12,
+      "stars": 1,
+      "spect": "K2 :",
+      "lum": 0.00044,
+      "sc": false,
+      "members": [
+        "Gliese 3820"
+      ],
+      "lanes": 3,
+      "con": "Vir",
+      "continent": 12
+    },
+    {
+      "id": 211,
+      "name": "Gliese 4360",
+      "x": 28.164,
+      "y": -1.781,
+      "z": -8.184,
+      "distLy": 29.38,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00011,
+      "sc": false,
+      "members": [
+        "Gliese 4360"
+      ],
+      "lanes": 3,
+      "con": "Aqr",
+      "continent": 1
+    },
+    {
+      "id": 212,
+      "name": "Gliese 51",
+      "x": 13.123,
+      "y": 3.721,
+      "z": 26.055,
+      "distLy": 29.41,
+      "stars": 1,
+      "spect": "M5",
+      "lum": 0.00024,
+      "sc": false,
+      "members": [
+        "Gliese 51"
+      ],
+      "lanes": 6,
+      "con": "Cas",
+      "continent": 3
+    },
+    {
+      "id": 213,
+      "name": "HIP 31293",
+      "x": -1.07,
+      "y": 7.222,
+      "z": -28.495,
+      "distLy": 29.42,
+      "stars": 1,
+      "spect": "",
+      "lum": 0.00513,
+      "sc": false,
+      "members": [
+        "HIP 31293"
+      ],
+      "lanes": 3,
+      "con": "Men",
+      "continent": 6
+    },
+    {
+      "id": 214,
+      "name": "Gliese 357",
+      "x": -22.129,
+      "y": 16.074,
+      "z": -10.862,
+      "distLy": 29.43,
+      "stars": 1,
+      "spect": "K",
+      "lum": 0.00307,
+      "sc": false,
+      "members": [
+        "Gliese 357"
+      ],
+      "lanes": 2,
+      "con": "Hya",
+      "continent": 13
+    },
+    {
+      "id": 215,
+      "name": "Rana",
+      "x": 16.329,
+      "y": 24.038,
+      "z": -5,
+      "distLy": 29.49,
+      "stars": 1,
+      "spect": "K0IV",
+      "lum": 2.78227,
+      "sc": true,
+      "members": [
+        "Rana"
+      ],
+      "lanes": 3,
+      "con": "Eri",
+      "continent": 11
+    },
+    {
+      "id": 216,
+      "name": "Groombridge 1830",
+      "x": -23.443,
+      "y": 0.718,
+      "z": 18.14,
+      "distLy": 29.65,
+      "stars": 2,
+      "spect": "G8Vp",
+      "lum": 0.19578,
+      "sc": true,
+      "members": [
+        "Groombridge 1830",
+        "Gliese 451B"
+      ],
+      "lanes": 5,
+      "con": "UMa",
+      "continent": 8
+    },
+    {
+      "id": 217,
+      "name": "Gliese 849",
+      "x": 26.209,
+      "y": -13.691,
+      "z": -2.4,
+      "distLy": 29.67,
+      "stars": 1,
+      "spect": "M3",
+      "lum": 0.00494,
+      "sc": false,
+      "members": [
+        "Gliese 849"
+      ],
+      "lanes": 4,
+      "con": "Aqr",
+      "continent": 1
+    },
+    {
+      "id": 218,
+      "name": "Gliese 2066",
+      "x": -16.648,
+      "y": 24.651,
+      "z": 0.676,
+      "distLy": 29.75,
+      "stars": 1,
+      "spect": "",
+      "lum": 0.00674,
+      "sc": false,
+      "members": [
+        "Gliese 2066"
+      ],
+      "lanes": 2,
+      "con": "Hya",
+      "continent": 13
+    },
+    {
+      "id": 219,
+      "name": "Beta Comae Berenices",
+      "x": -25.036,
+      "y": -8.119,
+      "z": 13.923,
+      "distLy": 29.78,
+      "stars": 1,
+      "spect": "G0V",
+      "lum": 1.47503,
+      "sc": true,
+      "members": [
+        "Beta Comae Berenices"
+      ],
+      "lanes": 2,
+      "con": "Com",
+      "continent": 5
+    },
+    {
+      "id": 220,
+      "name": "Kappa Ceti",
+      "x": 19.192,
+      "y": 22.744,
+      "z": 1.752,
+      "distLy": 29.81,
+      "stars": 1,
+      "spect": "G5Vvar",
+      "lum": 0.84333,
+      "sc": true,
+      "members": [
+        "Kappa Ceti"
+      ],
+      "lanes": 2,
+      "con": "Cet",
+      "continent": 11
+    },
+    {
+      "id": 221,
+      "name": "Gliese 84",
+      "x": 24.291,
+      "y": 14.752,
+      "z": -9.023,
+      "distLy": 29.82,
+      "stars": 1,
+      "spect": "M3",
+      "lum": 0.00611,
+      "sc": false,
+      "members": [
+        "Gliese 84"
+      ],
+      "lanes": 3,
+      "con": "Cet",
+      "continent": 11
+    },
+    {
+      "id": 222,
+      "name": "Gliese 3421",
+      "x": -4.988,
+      "y": 17.413,
+      "z": 23.783,
+      "distLy": 29.9,
+      "stars": 1,
+      "spect": "M4.5",
+      "lum": 0.00035,
+      "sc": false,
+      "members": [
+        "Gliese 3421"
+      ],
+      "lanes": 4,
+      "con": "Lyn",
+      "continent": 10
+    },
+    {
+      "id": 223,
+      "name": "Gliese 3325",
+      "x": 7.014,
+      "y": 27.789,
+      "z": -8.967,
+      "distLy": 30.03,
+      "stars": 1,
+      "spect": "K:",
+      "lum": 0.00153,
+      "sc": false,
+      "members": [
+        "Gliese 3325"
+      ],
+      "lanes": 5,
+      "con": "Lep",
+      "continent": 4
+    },
+    {
+      "id": 224,
+      "name": "Gliese 442",
+      "x": -22.829,
+      "y": 1.345,
+      "z": -19.532,
+      "distLy": 30.07,
+      "stars": 2,
+      "spect": "G3/G5V",
+      "lum": 0.81967,
+      "sc": true,
+      "members": [
+        "Gliese 442",
+        "Gliese 442B"
+      ],
+      "lanes": 5,
+      "con": "Cen",
+      "continent": 12
+    },
+    {
+      "id": 225,
+      "name": "Gamma Pavonis",
+      "x": 9.869,
+      "y": -7.819,
+      "z": -27.458,
+      "distLy": 30.21,
+      "stars": 1,
+      "spect": "F6V",
+      "lum": 1.54597,
+      "sc": true,
+      "members": [
+        "Gamma Pavonis"
+      ],
+      "lanes": 2,
+      "con": "Pav",
+      "continent": 6
+    },
+    {
+      "id": 226,
+      "name": "Gliese 190",
+      "x": 6.392,
+      "y": 28.013,
+      "z": -9.432,
+      "distLy": 30.24,
+      "stars": 1,
+      "spect": "M5",
+      "lum": 0.00579,
+      "sc": false,
+      "members": [
+        "Gliese 190"
+      ],
+      "lanes": 5,
+      "con": "Lep",
+      "continent": 4
+    },
+    {
+      "id": 227,
+      "name": "Gliese 176",
+      "x": 9.44,
+      "y": 27.005,
+      "z": 9.827,
+      "distLy": 30.25,
+      "stars": 1,
+      "spect": "M2",
+      "lum": 0.00784,
+      "sc": false,
+      "members": [
+        "Gliese 176"
+      ],
+      "lanes": 3,
+      "con": "Tau",
+      "continent": 4
+    },
+    {
+      "id": 228,
+      "name": "Gliese 3135",
+      "x": 22.31,
+      "y": 13.646,
+      "z": -15.207,
+      "distLy": 30.25,
+      "stars": 1,
+      "spect": "K:...",
+      "lum": 0.00103,
+      "sc": false,
+      "members": [
+        "Gliese 3135"
+      ],
+      "lanes": 2,
+      "con": "For",
+      "continent": 11
+    },
+    {
+      "id": 229,
+      "name": "Gliese 3380",
+      "x": -0.212,
+      "y": 19.502,
+      "z": 23.131,
+      "distLy": 30.26,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00012,
+      "sc": false,
+      "members": [
+        "Gliese 3380"
+      ],
+      "lanes": 3,
+      "con": "Aur",
+      "continent": 10
+    },
+    {
+      "id": 230,
+      "name": "Gliese 3801",
+      "x": -22.799,
+      "y": -10.963,
+      "z": 16.611,
+      "distLy": 30.26,
+      "stars": 1,
+      "spect": "M:",
+      "lum": 0.00116,
+      "sc": false,
+      "members": [
+        "Gliese 3801"
+      ],
+      "lanes": 3,
+      "con": "CVn",
+      "continent": 5
+    },
+    {
+      "id": 231,
+      "name": "Gliese 1253",
+      "x": 9.407,
+      "y": -12.701,
+      "z": 25.865,
+      "distLy": 30.31,
+      "stars": 1,
+      "spect": "M5",
+      "lum": 0.00018,
+      "sc": false,
+      "members": [
+        "Gliese 1253"
+      ],
+      "lanes": 2,
+      "con": "Cyg",
+      "continent": 7
+    },
+    {
+      "id": 232,
+      "name": "Gliese 226",
+      "x": -0.189,
+      "y": 4.194,
+      "z": 30.28,
+      "distLy": 30.57,
+      "stars": 1,
+      "spect": "M3",
+      "lum": 0.00492,
+      "sc": false,
+      "members": [
+        "Gliese 226"
+      ],
+      "lanes": 2,
+      "con": "Cam",
+      "continent": 10
+    },
+    {
+      "id": 233,
+      "name": "HIP 27604",
+      "x": 1.249,
+      "y": 30.63,
+      "z": -0.765,
+      "distLy": 30.67,
+      "stars": 1,
+      "spect": "F0",
+      "lum": 0.01363,
+      "sc": false,
+      "members": [
+        "HIP 27604"
+      ],
+      "lanes": 3,
+      "con": "Ori",
+      "continent": 4
+    },
+    {
+      "id": 234,
+      "name": "HIP 14101",
+      "x": 20.65,
+      "y": 20.988,
+      "z": -8.774,
+      "distLy": 30.72,
+      "stars": 1,
+      "spect": "",
+      "lum": 0.00535,
+      "sc": false,
+      "members": [
+        "HIP 14101"
+      ],
+      "lanes": 4,
+      "con": "Eri",
+      "continent": 11
+    },
+    {
+      "id": 235,
+      "name": "Gliese 358",
+      "x": -19.059,
+      "y": 13.373,
+      "z": -20.287,
+      "distLy": 30.88,
+      "stars": 1,
+      "spect": "M:",
+      "lum": 0.00402,
+      "sc": false,
+      "members": [
+        "Gliese 358"
+      ],
+      "lanes": 2,
+      "con": "Vel",
+      "continent": 6
+    },
+    {
+      "id": 236,
+      "name": "Gliese 694",
+      "x": -1.574,
+      "y": -22.415,
+      "z": 21.233,
+      "distLy": 30.92,
+      "stars": 1,
+      "spect": "M3",
+      "lum": 0.00498,
+      "sc": false,
+      "members": [
+        "Gliese 694"
+      ],
+      "lanes": 2,
+      "con": "Her",
+      "continent": 5
+    },
+    {
+      "id": 237,
+      "name": "Gliese 3988",
+      "x": -4.728,
+      "y": -18.753,
+      "z": 24.232,
+      "distLy": 31,
+      "stars": 1,
+      "spect": "k-m",
+      "lum": 0.0003,
+      "sc": false,
+      "members": [
+        "Gliese 3988"
+      ],
+      "lanes": 3,
+      "con": "Dra",
+      "continent": 5
+    },
+    {
+      "id": 238,
+      "name": "Gliese 3306",
+      "x": 10.763,
+      "y": 28.715,
+      "z": -4.758,
+      "distLy": 31.03,
+      "stars": 1,
+      "spect": "DQ7",
+      "lum": 0.00024,
+      "sc": false,
+      "members": [
+        "Gliese 3306"
+      ],
+      "lanes": 5,
+      "con": "Eri",
+      "continent": 4
+    },
+    {
+      "id": 239,
+      "name": "Gliese 1065",
+      "x": 16.528,
+      "y": 26.128,
+      "z": -3.301,
+      "distLy": 31.09,
+      "stars": 1,
+      "spect": "dM4",
+      "lum": 0.00061,
+      "sc": false,
+      "members": [
+        "Gliese 1065"
+      ],
+      "lanes": 4,
+      "con": "Eri",
+      "continent": 11
+    },
+    {
+      "id": 240,
+      "name": "Gliese 432",
+      "x": -26.035,
+      "y": 2.91,
+      "z": -16.903,
+      "distLy": 31.18,
+      "stars": 2,
+      "spect": "K0V",
+      "lum": 0.32878,
+      "sc": true,
+      "members": [
+        "Gliese 432",
+        "Gliese 432B"
+      ],
+      "lanes": 3,
+      "con": "Hya",
+      "continent": 12
+    },
+    {
+      "id": 241,
+      "name": "Gliese 633",
+      "x": -7.336,
+      "y": -20.381,
+      "z": -22.436,
+      "distLy": 31.18,
+      "stars": 1,
+      "spect": "M3",
+      "lum": 0.00067,
+      "sc": false,
+      "members": [
+        "Gliese 633"
+      ],
+      "lanes": 3,
+      "con": "Ara",
+      "continent": 2
+    },
+    {
+      "id": 242,
+      "name": "Gliese 1207",
+      "x": -8.442,
+      "y": -29.985,
+      "z": -2.37,
+      "distLy": 31.24,
+      "stars": 1,
+      "spect": "dM3.5",
+      "lum": 0.00098,
+      "sc": false,
+      "members": [
+        "Gliese 1207"
+      ],
+      "lanes": 4,
+      "con": "Oph",
+      "continent": 9
+    },
+    {
+      "id": 243,
+      "name": "Gliese 1001",
+      "x": 23.723,
+      "y": 0.485,
+      "z": -20.413,
+      "distLy": 31.3,
+      "stars": 1,
+      "spect": "M3.5",
+      "lum": 0.00059,
+      "sc": false,
+      "members": [
+        "Gliese 1001"
+      ],
+      "lanes": 2,
+      "con": "Phe",
+      "continent": 1
+    },
+    {
+      "id": 244,
+      "name": "61 Ursae Majoris",
+      "x": -25.839,
+      "y": 2.141,
+      "z": 17.621,
+      "distLy": 31.35,
+      "stars": 1,
+      "spect": "G8Vvar",
+      "lum": 0.60478,
+      "sc": true,
+      "members": [
+        "61 Ursae Majoris"
+      ],
+      "lanes": 4,
+      "con": "UMa",
+      "continent": 8
+    },
+    {
+      "id": 245,
+      "name": "Gliese 3253",
+      "x": 15.815,
+      "y": 25.479,
+      "z": 9.179,
+      "distLy": 31.36,
+      "stars": 1,
+      "spect": "M4.5",
+      "lum": 0.00027,
+      "sc": false,
+      "members": [
+        "Gliese 3253"
+      ],
+      "lanes": 2,
+      "con": "Tau",
+      "continent": 4
+    },
+    {
+      "id": 246,
+      "name": "Gliese 3275",
+      "x": 12.263,
+      "y": 26.947,
+      "z": 10.345,
+      "distLy": 31.36,
+      "stars": 1,
+      "spect": "dM4.5e",
+      "lum": 0.00056,
+      "sc": false,
+      "members": [
+        "Gliese 3275"
+      ],
+      "lanes": 3,
+      "con": "Tau",
+      "continent": 4
+    },
+    {
+      "id": 247,
+      "name": "Gliese 569",
+      "x": -21.898,
+      "y": -20.869,
+      "z": 8.732,
+      "distLy": 31.49,
+      "stars": 1,
+      "spect": "M2Ve",
+      "lum": 0.00733,
+      "sc": false,
+      "members": [
+        "Gliese 569"
+      ],
+      "lanes": 2,
+      "con": "Boo",
+      "continent": 5
+    },
+    {
+      "id": 248,
+      "name": "Gliese 1125",
+      "x": -25.071,
+      "y": 19.109,
+      "z": 0.178,
+      "distLy": 31.52,
+      "stars": 1,
+      "spect": "K:...",
+      "lum": 0.00168,
+      "sc": false,
+      "members": [
+        "Gliese 1125"
+      ],
+      "lanes": 3,
+      "con": "Hya",
+      "continent": 13
+    },
+    {
+      "id": 249,
+      "name": "Gliese 3855",
+      "x": -12.605,
+      "y": -9.729,
+      "z": 27.268,
+      "distLy": 31.57,
+      "stars": 1,
+      "spect": "M6.5",
+      "lum": 1E-05,
+      "sc": false,
+      "members": [
+        "Gliese 3855"
+      ],
+      "lanes": 2,
+      "con": "Dra",
+      "continent": 10
+    },
+    {
+      "id": 250,
+      "name": "HIP 84581",
+      "x": -5.782,
+      "y": -30.743,
+      "z": -4.328,
+      "distLy": 31.58,
+      "stars": 1,
+      "spect": "",
+      "lum": 0.00299,
+      "sc": false,
+      "members": [
+        "HIP 84581"
+      ],
+      "lanes": 3,
+      "con": "Oph",
+      "continent": 9
+    },
+    {
+      "id": 251,
+      "name": "Gliese 479",
+      "x": -19.196,
+      "y": -3.201,
+      "z": -24.91,
+      "distLy": 31.61,
+      "stars": 1,
+      "spect": "M3",
+      "lum": 0.0045,
+      "sc": false,
+      "members": [
+        "Gliese 479"
+      ],
+      "lanes": 2,
+      "con": "Cen",
+      "continent": 12
+    },
+    {
+      "id": 252,
+      "name": "Gliese 680",
+      "x": -2.259,
+      "y": -20.82,
+      "z": -23.822,
+      "distLy": 31.72,
+      "stars": 1,
+      "spect": "K5",
+      "lum": 0.0073,
+      "sc": false,
+      "members": [
+        "Gliese 680"
+      ],
+      "lanes": 3,
+      "con": "Ara",
+      "continent": 2
+    },
+    {
+      "id": 253,
+      "name": "HIP 70185",
+      "x": -24.866,
+      "y": -17.667,
+      "z": -8.896,
+      "distLy": 31.77,
+      "stars": 1,
+      "spect": "",
+      "lum": 0.00034,
+      "sc": false,
+      "members": [
+        "HIP 70185"
+      ],
+      "lanes": 3,
+      "con": "Vir",
+      "continent": 12
+    },
+    {
+      "id": 254,
+      "name": "Gliese 239",
+      "x": -4.895,
+      "y": 29.908,
+      "z": 9.593,
+      "distLy": 31.79,
+      "stars": 1,
+      "spect": "M1:",
+      "lum": 0.01163,
+      "sc": false,
+      "members": [
+        "Gliese 239"
+      ],
+      "lanes": 3,
+      "con": "Gem",
+      "continent": 4
+    },
+    {
+      "id": 255,
+      "name": "12 Ophiuchi",
+      "x": -11.342,
+      "y": -29.685,
+      "z": -1.29,
+      "distLy": 31.8,
+      "stars": 1,
+      "spect": "K2V",
+      "lum": 0.40738,
+      "sc": true,
+      "members": [
+        "12 Ophiuchi"
+      ],
+      "lanes": 3,
+      "con": "Oph",
+      "continent": 9
+    },
+    {
+      "id": 256,
+      "name": "Gliese 102",
+      "x": 22.636,
+      "y": 17.942,
+      "z": 13.423,
+      "distLy": 31.85,
+      "stars": 1,
+      "spect": "M4",
+      "lum": 0.00054,
+      "sc": false,
+      "members": [
+        "Gliese 102"
+      ],
+      "lanes": 2,
+      "con": "Ari",
+      "continent": 11
+    },
+    {
+      "id": 257,
+      "name": "Gliese 1138",
+      "x": -24.708,
+      "y": 7.818,
+      "z": 18.517,
+      "distLy": 31.85,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00051,
+      "sc": false,
+      "members": [
+        "Gliese 1138"
+      ],
+      "lanes": 3,
+      "con": "LMi",
+      "continent": 8
+    },
+    {
+      "id": 258,
+      "name": "Gliese 638",
+      "x": -8.562,
+      "y": -25.26,
+      "z": 17.66,
+      "distLy": 31.99,
+      "stars": 1,
+      "spect": "K7V",
+      "lum": 0.04822,
+      "sc": false,
+      "members": [
+        "Gliese 638"
+      ],
+      "lanes": 2,
+      "con": "Her",
+      "continent": 5
+    },
+    {
+      "id": 259,
+      "name": "Gliese 1256",
+      "x": 19.935,
+      "y": -23.639,
+      "z": 8.574,
+      "distLy": 32.1,
+      "stars": 1,
+      "spect": "dM4-5",
+      "lum": 0.00036,
+      "sc": false,
+      "members": [
+        "Gliese 1256"
+      ],
+      "lanes": 2,
+      "con": "Del",
+      "continent": 1
+    },
+    {
+      "id": 260,
+      "name": "Añañuca",
+      "x": -18.643,
+      "y": 12.516,
+      "z": -23.072,
+      "distLy": 32.19,
+      "stars": 1,
+      "spect": "M1:",
+      "lum": 0.00693,
+      "sc": false,
+      "members": [
+        "Añañuca"
+      ],
+      "lanes": 2,
+      "con": "Vel",
+      "continent": 6
+    },
+    {
+      "id": 261,
+      "name": "Gliese 3049",
+      "x": 23.828,
+      "y": 4.57,
+      "z": -21.311,
+      "distLy": 32.29,
+      "stars": 1,
+      "spect": "M4",
+      "lum": 0.00049,
+      "sc": false,
+      "members": [
+        "Gliese 3049"
+      ],
+      "lanes": 2,
+      "con": "Phe",
+      "continent": 1
+    },
+    {
+      "id": 262,
+      "name": "Gliese 803",
+      "x": 18.216,
+      "y": -20.742,
+      "z": -16.811,
+      "distLy": 32.32,
+      "stars": 1,
+      "spect": "M1Ve",
+      "lum": 0.02559,
+      "sc": false,
+      "members": [
+        "Gliese 803"
+      ],
+      "lanes": 2,
+      "con": "Mic",
+      "continent": 1
+    },
+    {
+      "id": 263,
+      "name": "Gliese 2012",
+      "x": 29.438,
+      "y": 5.38,
+      "z": -12.304,
+      "distLy": 32.36,
+      "stars": 1,
+      "spect": "DQ9",
+      "lum": 0.00013,
+      "sc": false,
+      "members": [
+        "Gliese 2012"
+      ],
+      "lanes": 2,
+      "con": "Cet",
+      "continent": 11
+    },
+    {
+      "id": 264,
+      "name": "Gliese 49",
+      "x": 14.518,
+      "y": 4.07,
+      "z": 28.774,
+      "distLy": 32.49,
+      "stars": 1,
+      "spect": "K5V...",
+      "lum": 0.01295,
+      "sc": false,
+      "members": [
+        "Gliese 49"
+      ],
+      "lanes": 4,
+      "con": "Cas",
+      "continent": 3
+    },
+    {
+      "id": 265,
+      "name": "HIP 12703",
+      "x": 14.421,
+      "y": 12.453,
+      "z": -26.339,
+      "distLy": 32.51,
+      "stars": 1,
+      "spect": "",
+      "lum": 0.00118,
+      "sc": false,
+      "members": [
+        "HIP 12703"
+      ],
+      "lanes": 3,
+      "con": "Hor",
+      "continent": 6
+    },
+    {
+      "id": 266,
+      "name": "Gliese 678.1",
+      "x": -4.174,
+      "y": -32.118,
+      "z": 3.146,
+      "distLy": 32.54,
+      "stars": 1,
+      "spect": "M1V...",
+      "lum": 0.01607,
+      "sc": false,
+      "members": [
+        "Gliese 678.1"
+      ],
+      "lanes": 3,
+      "con": "Oph",
+      "continent": 9
+    },
+    {
+      "id": 267,
+      "name": "Gliese 3512",
+      "x": -10.694,
+      "y": 12.593,
+      "z": 28.046,
+      "distLy": 32.55,
+      "stars": 1,
+      "spect": "m",
+      "lum": 8E-05,
+      "sc": false,
+      "members": [
+        "Gliese 3512"
+      ],
+      "lanes": 2,
+      "con": "UMa",
+      "continent": 10
+    },
+    {
+      "id": 268,
+      "name": "HIP 117828",
+      "x": 8.085,
+      "y": -0.218,
+      "z": -31.573,
+      "distLy": 32.59,
+      "stars": 1,
+      "spect": "M...",
+      "lum": 0.00877,
+      "sc": false,
+      "members": [
+        "HIP 117828"
+      ],
+      "lanes": 2,
+      "con": "Oct",
+      "continent": 6
+    },
+    {
+      "id": 269,
+      "name": "Gliese 1028",
+      "x": 29.763,
+      "y": 8.659,
+      "z": -10.146,
+      "distLy": 32.62,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00014,
+      "sc": false,
+      "members": [
+        "Gliese 1028"
+      ],
+      "lanes": 3,
+      "con": "Cet",
+      "continent": 11
+    },
+    {
+      "id": 270,
+      "name": "Gliese 3119",
+      "x": 28.696,
+      "y": 15.108,
+      "z": -3.477,
+      "distLy": 32.62,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00013,
+      "sc": false,
+      "members": [
+        "Gliese 3119"
+      ],
+      "lanes": 2,
+      "con": "Cet",
+      "continent": 11
+    },
+    {
+      "id": 271,
+      "name": "Gliese 3126",
+      "x": 12.434,
+      "y": 7.292,
+      "z": 29.257,
+      "distLy": 32.62,
+      "stars": 1,
+      "spect": "M4",
+      "lum": 0.00337,
+      "sc": false,
+      "members": [
+        "Gliese 3126"
+      ],
+      "lanes": 5,
+      "con": "Cas",
+      "continent": 3
+    },
+    {
+      "id": 272,
+      "name": "Gliese 3304",
+      "x": 10.041,
+      "y": 26.928,
+      "z": 15.422,
+      "distLy": 32.62,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00085,
+      "sc": false,
+      "members": [
+        "Gliese 3304"
+      ],
+      "lanes": 3,
+      "con": "Tau",
+      "continent": 4
+    },
+    {
+      "id": 273,
+      "name": "Gliese 3959",
+      "x": -9.309,
+      "y": -22.842,
+      "z": 21.339,
+      "distLy": 32.62,
+      "stars": 1,
+      "spect": "m+",
+      "lum": 0.00011,
+      "sc": false,
+      "members": [
+        "Gliese 3959"
+      ],
+      "lanes": 2,
+      "con": "Her",
+      "continent": 5
+    },
+    {
+      "id": 274,
+      "name": "Gliese 3976",
+      "x": -8.944,
+      "y": -28.786,
+      "z": 12.455,
+      "distLy": 32.62,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.0002,
+      "sc": false,
+      "members": [
+        "Gliese 3976"
+      ],
+      "lanes": 2,
+      "con": "Her",
+      "continent": 5
+    },
+    {
+      "id": 275,
+      "name": "Gliese 4248",
+      "x": 22.674,
+      "y": -12.764,
+      "z": -19.666,
+      "distLy": 32.62,
+      "stars": 1,
+      "spect": "M3.5",
+      "lum": 0.00166,
+      "sc": false,
+      "members": [
+        "Gliese 4248"
+      ],
+      "lanes": 2,
+      "con": "Gru",
+      "continent": 1
+    },
+    {
+      "id": 276,
+      "name": "Gliese 352",
+      "x": -25.304,
+      "y": 19.185,
+      "z": -7.617,
+      "distLy": 32.65,
+      "stars": 2,
+      "spect": "M2",
+      "lum": 0.01289,
+      "sc": true,
+      "members": [
+        "Gliese 352",
+        "Gliese 352B"
+      ],
+      "lanes": 3,
+      "con": "Hya",
+      "continent": 13
+    },
+    {
+      "id": 277,
+      "name": "Gliese 536",
+      "x": -28.22,
+      "y": -16.466,
+      "z": -1.515,
+      "distLy": 32.71,
+      "stars": 1,
+      "spect": "K5",
+      "lum": 0.01144,
+      "sc": false,
+      "members": [
+        "Gliese 536"
+      ],
+      "lanes": 2,
+      "con": "Vir",
+      "continent": 12
+    },
+    {
+      "id": 278,
+      "name": "Gliese 609",
+      "x": -15.028,
+      "y": -26.794,
+      "z": 11.54,
+      "distLy": 32.81,
+      "stars": 1,
+      "spect": "M3",
+      "lum": 0.00083,
+      "sc": false,
+      "members": [
+        "Gliese 609"
+      ],
+      "lanes": 2,
+      "con": "Her",
+      "continent": 5
+    },
+    {
+      "id": 279,
+      "name": "HIP 68184",
+      "x": -13.651,
+      "y": -7.687,
+      "z": 28.845,
+      "distLy": 32.83,
+      "stars": 1,
+      "spect": "K3V",
+      "lum": 0.22367,
+      "sc": true,
+      "members": [
+        "HIP 68184"
+      ],
+      "lanes": 2,
+      "con": "UMa",
+      "continent": 10
+    },
+    {
+      "id": 280,
+      "name": "Gliese 22",
+      "x": 12.575,
+      "y": 1.795,
+      "z": 30.272,
+      "distLy": 32.83,
+      "stars": 2,
+      "spect": "M2.5Ve",
+      "lum": 0.00786,
+      "sc": true,
+      "members": [
+        "Gliese 22",
+        "Gliese 22B"
+      ],
+      "lanes": 5,
+      "con": "Cas",
+      "continent": 3
+    },
+    {
+      "id": 281,
+      "name": "Gliese 75",
+      "x": 12.9,
+      "y": 6.555,
+      "z": 29.476,
+      "distLy": 32.84,
+      "stars": 1,
+      "spect": "K0V",
+      "lum": 0.49431,
+      "sc": true,
+      "members": [
+        "Gliese 75"
+      ],
+      "lanes": 4,
+      "con": "Cas",
+      "continent": 3
+    },
+    {
+      "id": 282,
+      "name": "Gliese 3079",
+      "x": 31.295,
+      "y": 10.239,
+      "z": -1.067,
+      "distLy": 32.95,
+      "stars": 1,
+      "spect": "DAwk",
+      "lum": 0.00021,
+      "sc": false,
+      "members": [
+        "Gliese 3079"
+      ],
+      "lanes": 2,
+      "con": "Cet",
+      "continent": 11
+    },
+    {
+      "id": 283,
+      "name": "Gliese 172",
+      "x": 6.993,
+      "y": 18.625,
+      "z": 26.299,
+      "distLy": 32.98,
+      "stars": 1,
+      "spect": "K8V",
+      "lum": 0.03174,
+      "sc": false,
+      "members": [
+        "Gliese 172"
+      ],
+      "lanes": 2,
+      "con": "Cam",
+      "continent": 10
+    },
+    {
+      "id": 284,
+      "name": "Noquisi",
+      "x": -29.458,
+      "y": 2.294,
+      "z": 14.865,
+      "distLy": 33.08,
+      "stars": 1,
+      "spect": "M3",
+      "lum": 0.00483,
+      "sc": false,
+      "members": [
+        "Noquisi"
+      ],
+      "lanes": 3,
+      "con": "Leo",
+      "continent": 8
+    },
+    {
+      "id": 285,
+      "name": "Gliese 453",
+      "x": -29.33,
+      "y": 0.264,
+      "z": -15.404,
+      "distLy": 33.13,
+      "stars": 1,
+      "spect": "K4V",
+      "lum": 0.14375,
+      "sc": true,
+      "members": [
+        "Gliese 453"
+      ],
+      "lanes": 3,
+      "con": "Hya",
+      "continent": 12
+    },
+    {
+      "id": 286,
+      "name": "Gliese 568",
+      "x": -22.052,
+      "y": -20.901,
+      "z": 13.246,
+      "distLy": 33.15,
+      "stars": 2,
+      "spect": "",
+      "lum": 0.00296,
+      "sc": true,
+      "members": [
+        "Gliese 568",
+        "Gliese 568B"
+      ],
+      "lanes": 2,
+      "con": "Boo",
+      "continent": 5
+    },
+    {
+      "id": 287,
+      "name": "Gliese 1235",
+      "x": 10.806,
+      "y": -29.041,
+      "z": 11.811,
+      "distLy": 33.15,
+      "stars": 1,
+      "spect": "k-m",
+      "lum": 0.0004,
+      "sc": false,
+      "members": [
+        "Gliese 1235"
+      ],
+      "lanes": 3,
+      "con": "Vul",
+      "continent": 5
+    },
+    {
+      "id": 288,
+      "name": "Gliese 3526",
+      "x": -8.875,
+      "y": 8.653,
+      "z": 30.777,
+      "distLy": 33.18,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00078,
+      "sc": false,
+      "members": [
+        "Gliese 3526"
+      ],
+      "lanes": 3,
+      "con": "UMa",
+      "continent": 10
+    },
+    {
+      "id": 289,
+      "name": "Gliese 660",
+      "x": -6.921,
+      "y": -32.47,
+      "z": -1.073,
+      "distLy": 33.22,
+      "stars": 2,
+      "spect": "G",
+      "lum": 0.00372,
+      "sc": true,
+      "members": [
+        "Gliese 660",
+        "Gliese 660B"
+      ],
+      "lanes": 4,
+      "con": "Oph",
+      "continent": 9
+    },
+    {
+      "id": 290,
+      "name": "Gliese 852",
+      "x": 29.621,
+      "y": -14.237,
+      "z": -5.09,
+      "distLy": 33.25,
+      "stars": 2,
+      "spect": "dM4.5e",
+      "lum": 0.00055,
+      "sc": true,
+      "members": [
+        "Gliese 852",
+        "Gliese 852B"
+      ],
+      "lanes": 2,
+      "con": "Aqr",
+      "continent": 1
+    },
+    {
+      "id": 291,
+      "name": "Alpha Mensae",
+      "x": -0.391,
+      "y": 8.738,
+      "z": -32.091,
+      "distLy": 33.26,
+      "stars": 1,
+      "spect": "G5V",
+      "lum": 0.84178,
+      "sc": true,
+      "members": [
+        "Alpha Mensae"
+      ],
+      "lanes": 3,
+      "con": "Men",
+      "continent": 6
+    },
+    {
+      "id": 292,
+      "name": "Gliese 1129",
+      "x": -26.272,
+      "y": 17.588,
+      "z": -10.402,
+      "distLy": 33.28,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00083,
+      "sc": false,
+      "members": [
+        "Gliese 1129"
+      ],
+      "lanes": 2,
+      "con": "Hya",
+      "continent": 13
+    },
+    {
+      "id": 293,
+      "name": "Gliese 3571",
+      "x": -26.496,
+      "y": 16.249,
+      "z": 11.898,
+      "distLy": 33.28,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00022,
+      "sc": false,
+      "members": [
+        "Gliese 3571"
+      ],
+      "lanes": 2,
+      "con": "Leo",
+      "continent": 8
+    },
+    {
+      "id": 294,
+      "name": "Gliese 487",
+      "x": -13.183,
+      "y": -2.865,
+      "z": 30.458,
+      "distLy": 33.31,
+      "stars": 1,
+      "spect": "M4",
+      "lum": 0.00382,
+      "sc": false,
+      "members": [
+        "Gliese 487"
+      ],
+      "lanes": 3,
+      "con": "Dra",
+      "continent": 10
+    },
+    {
+      "id": 295,
+      "name": "Gliese 748",
+      "x": 10.321,
+      "y": -31.652,
+      "z": 1.679,
+      "distLy": 33.34,
+      "stars": 1,
+      "spect": "M4",
+      "lum": 0.00333,
+      "sc": false,
+      "members": [
+        "Gliese 748"
+      ],
+      "lanes": 2,
+      "con": "Aql",
+      "continent": 5
+    },
+    {
+      "id": 296,
+      "name": "Gliese 127.1",
+      "x": 8.212,
+      "y": 9.002,
+      "z": -31.095,
+      "distLy": 33.4,
+      "stars": 2,
+      "spect": "DA",
+      "lum": 0.00265,
+      "sc": true,
+      "members": [
+        "Gliese 127.1",
+        "Gliese 127.1B"
+      ],
+      "lanes": 2,
+      "con": "Hyi",
+      "continent": 6
+    },
+    {
+      "id": 297,
+      "name": "Gliese 3804",
+      "x": -28.452,
+      "y": -14.162,
+      "z": -10.307,
+      "distLy": 33.41,
+      "stars": 1,
+      "spect": "M:",
+      "lum": 0.00173,
+      "sc": false,
+      "members": [
+        "Gliese 3804"
+      ],
+      "lanes": 3,
+      "con": "Vir",
+      "continent": 12
+    },
+    {
+      "id": 298,
+      "name": "Gliese 846",
+      "x": 29.086,
+      "y": -16.428,
+      "z": 0.817,
+      "distLy": 33.41,
+      "stars": 1,
+      "spect": "M0",
+      "lum": 0.01964,
+      "sc": false,
+      "members": [
+        "Gliese 846"
+      ],
+      "lanes": 2,
+      "con": "Aqr",
+      "continent": 1
+    },
+    {
+      "id": 299,
+      "name": "Gliese 3182",
+      "x": 14.517,
+      "y": 13.138,
+      "z": 27.336,
+      "distLy": 33.62,
+      "stars": 1,
+      "spect": "DC9",
+      "lum": 7E-05,
+      "sc": false,
+      "members": [
+        "Gliese 3182"
+      ],
+      "lanes": 2,
+      "con": "Per",
+      "continent": 3
+    },
+    {
+      "id": 300,
+      "name": "Gliese 1083",
+      "x": 2.611,
+      "y": 30.506,
+      "z": 14.15,
+      "distLy": 33.73,
+      "stars": 1,
+      "spect": "m",
+      "lum": 0.00011,
+      "sc": false,
+      "members": [
+        "Gliese 1083"
+      ],
+      "lanes": 2,
+      "con": "Tau",
+      "continent": 4
+    }
+  ],
+  "lanes": [
+    {
+      "a": 134,
+      "b": 135,
+      "ly": 0,
+      "extra": false
+    },
+    {
+      "a": 79,
+      "b": 82,
+      "ly": 0.14,
+      "extra": false
+    },
+    {
+      "a": 64,
+      "b": 71,
+      "ly": 0.57,
+      "extra": false
+    },
+    {
+      "a": 223,
+      "b": 226,
+      "ly": 0.81,
+      "extra": false
+    },
+    {
+      "a": 271,
+      "b": 281,
+      "ly": 0.9,
+      "extra": false
+    },
+    {
+      "a": 133,
+      "b": 139,
+      "ly": 0.91,
+      "extra": false
+    },
+    {
+      "a": 189,
+      "b": 213,
+      "ly": 1.1,
+      "extra": false
+    },
+    {
+      "a": 16,
+      "b": 24,
+      "ly": 1.12,
+      "extra": false
+    },
+    {
+      "a": 137,
+      "b": 153,
+      "ly": 1.41,
+      "extra": false
+    },
+    {
+      "a": 23,
+      "b": 31,
+      "ly": 1.47,
+      "extra": false
+    },
+    {
+      "a": 81,
+      "b": 91,
+      "ly": 1.58,
+      "extra": false
+    },
+    {
+      "a": 21,
+      "b": 22,
+      "ly": 1.6,
+      "extra": false
+    },
+    {
+      "a": 93,
+      "b": 107,
+      "ly": 1.69,
+      "extra": false
+    },
+    {
+      "a": 10,
+      "b": 18,
+      "ly": 1.86,
+      "extra": false
+    },
+    {
+      "a": 42,
+      "b": 53,
+      "ly": 1.93,
+      "extra": false
+    },
+    {
+      "a": 39,
+      "b": 43,
+      "ly": 2.06,
+      "extra": false
+    },
+    {
+      "a": 184,
+      "b": 216,
+      "ly": 2.07,
+      "extra": false
+    },
+    {
+      "a": 200,
+      "b": 240,
+      "ly": 2.21,
+      "extra": false
+    },
+    {
+      "a": 199,
+      "b": 209,
+      "ly": 2.42,
+      "extra": false
+    },
+    {
+      "a": 177,
+      "b": 220,
+      "ly": 2.42,
+      "extra": false
+    },
+    {
+      "a": 159,
+      "b": 172,
+      "ly": 2.52,
+      "extra": false
+    },
+    {
+      "a": 75,
+      "b": 96,
+      "ly": 2.61,
+      "extra": false
+    },
+    {
+      "a": 45,
+      "b": 52,
+      "ly": 2.61,
+      "extra": false
+    },
+    {
+      "a": 65,
+      "b": 79,
+      "ly": 2.67,
+      "extra": false
+    },
+    {
+      "a": 215,
+      "b": 239,
+      "ly": 2.7,
+      "extra": false
+    },
+    {
+      "a": 71,
+      "b": 98,
+      "ly": 2.72,
+      "extra": false
+    },
+    {
+      "a": 58,
+      "b": 61,
+      "ly": 2.74,
+      "extra": false
+    },
+    {
+      "a": 65,
+      "b": 82,
+      "ly": 2.76,
+      "extra": false
+    },
+    {
+      "a": 249,
+      "b": 279,
+      "ly": 2.78,
+      "extra": false
+    },
+    {
+      "a": 175,
+      "b": 207,
+      "ly": 2.81,
+      "extra": false
+    },
+    {
+      "a": 216,
+      "b": 244,
+      "ly": 2.83,
+      "extra": false
+    },
+    {
+      "a": 183,
+      "b": 223,
+      "ly": 2.85,
+      "extra": false
+    },
+    {
+      "a": 183,
+      "b": 226,
+      "ly": 2.85,
+      "extra": false
+    },
+    {
+      "a": 227,
+      "b": 246,
+      "ly": 2.87,
+      "extra": false
+    },
+    {
+      "a": 23,
+      "b": 28,
+      "ly": 2.9,
+      "extra": false
+    },
+    {
+      "a": 28,
+      "b": 31,
+      "ly": 2.92,
+      "extra": false
+    },
+    {
+      "a": 118,
+      "b": 143,
+      "ly": 2.93,
+      "extra": false
+    },
+    {
+      "a": 235,
+      "b": 260,
+      "ly": 2.94,
+      "extra": false
+    },
+    {
+      "a": 163,
+      "b": 185,
+      "ly": 3,
+      "extra": false
+    },
+    {
+      "a": 165,
+      "b": 190,
+      "ly": 3.01,
+      "extra": false
+    },
+    {
+      "a": 47,
+      "b": 48,
+      "ly": 3.04,
+      "extra": false
+    },
+    {
+      "a": 264,
+      "b": 281,
+      "ly": 3.05,
+      "extra": false
+    },
+    {
+      "a": 212,
+      "b": 264,
+      "ly": 3.08,
+      "extra": false
+    },
+    {
+      "a": 64,
+      "b": 98,
+      "ly": 3.09,
+      "extra": false
+    },
+    {
+      "a": 242,
+      "b": 255,
+      "ly": 3.11,
+      "extra": false
+    },
+    {
+      "a": 66,
+      "b": 89,
+      "ly": 3.11,
+      "extra": false
+    },
+    {
+      "a": 43,
+      "b": 62,
+      "ly": 3.13,
+      "extra": false
+    },
+    {
+      "a": 60,
+      "b": 66,
+      "ly": 3.15,
+      "extra": false
+    },
+    {
+      "a": 242,
+      "b": 289,
+      "ly": 3.19,
+      "extra": false
+    },
+    {
+      "a": 85,
+      "b": 94,
+      "ly": 3.21,
+      "extra": false
+    },
+    {
+      "a": 70,
+      "b": 90,
+      "ly": 3.24,
+      "extra": false
+    },
+    {
+      "a": 132,
+      "b": 140,
+      "ly": 3.28,
+      "extra": false
+    },
+    {
+      "a": 66,
+      "b": 100,
+      "ly": 3.32,
+      "extra": false
+    },
+    {
+      "a": 109,
+      "b": 116,
+      "ly": 3.34,
+      "extra": false
+    },
+    {
+      "a": 196,
+      "b": 218,
+      "ly": 3.34,
+      "extra": false
+    },
+    {
+      "a": 264,
+      "b": 280,
+      "ly": 3.35,
+      "extra": false
+    },
+    {
+      "a": 276,
+      "b": 292,
+      "ly": 3.35,
+      "extra": false
+    },
+    {
+      "a": 7,
+      "b": 21,
+      "ly": 3.36,
+      "extra": false
+    },
+    {
+      "a": 242,
+      "b": 250,
+      "ly": 3.39,
+      "extra": false
+    },
+    {
+      "a": 197,
+      "b": 252,
+      "ly": 3.5,
+      "extra": false
+    },
+    {
+      "a": 136,
+      "b": 162,
+      "ly": 3.55,
+      "extra": false
+    },
+    {
+      "a": 67,
+      "b": 94,
+      "ly": 3.55,
+      "extra": false
+    },
+    {
+      "a": 184,
+      "b": 244,
+      "ly": 3.56,
+      "extra": false
+    },
+    {
+      "a": 115,
+      "b": 148,
+      "ly": 3.56,
+      "extra": false
+    },
+    {
+      "a": 1,
+      "b": 3,
+      "ly": 3.59,
+      "extra": false
+    },
+    {
+      "a": 75,
+      "b": 87,
+      "ly": 3.62,
+      "extra": false
+    },
+    {
+      "a": 120,
+      "b": 167,
+      "ly": 3.63,
+      "extra": false
+    },
+    {
+      "a": 139,
+      "b": 165,
+      "ly": 3.63,
+      "extra": false
+    },
+    {
+      "a": 7,
+      "b": 22,
+      "ly": 3.64,
+      "extra": false
+    },
+    {
+      "a": 116,
+      "b": 145,
+      "ly": 3.71,
+      "extra": false
+    },
+    {
+      "a": 60,
+      "b": 73,
+      "ly": 3.73,
+      "extra": false
+    },
+    {
+      "a": 56,
+      "b": 76,
+      "ly": 3.75,
+      "extra": false
+    },
+    {
+      "a": 25,
+      "b": 38,
+      "ly": 3.75,
+      "extra": false
+    },
+    {
+      "a": 91,
+      "b": 108,
+      "ly": 3.8,
+      "extra": false
+    },
+    {
+      "a": 120,
+      "b": 152,
+      "ly": 3.81,
+      "extra": false
+    },
+    {
+      "a": 250,
+      "b": 289,
+      "ly": 3.86,
+      "extra": false
+    },
+    {
+      "a": 264,
+      "b": 271,
+      "ly": 3.87,
+      "extra": false
+    },
+    {
+      "a": 24,
+      "b": 30,
+      "ly": 3.87,
+      "extra": false
+    },
+    {
+      "a": 170,
+      "b": 188,
+      "ly": 3.88,
+      "extra": false
+    },
+    {
+      "a": 5,
+      "b": 13,
+      "ly": 3.89,
+      "extra": false
+    },
+    {
+      "a": 263,
+      "b": 269,
+      "ly": 3.94,
+      "extra": false
+    },
+    {
+      "a": 180,
+      "b": 215,
+      "ly": 3.96,
+      "extra": false
+    },
+    {
+      "a": 213,
+      "b": 291,
+      "ly": 3.96,
+      "extra": false
+    },
+    {
+      "a": 37,
+      "b": 57,
+      "ly": 3.97,
+      "extra": false
+    },
+    {
+      "a": 92,
+      "b": 113,
+      "ly": 3.98,
+      "extra": false
+    },
+    {
+      "a": 245,
+      "b": 246,
+      "ly": 4.02,
+      "extra": false
+    },
+    {
+      "a": 81,
+      "b": 108,
+      "ly": 4.04,
+      "extra": false
+    },
+    {
+      "a": 17,
+      "b": 41,
+      "ly": 4.05,
+      "extra": false
+    },
+    {
+      "a": 5,
+      "b": 6,
+      "ly": 4.06,
+      "extra": false
+    },
+    {
+      "a": 12,
+      "b": 14,
+      "ly": 4.06,
+      "extra": false
+    },
+    {
+      "a": 53,
+      "b": 65,
+      "ly": 4.1,
+      "extra": false
+    },
+    {
+      "a": 26,
+      "b": 33,
+      "ly": 4.12,
+      "extra": false
+    },
+    {
+      "a": 65,
+      "b": 112,
+      "ly": 4.12,
+      "extra": false
+    },
+    {
+      "a": 82,
+      "b": 112,
+      "ly": 4.17,
+      "extra": false
+    },
+    {
+      "a": 243,
+      "b": 261,
+      "ly": 4.18,
+      "extra": false
+    },
+    {
+      "a": 48,
+      "b": 72,
+      "ly": 4.2,
+      "extra": false
+    },
+    {
+      "a": 31,
+      "b": 42,
+      "ly": 4.2,
+      "extra": false
+    },
+    {
+      "a": 136,
+      "b": 159,
+      "ly": 4.2,
+      "extra": false
+    },
+    {
+      "a": 27,
+      "b": 50,
+      "ly": 4.22,
+      "extra": false
+    },
+    {
+      "a": 191,
+      "b": 230,
+      "ly": 4.24,
+      "extra": false
+    },
+    {
+      "a": 79,
+      "b": 112,
+      "ly": 4.24,
+      "extra": false
+    },
+    {
+      "a": 87,
+      "b": 97,
+      "ly": 4.25,
+      "extra": false
+    },
+    {
+      "a": 197,
+      "b": 241,
+      "ly": 4.26,
+      "extra": false
+    },
+    {
+      "a": 90,
+      "b": 120,
+      "ly": 4.26,
+      "extra": false
+    },
+    {
+      "a": 60,
+      "b": 100,
+      "ly": 4.26,
+      "extra": false
+    },
+    {
+      "a": 192,
+      "b": 238,
+      "ly": 4.26,
+      "extra": false
+    },
+    {
+      "a": 137,
+      "b": 161,
+      "ly": 4.26,
+      "extra": false
+    },
+    {
+      "a": 159,
+      "b": 162,
+      "ly": 4.27,
+      "extra": false
+    },
+    {
+      "a": 127,
+      "b": 181,
+      "ly": 4.27,
+      "extra": false
+    },
+    {
+      "a": 19,
+      "b": 27,
+      "ly": 4.3,
+      "extra": false
+    },
+    {
+      "a": 14,
+      "b": 44,
+      "ly": 4.3,
+      "extra": false
+    },
+    {
+      "a": 39,
+      "b": 62,
+      "ly": 4.31,
+      "extra": false
+    },
+    {
+      "a": 210,
+      "b": 253,
+      "ly": 4.32,
+      "extra": false
+    },
+    {
+      "a": 0,
+      "b": 1,
+      "ly": 4.32,
+      "extra": false
+    },
+    {
+      "a": 12,
+      "b": 36,
+      "ly": 4.32,
+      "extra": false
+    },
+    {
+      "a": 13,
+      "b": 35,
+      "ly": 4.33,
+      "extra": false
+    },
+    {
+      "a": 217,
+      "b": 290,
+      "ly": 4.38,
+      "extra": false
+    },
+    {
+      "a": 200,
+      "b": 224,
+      "ly": 4.39,
+      "extra": false
+    },
+    {
+      "a": 4,
+      "b": 5,
+      "ly": 4.4,
+      "extra": false
+    },
+    {
+      "a": 95,
+      "b": 114,
+      "ly": 4.4,
+      "extra": false
+    },
+    {
+      "a": 155,
+      "b": 169,
+      "ly": 4.41,
+      "extra": false
+    },
+    {
+      "a": 83,
+      "b": 101,
+      "ly": 4.41,
+      "extra": false
+    },
+    {
+      "a": 224,
+      "b": 240,
+      "ly": 4.43,
+      "extra": false
+    },
+    {
+      "a": 214,
+      "b": 292,
+      "ly": 4.43,
+      "extra": false
+    },
+    {
+      "a": 212,
+      "b": 281,
+      "ly": 4.45,
+      "extra": false
+    },
+    {
+      "a": 258,
+      "b": 273,
+      "ly": 4.47,
+      "extra": false
+    },
+    {
+      "a": 32,
+      "b": 45,
+      "ly": 4.47,
+      "extra": false
+    },
+    {
+      "a": 146,
+      "b": 219,
+      "ly": 4.48,
+      "extra": false
+    },
+    {
+      "a": 240,
+      "b": 285,
+      "ly": 4.48,
+      "extra": false
+    },
+    {
+      "a": 122,
+      "b": 151,
+      "ly": 4.49,
+      "extra": false
+    },
+    {
+      "a": 10,
+      "b": 29,
+      "ly": 4.5,
+      "extra": false
+    },
+    {
+      "a": 219,
+      "b": 230,
+      "ly": 4.51,
+      "extra": false
+    },
+    {
+      "a": 247,
+      "b": 286,
+      "ly": 4.52,
+      "extra": false
+    },
+    {
+      "a": 133,
+      "b": 165,
+      "ly": 4.54,
+      "extra": false
+    },
+    {
+      "a": 125,
+      "b": 186,
+      "ly": 4.54,
+      "extra": false
+    },
+    {
+      "a": 141,
+      "b": 170,
+      "ly": 4.55,
+      "extra": false
+    },
+    {
+      "a": 244,
+      "b": 284,
+      "ly": 4.55,
+      "extra": false
+    },
+    {
+      "a": 67,
+      "b": 85,
+      "ly": 4.57,
+      "extra": false
+    },
+    {
+      "a": 124,
+      "b": 190,
+      "ly": 4.59,
+      "extra": false
+    },
+    {
+      "a": 16,
+      "b": 30,
+      "ly": 4.6,
+      "extra": false
+    },
+    {
+      "a": 84,
+      "b": 119,
+      "ly": 4.61,
+      "extra": false
+    },
+    {
+      "a": 153,
+      "b": 161,
+      "ly": 4.66,
+      "extra": false
+    },
+    {
+      "a": 212,
+      "b": 280,
+      "ly": 4.67,
+      "extra": false
+    },
+    {
+      "a": 23,
+      "b": 42,
+      "ly": 4.67,
+      "extra": false
+    },
+    {
+      "a": 12,
+      "b": 19,
+      "ly": 4.7,
+      "extra": false
+    },
+    {
+      "a": 4,
+      "b": 8,
+      "ly": 4.71,
+      "extra": false
+    },
+    {
+      "a": 53,
+      "b": 74,
+      "ly": 4.73,
+      "extra": false
+    },
+    {
+      "a": 210,
+      "b": 297,
+      "ly": 4.73,
+      "extra": false
+    },
+    {
+      "a": 30,
+      "b": 60,
+      "ly": 4.73,
+      "extra": false
+    },
+    {
+      "a": 147,
+      "b": 198,
+      "ly": 4.75,
+      "extra": false
+    },
+    {
+      "a": 32,
+      "b": 38,
+      "ly": 4.77,
+      "extra": false
+    },
+    {
+      "a": 174,
+      "b": 216,
+      "ly": 4.81,
+      "extra": false
+    },
+    {
+      "a": 280,
+      "b": 281,
+      "ly": 4.84,
+      "extra": false
+    },
+    {
+      "a": 157,
+      "b": 189,
+      "ly": 4.84,
+      "extra": false
+    },
+    {
+      "a": 212,
+      "b": 271,
+      "ly": 4.85,
+      "extra": false
+    },
+    {
+      "a": 83,
+      "b": 122,
+      "ly": 4.85,
+      "extra": false
+    },
+    {
+      "a": 19,
+      "b": 50,
+      "ly": 4.85,
+      "extra": false
+    },
+    {
+      "a": 194,
+      "b": 259,
+      "ly": 4.88,
+      "extra": false
+    },
+    {
+      "a": 18,
+      "b": 29,
+      "ly": 4.88,
+      "extra": false
+    },
+    {
+      "a": 138,
+      "b": 142,
+      "ly": 4.88,
+      "extra": false
+    },
+    {
+      "a": 186,
+      "b": 268,
+      "ly": 4.88,
+      "extra": false
+    },
+    {
+      "a": 12,
+      "b": 27,
+      "ly": 4.93,
+      "extra": false
+    },
+    {
+      "a": 146,
+      "b": 230,
+      "ly": 4.93,
+      "extra": false
+    },
+    {
+      "a": 164,
+      "b": 174,
+      "ly": 4.94,
+      "extra": false
+    },
+    {
+      "a": 61,
+      "b": 99,
+      "ly": 4.94,
+      "extra": false
+    },
+    {
+      "a": 80,
+      "b": 103,
+      "ly": 4.94,
+      "extra": false
+    },
+    {
+      "a": 89,
+      "b": 100,
+      "ly": 4.95,
+      "extra": false
+    },
+    {
+      "a": 111,
+      "b": 155,
+      "ly": 4.95,
+      "extra": false
+    },
+    {
+      "a": 121,
+      "b": 179,
+      "ly": 4.97,
+      "extra": false
+    },
+    {
+      "a": 152,
+      "b": 167,
+      "ly": 4.99,
+      "extra": false
+    },
+    {
+      "a": 58,
+      "b": 99,
+      "ly": 4.99,
+      "extra": false
+    },
+    {
+      "a": 16,
+      "b": 20,
+      "ly": 4.99,
+      "extra": false
+    },
+    {
+      "a": 181,
+      "b": 210,
+      "ly": 5,
+      "extra": false
+    },
+    {
+      "a": 121,
+      "b": 161,
+      "ly": 5.01,
+      "extra": false
+    },
+    {
+      "a": 41,
+      "b": 70,
+      "ly": 5.01,
+      "extra": false
+    },
+    {
+      "a": 206,
+      "b": 226,
+      "ly": 5.01,
+      "extra": false
+    },
+    {
+      "a": 183,
+      "b": 206,
+      "ly": 5.01,
+      "extra": false
+    },
+    {
+      "a": 174,
+      "b": 184,
+      "ly": 5.02,
+      "extra": false
+    },
+    {
+      "a": 189,
+      "b": 291,
+      "ly": 5.03,
+      "extra": false
+    },
+    {
+      "a": 266,
+      "b": 289,
+      "ly": 5.05,
+      "extra": false
+    },
+    {
+      "a": 129,
+      "b": 178,
+      "ly": 5.05,
+      "extra": false
+    },
+    {
+      "a": 29,
+      "b": 55,
+      "ly": 5.07,
+      "extra": false
+    },
+    {
+      "a": 124,
+      "b": 165,
+      "ly": 5.1,
+      "extra": false
+    },
+    {
+      "a": 279,
+      "b": 294,
+      "ly": 5.11,
+      "extra": false
+    },
+    {
+      "a": 7,
+      "b": 11,
+      "ly": 5.11,
+      "extra": false
+    },
+    {
+      "a": 217,
+      "b": 298,
+      "ly": 5.11,
+      "extra": false
+    },
+    {
+      "a": 44,
+      "b": 45,
+      "ly": 5.11,
+      "extra": false
+    },
+    {
+      "a": 267,
+      "b": 288,
+      "ly": 5.13,
+      "extra": false
+    },
+    {
+      "a": 28,
+      "b": 42,
+      "ly": 5.15,
+      "extra": false
+    },
+    {
+      "a": 15,
+      "b": 29,
+      "ly": 5.15,
+      "extra": false
+    },
+    {
+      "a": 75,
+      "b": 97,
+      "ly": 5.17,
+      "extra": false
+    },
+    {
+      "a": 125,
+      "b": 163,
+      "ly": 5.18,
+      "extra": false
+    },
+    {
+      "a": 253,
+      "b": 297,
+      "ly": 5.21,
+      "extra": false
+    },
+    {
+      "a": 166,
+      "b": 212,
+      "ly": 5.23,
+      "extra": false
+    },
+    {
+      "a": 255,
+      "b": 289,
+      "ly": 5.23,
+      "extra": false
+    },
+    {
+      "a": 20,
+      "b": 37,
+      "ly": 5.23,
+      "extra": false
+    },
+    {
+      "a": 51,
+      "b": 89,
+      "ly": 5.23,
+      "extra": false
+    },
+    {
+      "a": 78,
+      "b": 96,
+      "ly": 5.25,
+      "extra": false
+    },
+    {
+      "a": 222,
+      "b": 229,
+      "ly": 5.25,
+      "extra": false
+    },
+    {
+      "a": 15,
+      "b": 46,
+      "ly": 5.26,
+      "extra": false
+    },
+    {
+      "a": 42,
+      "b": 74,
+      "ly": 5.26,
+      "extra": false
+    },
+    {
+      "a": 8,
+      "b": 16,
+      "ly": 5.26,
+      "extra": false
+    },
+    {
+      "a": 136,
+      "b": 172,
+      "ly": 5.26,
+      "extra": false
+    },
+    {
+      "a": 241,
+      "b": 252,
+      "ly": 5.28,
+      "extra": false
+    },
+    {
+      "a": 154,
+      "b": 198,
+      "ly": 5.29,
+      "extra": false
+    },
+    {
+      "a": 203,
+      "b": 262,
+      "ly": 5.3,
+      "extra": false
+    },
+    {
+      "a": 42,
+      "b": 65,
+      "ly": 5.3,
+      "extra": false
+    },
+    {
+      "a": 45,
+      "b": 84,
+      "ly": 5.3,
+      "extra": false
+    },
+    {
+      "a": 111,
+      "b": 169,
+      "ly": 5.32,
+      "extra": false
+    },
+    {
+      "a": 41,
+      "b": 90,
+      "ly": 5.33,
+      "extra": false
+    },
+    {
+      "a": 146,
+      "b": 191,
+      "ly": 5.35,
+      "extra": false
+    },
+    {
+      "a": 66,
+      "b": 73,
+      "ly": 5.37,
+      "extra": false
+    },
+    {
+      "a": 127,
+      "b": 199,
+      "ly": 5.38,
+      "extra": false
+    },
+    {
+      "a": 22,
+      "b": 52,
+      "ly": 5.39,
+      "extra": false
+    },
+    {
+      "a": 148,
+      "b": 231,
+      "ly": 5.42,
+      "extra": false
+    },
+    {
+      "a": 4,
+      "b": 16,
+      "ly": 5.42,
+      "extra": false
+    },
+    {
+      "a": 157,
+      "b": 213,
+      "ly": 5.42,
+      "extra": false
+    },
+    {
+      "a": 80,
+      "b": 131,
+      "ly": 5.43,
+      "extra": false
+    },
+    {
+      "a": 16,
+      "b": 37,
+      "ly": 5.46,
+      "extra": false
+    },
+    {
+      "a": 160,
+      "b": 163,
+      "ly": 5.46,
+      "extra": false
+    },
+    {
+      "a": 11,
+      "b": 21,
+      "ly": 5.46,
+      "extra": false
+    },
+    {
+      "a": 19,
+      "b": 28,
+      "ly": 5.48,
+      "extra": false
+    },
+    {
+      "a": 22,
+      "b": 45,
+      "ly": 5.49,
+      "extra": false
+    },
+    {
+      "a": 214,
+      "b": 276,
+      "ly": 5.5,
+      "extra": false
+    },
+    {
+      "a": 22,
+      "b": 32,
+      "ly": 5.51,
+      "extra": false
+    },
+    {
+      "a": 20,
+      "b": 24,
+      "ly": 5.52,
+      "extra": false
+    },
+    {
+      "a": 2,
+      "b": 9,
+      "ly": 5.54,
+      "extra": false
+    },
+    {
+      "a": 44,
+      "b": 52,
+      "ly": 5.54,
+      "extra": false
+    },
+    {
+      "a": 246,
+      "b": 272,
+      "ly": 5.54,
+      "extra": false
+    },
+    {
+      "a": 99,
+      "b": 102,
+      "ly": 5.55,
+      "extra": false
+    },
+    {
+      "a": 117,
+      "b": 175,
+      "ly": 5.55,
+      "extra": false
+    },
+    {
+      "a": 119,
+      "b": 150,
+      "ly": 5.56,
+      "extra": false
+    },
+    {
+      "a": 8,
+      "b": 30,
+      "ly": 5.56,
+      "extra": false
+    },
+    {
+      "a": 200,
+      "b": 285,
+      "ly": 5.57,
+      "extra": false
+    },
+    {
+      "a": 10,
+      "b": 15,
+      "ly": 5.57,
+      "extra": false
+    },
+    {
+      "a": 49,
+      "b": 57,
+      "ly": 5.58,
+      "extra": false
+    },
+    {
+      "a": 101,
+      "b": 151,
+      "ly": 5.59,
+      "extra": false
+    },
+    {
+      "a": 182,
+      "b": 218,
+      "ly": 5.59,
+      "extra": false
+    },
+    {
+      "a": 271,
+      "b": 280,
+      "ly": 5.59,
+      "extra": false
+    },
+    {
+      "a": 227,
+      "b": 272,
+      "ly": 5.63,
+      "extra": false
+    },
+    {
+      "a": 161,
+      "b": 179,
+      "ly": 5.64,
+      "extra": false
+    },
+    {
+      "a": 139,
+      "b": 190,
+      "ly": 5.65,
+      "extra": false
+    },
+    {
+      "a": 129,
+      "b": 175,
+      "ly": 5.65,
+      "extra": false
+    },
+    {
+      "a": 130,
+      "b": 142,
+      "ly": 5.67,
+      "extra": false
+    },
+    {
+      "a": 179,
+      "b": 287,
+      "ly": 5.68,
+      "extra": false
+    },
+    {
+      "a": 236,
+      "b": 237,
+      "ly": 5.69,
+      "extra": false
+    },
+    {
+      "a": 13,
+      "b": 40,
+      "ly": 5.69,
+      "extra": false
+    },
+    {
+      "a": 206,
+      "b": 223,
+      "ly": 5.7,
+      "extra": false
+    },
+    {
+      "a": 170,
+      "b": 254,
+      "ly": 5.7,
+      "extra": false
+    },
+    {
+      "a": 223,
+      "b": 238,
+      "ly": 5.71,
+      "extra": false
+    },
+    {
+      "a": 17,
+      "b": 46,
+      "ly": 5.72,
+      "extra": false
+    },
+    {
+      "a": 147,
+      "b": 233,
+      "ly": 5.73,
+      "extra": false
+    },
+    {
+      "a": 70,
+      "b": 120,
+      "ly": 5.73,
+      "extra": false
+    },
+    {
+      "a": 20,
+      "b": 57,
+      "ly": 5.73,
+      "extra": false
+    },
+    {
+      "a": 87,
+      "b": 96,
+      "ly": 5.76,
+      "extra": false
+    },
+    {
+      "a": 24,
+      "b": 37,
+      "ly": 5.76,
+      "extra": false
+    },
+    {
+      "a": 62,
+      "b": 95,
+      "ly": 5.77,
+      "extra": false
+    },
+    {
+      "a": 8,
+      "b": 24,
+      "ly": 5.78,
+      "extra": false
+    },
+    {
+      "a": 33,
+      "b": 86,
+      "ly": 5.8,
+      "extra": false
+    },
+    {
+      "a": 70,
+      "b": 115,
+      "ly": 5.82,
+      "extra": false
+    },
+    {
+      "a": 31,
+      "b": 53,
+      "ly": 5.82,
+      "extra": false
+    },
+    {
+      "a": 134,
+      "b": 234,
+      "ly": 5.83,
+      "extra": false
+    },
+    {
+      "a": 135,
+      "b": 234,
+      "ly": 5.83,
+      "extra": false
+    },
+    {
+      "a": 180,
+      "b": 239,
+      "ly": 5.85,
+      "extra": false
+    },
+    {
+      "a": 244,
+      "b": 257,
+      "ly": 5.86,
+      "extra": false
+    },
+    {
+      "a": 151,
+      "b": 237,
+      "ly": 5.88,
+      "extra": false
+    },
+    {
+      "a": 101,
+      "b": 122,
+      "ly": 5.91,
+      "extra": false
+    },
+    {
+      "a": 11,
+      "b": 25,
+      "ly": 5.92,
+      "extra": false
+    },
+    {
+      "a": 88,
+      "b": 110,
+      "ly": 5.92,
+      "extra": false
+    },
+    {
+      "a": 131,
+      "b": 212,
+      "ly": 5.93,
+      "extra": false
+    },
+    {
+      "a": 172,
+      "b": 176,
+      "ly": 5.93,
+      "extra": false
+    },
+    {
+      "a": 53,
+      "b": 67,
+      "ly": 5.93,
+      "extra": false
+    },
+    {
+      "a": 168,
+      "b": 217,
+      "ly": 5.94,
+      "extra": false
+    },
+    {
+      "a": 0,
+      "b": 2,
+      "ly": 5.95,
+      "extra": false
+    },
+    {
+      "a": 117,
+      "b": 177,
+      "ly": 5.95,
+      "extra": false
+    },
+    {
+      "a": 31,
+      "b": 74,
+      "ly": 5.96,
+      "extra": false
+    },
+    {
+      "a": 164,
+      "b": 216,
+      "ly": 5.98,
+      "extra": false
+    },
+    {
+      "a": 21,
+      "b": 32,
+      "ly": 5.98,
+      "extra": false
+    },
+    {
+      "a": 144,
+      "b": 243,
+      "ly": 5.99,
+      "extra": false
+    },
+    {
+      "a": 50,
+      "b": 94,
+      "ly": 6,
+      "extra": false
+    },
+    {
+      "a": 36,
+      "b": 52,
+      "ly": 6,
+      "extra": false
+    },
+    {
+      "a": 173,
+      "b": 251,
+      "ly": 6.02,
+      "extra": false
+    },
+    {
+      "a": 270,
+      "b": 282,
+      "ly": 6.02,
+      "extra": false
+    },
+    {
+      "a": 159,
+      "b": 176,
+      "ly": 6.04,
+      "extra": false
+    },
+    {
+      "a": 110,
+      "b": 125,
+      "ly": 6.05,
+      "extra": false
+    },
+    {
+      "a": 22,
+      "b": 36,
+      "ly": 6.07,
+      "extra": false
+    },
+    {
+      "a": 121,
+      "b": 137,
+      "ly": 6.08,
+      "extra": false
+    },
+    {
+      "a": 67,
+      "b": 74,
+      "ly": 6.11,
+      "extra": false
+    },
+    {
+      "a": 148,
+      "b": 152,
+      "ly": 6.11,
+      "extra": false
+    },
+    {
+      "a": 124,
+      "b": 150,
+      "ly": 6.11,
+      "extra": false
+    },
+    {
+      "a": 15,
+      "b": 17,
+      "ly": 6.12,
+      "extra": false
+    },
+    {
+      "a": 3,
+      "b": 4,
+      "ly": 6.12,
+      "extra": false
+    },
+    {
+      "a": 192,
+      "b": 223,
+      "ly": 6.14,
+      "extra": false
+    },
+    {
+      "a": 54,
+      "b": 76,
+      "ly": 6.14,
+      "extra": false
+    },
+    {
+      "a": 37,
+      "b": 49,
+      "ly": 6.15,
+      "extra": false
+    },
+    {
+      "a": 185,
+      "b": 186,
+      "ly": 6.17,
+      "extra": false
+    },
+    {
+      "a": 107,
+      "b": 138,
+      "ly": 6.17,
+      "extra": false
+    },
+    {
+      "a": 104,
+      "b": 109,
+      "ly": 6.17,
+      "extra": false
+    },
+    {
+      "a": 188,
+      "b": 198,
+      "ly": 6.17,
+      "extra": false
+    },
+    {
+      "a": 143,
+      "b": 173,
+      "ly": 6.17,
+      "extra": false
+    },
+    {
+      "a": 171,
+      "b": 241,
+      "ly": 6.18,
+      "extra": false
+    },
+    {
+      "a": 60,
+      "b": 89,
+      "ly": 6.2,
+      "extra": false
+    },
+    {
+      "a": 35,
+      "b": 61,
+      "ly": 6.2,
+      "extra": false
+    },
+    {
+      "a": 99,
+      "b": 136,
+      "ly": 6.21,
+      "extra": false
+    },
+    {
+      "a": 123,
+      "b": 178,
+      "ly": 6.22,
+      "extra": false
+    },
+    {
+      "a": 17,
+      "b": 29,
+      "ly": 6.22,
+      "extra": false
+    },
+    {
+      "a": 51,
+      "b": 66,
+      "ly": 6.22,
+      "extra": false
+    },
+    {
+      "a": 120,
+      "b": 148,
+      "ly": 6.23,
+      "extra": false
+    },
+    {
+      "a": 124,
+      "b": 139,
+      "ly": 6.24,
+      "extra": false
+    },
+    {
+      "a": 188,
+      "b": 300,
+      "ly": 6.24,
+      "extra": false
+    },
+    {
+      "a": 11,
+      "b": 51,
+      "ly": 6.25,
+      "extra": false
+    },
+    {
+      "a": 84,
+      "b": 92,
+      "ly": 6.25,
+      "extra": false
+    },
+    {
+      "a": 73,
+      "b": 100,
+      "ly": 6.25,
+      "extra": false
+    },
+    {
+      "a": 180,
+      "b": 238,
+      "ly": 6.27,
+      "extra": false
+    },
+    {
+      "a": 173,
+      "b": 224,
+      "ly": 6.27,
+      "extra": false
+    },
+    {
+      "a": 258,
+      "b": 274,
+      "ly": 6.3,
+      "extra": false
+    },
+    {
+      "a": 182,
+      "b": 248,
+      "ly": 6.32,
+      "extra": false
+    },
+    {
+      "a": 290,
+      "b": 298,
+      "ly": 6.32,
+      "extra": false
+    },
+    {
+      "a": 53,
+      "b": 79,
+      "ly": 6.33,
+      "extra": false
+    },
+    {
+      "a": 160,
+      "b": 185,
+      "ly": 6.34,
+      "extra": false
+    },
+    {
+      "a": 100,
+      "b": 147,
+      "ly": 6.34,
+      "extra": false
+    },
+    {
+      "a": 14,
+      "b": 27,
+      "ly": 6.35,
+      "extra": false
+    },
+    {
+      "a": 181,
+      "b": 199,
+      "ly": 6.35,
+      "extra": false
+    },
+    {
+      "a": 114,
+      "b": 157,
+      "ly": 6.36,
+      "extra": false
+    },
+    {
+      "a": 164,
+      "b": 184,
+      "ly": 6.37,
+      "extra": false
+    },
+    {
+      "a": 39,
+      "b": 95,
+      "ly": 6.37,
+      "extra": false
+    },
+    {
+      "a": 90,
+      "b": 152,
+      "ly": 6.37,
+      "extra": false
+    },
+    {
+      "a": 74,
+      "b": 88,
+      "ly": 6.38,
+      "extra": false
+    },
+    {
+      "a": 162,
+      "b": 172,
+      "ly": 6.38,
+      "extra": false
+    },
+    {
+      "a": 30,
+      "b": 66,
+      "ly": 6.38,
+      "extra": false
+    },
+    {
+      "a": 163,
+      "b": 186,
+      "ly": 6.39,
+      "extra": false
+    },
+    {
+      "a": 18,
+      "b": 55,
+      "ly": 6.4,
+      "extra": false
+    },
+    {
+      "a": 53,
+      "b": 82,
+      "ly": 6.4,
+      "extra": false
+    },
+    {
+      "a": 121,
+      "b": 169,
+      "ly": 6.41,
+      "extra": false
+    },
+    {
+      "a": 55,
+      "b": 103,
+      "ly": 6.42,
+      "extra": false
+    },
+    {
+      "a": 250,
+      "b": 255,
+      "ly": 6.42,
+      "extra": false
+    },
+    {
+      "a": 150,
+      "b": 217,
+      "ly": 6.43,
+      "extra": false
+    },
+    {
+      "a": 226,
+      "b": 238,
+      "ly": 6.44,
+      "extra": false
+    },
+    {
+      "a": 133,
+      "b": 190,
+      "ly": 6.44,
+      "extra": false
+    },
+    {
+      "a": 1,
+      "b": 2,
+      "ly": 6.44,
+      "extra": false
+    },
+    {
+      "a": 99,
+      "b": 146,
+      "ly": 6.46,
+      "extra": false
+    },
+    {
+      "a": 204,
+      "b": 294,
+      "ly": 6.46,
+      "extra": false
+    },
+    {
+      "a": 32,
+      "b": 52,
+      "ly": 6.46,
+      "extra": false
+    },
+    {
+      "a": 274,
+      "b": 278,
+      "ly": 6.47,
+      "extra": false
+    },
+    {
+      "a": 126,
+      "b": 129,
+      "ly": 6.47,
+      "extra": false
+    },
+    {
+      "a": 43,
+      "b": 95,
+      "ly": 6.47,
+      "extra": false
+    },
+    {
+      "a": 238,
+      "b": 239,
+      "ly": 6.48,
+      "extra": false
+    },
+    {
+      "a": 271,
+      "b": 299,
+      "ly": 6.5,
+      "extra": false
+    },
+    {
+      "a": 215,
+      "b": 234,
+      "ly": 6.5,
+      "extra": false
+    },
+    {
+      "a": 4,
+      "b": 24,
+      "ly": 6.5,
+      "extra": false
+    },
+    {
+      "a": 23,
+      "b": 53,
+      "ly": 6.5,
+      "extra": false
+    },
+    {
+      "a": 0,
+      "b": 3,
+      "ly": 6.51,
+      "extra": false
+    },
+    {
+      "a": 188,
+      "b": 254,
+      "ly": 6.51,
+      "extra": false
+    },
+    {
+      "a": 181,
+      "b": 297,
+      "ly": 6.51,
+      "extra": false
+    },
+    {
+      "a": 140,
+      "b": 222,
+      "ly": 6.53,
+      "extra": false
+    },
+    {
+      "a": 154,
+      "b": 192,
+      "ly": 6.53,
+      "extra": false
+    },
+    {
+      "a": 166,
+      "b": 280,
+      "ly": 6.54,
+      "extra": false
+    },
+    {
+      "a": 79,
+      "b": 93,
+      "ly": 6.54,
+      "extra": false
+    },
+    {
+      "a": 28,
+      "b": 74,
+      "ly": 6.54,
+      "extra": false
+    },
+    {
+      "a": 82,
+      "b": 93,
+      "ly": 6.54,
+      "extra": false
+    },
+    {
+      "a": 6,
+      "b": 13,
+      "ly": 6.55,
+      "extra": false
+    },
+    {
+      "a": 195,
+      "b": 284,
+      "ly": 6.55,
+      "extra": false
+    },
+    {
+      "a": 49,
+      "b": 104,
+      "ly": 6.57,
+      "extra": false
+    },
+    {
+      "a": 65,
+      "b": 78,
+      "ly": 6.57,
+      "extra": false
+    },
+    {
+      "a": 221,
+      "b": 228,
+      "ly": 6.59,
+      "extra": false
+    },
+    {
+      "a": 227,
+      "b": 245,
+      "ly": 6.59,
+      "extra": false
+    },
+    {
+      "a": 34,
+      "b": 93,
+      "ly": 6.59,
+      "extra": false
+    },
+    {
+      "a": 28,
+      "b": 53,
+      "ly": 6.59,
+      "extra": false
+    },
+    {
+      "a": 165,
+      "b": 211,
+      "ly": 6.59,
+      "extra": false
+    },
+    {
+      "a": 7,
+      "b": 12,
+      "ly": 6.61,
+      "extra": false
+    },
+    {
+      "a": 53,
+      "b": 112,
+      "ly": 6.63,
+      "extra": false
+    },
+    {
+      "a": 66,
+      "b": 69,
+      "ly": 6.63,
+      "extra": false
+    },
+    {
+      "a": 186,
+      "b": 225,
+      "ly": 6.64,
+      "extra": false
+    },
+    {
+      "a": 220,
+      "b": 239,
+      "ly": 6.64,
+      "extra": false
+    },
+    {
+      "a": 69,
+      "b": 100,
+      "ly": 6.66,
+      "extra": false
+    },
+    {
+      "a": 192,
+      "b": 226,
+      "ly": 6.67,
+      "extra": false
+    },
+    {
+      "a": 12,
+      "b": 44,
+      "ly": 6.67,
+      "extra": false
+    },
+    {
+      "a": 148,
+      "b": 167,
+      "ly": 6.68,
+      "extra": false
+    },
+    {
+      "a": 19,
+      "b": 36,
+      "ly": 6.69,
+      "extra": false
+    },
+    {
+      "a": 14,
+      "b": 45,
+      "ly": 6.7,
+      "extra": false
+    },
+    {
+      "a": 102,
+      "b": 172,
+      "ly": 6.7,
+      "extra": false
+    },
+    {
+      "a": 198,
+      "b": 233,
+      "ly": 6.71,
+      "extra": false
+    },
+    {
+      "a": 42,
+      "b": 67,
+      "ly": 6.72,
+      "extra": false
+    },
+    {
+      "a": 125,
+      "b": 185,
+      "ly": 6.73,
+      "extra": false
+    },
+    {
+      "a": 12,
+      "b": 22,
+      "ly": 6.73,
+      "extra": false
+    },
+    {
+      "a": 21,
+      "b": 52,
+      "ly": 6.74,
+      "extra": false
+    },
+    {
+      "a": 6,
+      "b": 20,
+      "ly": 6.75,
+      "extra": false
+    },
+    {
+      "a": 111,
+      "b": 121,
+      "ly": 6.75,
+      "extra": false
+    },
+    {
+      "a": 58,
+      "b": 106,
+      "ly": 6.76,
+      "extra": false
+    },
+    {
+      "a": 10,
+      "b": 55,
+      "ly": 6.77,
+      "extra": false
+    },
+    {
+      "a": 153,
+      "b": 236,
+      "ly": 6.77,
+      "extra": false
+    },
+    {
+      "a": 178,
+      "b": 207,
+      "ly": 6.78,
+      "extra": false
+    },
+    {
+      "a": 237,
+      "b": 273,
+      "ly": 6.79,
+      "extra": false
+    },
+    {
+      "a": 124,
+      "b": 133,
+      "ly": 6.8,
+      "extra": false
+    },
+    {
+      "a": 21,
+      "b": 45,
+      "ly": 6.82,
+      "extra": false
+    },
+    {
+      "a": 127,
+      "b": 209,
+      "ly": 6.84,
+      "extra": false
+    },
+    {
+      "a": 129,
+      "b": 207,
+      "ly": 6.86,
+      "extra": false
+    },
+    {
+      "a": 52,
+      "b": 84,
+      "ly": 6.88,
+      "extra": false
+    },
+    {
+      "a": 90,
+      "b": 101,
+      "ly": 6.88,
+      "extra": false
+    },
+    {
+      "a": 184,
+      "b": 284,
+      "ly": 6.89,
+      "extra": false
+    },
+    {
+      "a": 126,
+      "b": 175,
+      "ly": 6.89,
+      "extra": false
+    },
+    {
+      "a": 143,
+      "b": 224,
+      "ly": 6.91,
+      "extra": false
+    },
+    {
+      "a": 47,
+      "b": 72,
+      "ly": 6.92,
+      "extra": false
+    },
+    {
+      "a": 11,
+      "b": 22,
+      "ly": 6.92,
+      "extra": false
+    },
+    {
+      "a": 109,
+      "b": 145,
+      "ly": 6.93,
+      "extra": false
+    },
+    {
+      "a": 115,
+      "b": 120,
+      "ly": 6.95,
+      "extra": false
+    },
+    {
+      "a": 61,
+      "b": 106,
+      "ly": 7.02,
+      "extra": true
+    },
+    {
+      "a": 47,
+      "b": 49,
+      "ly": 7.03,
+      "extra": true
+    },
+    {
+      "a": 141,
+      "b": 254,
+      "ly": 7.05,
+      "extra": true
+    },
+    {
+      "a": 171,
+      "b": 197,
+      "ly": 7.07,
+      "extra": true
+    },
+    {
+      "a": 221,
+      "b": 270,
+      "ly": 7.09,
+      "extra": true
+    },
+    {
+      "a": 68,
+      "b": 85,
+      "ly": 7.11,
+      "extra": true
+    },
+    {
+      "a": 41,
+      "b": 59,
+      "ly": 7.15,
+      "extra": true
+    },
+    {
+      "a": 124,
+      "b": 168,
+      "ly": 7.15,
+      "extra": true
+    },
+    {
+      "a": 112,
+      "b": 171,
+      "ly": 7.16,
+      "extra": true
+    },
+    {
+      "a": 216,
+      "b": 257,
+      "ly": 7.22,
+      "extra": true
+    },
+    {
+      "a": 132,
+      "b": 229,
+      "ly": 7.26,
+      "extra": true
+    },
+    {
+      "a": 128,
+      "b": 144,
+      "ly": 7.29,
+      "extra": true
+    },
+    {
+      "a": 242,
+      "b": 266,
+      "ly": 7.29,
+      "extra": true
+    },
+    {
+      "a": 34,
+      "b": 79,
+      "ly": 7.33,
+      "extra": true
+    },
+    {
+      "a": 9,
+      "b": 27,
+      "ly": 7.36,
+      "extra": true
+    },
+    {
+      "a": 185,
+      "b": 268,
+      "ly": 7.37,
+      "extra": true
+    },
+    {
+      "a": 199,
+      "b": 285,
+      "ly": 7.44,
+      "extra": true
+    },
+    {
+      "a": 84,
+      "b": 123,
+      "ly": 7.46,
+      "extra": true
+    },
+    {
+      "a": 126,
+      "b": 256,
+      "ly": 7.46,
+      "extra": true
+    },
+    {
+      "a": 8,
+      "b": 26,
+      "ly": 7.47,
+      "extra": true
+    },
+    {
+      "a": 54,
+      "b": 93,
+      "ly": 7.47,
+      "extra": true
+    },
+    {
+      "a": 143,
+      "b": 251,
+      "ly": 7.5,
+      "extra": true
+    },
+    {
+      "a": 175,
+      "b": 256,
+      "ly": 7.53,
+      "extra": true
+    },
+    {
+      "a": 162,
+      "b": 277,
+      "ly": 7.54,
+      "extra": true
+    },
+    {
+      "a": 249,
+      "b": 294,
+      "ly": 7.59,
+      "extra": true
+    },
+    {
+      "a": 187,
+      "b": 222,
+      "ly": 7.6,
+      "extra": true
+    },
+    {
+      "a": 202,
+      "b": 235,
+      "ly": 7.6,
+      "extra": true
+    },
+    {
+      "a": 160,
+      "b": 265,
+      "ly": 7.6,
+      "extra": true
+    },
+    {
+      "a": 59,
+      "b": 90,
+      "ly": 7.63,
+      "extra": true
+    },
+    {
+      "a": 138,
+      "b": 266,
+      "ly": 7.64,
+      "extra": true
+    },
+    {
+      "a": 115,
+      "b": 231,
+      "ly": 7.66,
+      "extra": true
+    },
+    {
+      "a": 63,
+      "b": 132,
+      "ly": 7.73,
+      "extra": true
+    },
+    {
+      "a": 104,
+      "b": 195,
+      "ly": 7.75,
+      "extra": true
+    },
+    {
+      "a": 5,
+      "b": 40,
+      "ly": 7.76,
+      "extra": true
+    },
+    {
+      "a": 54,
+      "b": 56,
+      "ly": 7.76,
+      "extra": true
+    },
+    {
+      "a": 191,
+      "b": 286,
+      "ly": 7.79,
+      "extra": true
+    },
+    {
+      "a": 248,
+      "b": 276,
+      "ly": 7.8,
+      "extra": true
+    },
+    {
+      "a": 193,
+      "b": 196,
+      "ly": 7.83,
+      "extra": true
+    },
+    {
+      "a": 144,
+      "b": 261,
+      "ly": 7.9,
+      "extra": true
+    },
+    {
+      "a": 229,
+      "b": 283,
+      "ly": 7.92,
+      "extra": true
+    },
+    {
+      "a": 82,
+      "b": 130,
+      "ly": 7.93,
+      "extra": true
+    },
+    {
+      "a": 105,
+      "b": 113,
+      "ly": 7.99,
+      "extra": true
+    },
+    {
+      "a": 118,
+      "b": 224,
+      "ly": 8.15,
+      "extra": true
+    },
+    {
+      "a": 253,
+      "b": 277,
+      "ly": 8.2,
+      "extra": true
+    },
+    {
+      "a": 128,
+      "b": 211,
+      "ly": 8.24,
+      "extra": true
+    },
+    {
+      "a": 221,
+      "b": 269,
+      "ly": 8.27,
+      "extra": true
+    },
+    {
+      "a": 86,
+      "b": 156,
+      "ly": 8.31,
+      "extra": true
+    },
+    {
+      "a": 204,
+      "b": 288,
+      "ly": 8.34,
+      "extra": true
+    },
+    {
+      "a": 272,
+      "b": 300,
+      "ly": 8.34,
+      "extra": true
+    },
+    {
+      "a": 27,
+      "b": 68,
+      "ly": 8.36,
+      "extra": true
+    },
+    {
+      "a": 211,
+      "b": 263,
+      "ly": 8.36,
+      "extra": true
+    },
+    {
+      "a": 193,
+      "b": 233,
+      "ly": 8.44,
+      "extra": true
+    },
+    {
+      "a": 193,
+      "b": 208,
+      "ly": 8.52,
+      "extra": true
+    },
+    {
+      "a": 265,
+      "b": 296,
+      "ly": 8.55,
+      "extra": true
+    },
+    {
+      "a": 98,
+      "b": 187,
+      "ly": 8.58,
+      "extra": true
+    },
+    {
+      "a": 222,
+      "b": 267,
+      "ly": 8.6,
+      "extra": true
+    },
+    {
+      "a": 291,
+      "b": 296,
+      "ly": 8.66,
+      "extra": true
+    },
+    {
+      "a": 110,
+      "b": 225,
+      "ly": 8.68,
+      "extra": true
+    },
+    {
+      "a": 77,
+      "b": 81,
+      "ly": 8.7,
+      "extra": true
+    },
+    {
+      "a": 205,
+      "b": 252,
+      "ly": 8.77,
+      "extra": true
+    },
+    {
+      "a": 196,
+      "b": 208,
+      "ly": 8.87,
+      "extra": true
+    },
+    {
+      "a": 105,
+      "b": 201,
+      "ly": 9.13,
+      "extra": true
+    },
+    {
+      "a": 63,
+      "b": 80,
+      "ly": 9.26,
+      "extra": true
+    },
+    {
+      "a": 92,
+      "b": 158,
+      "ly": 9.27,
+      "extra": true
+    },
+    {
+      "a": 69,
+      "b": 77,
+      "ly": 9.29,
+      "extra": true
+    },
+    {
+      "a": 269,
+      "b": 282,
+      "ly": 9.34,
+      "extra": true
+    },
+    {
+      "a": 283,
+      "b": 299,
+      "ly": 9.37,
+      "extra": true
+    },
+    {
+      "a": 197,
+      "b": 205,
+      "ly": 9.49,
+      "extra": true
+    },
+    {
+      "a": 247,
+      "b": 278,
+      "ly": 9.5,
+      "extra": true
+    },
+    {
+      "a": 262,
+      "b": 275,
+      "ly": 9.57,
+      "extra": true
+    },
+    {
+      "a": 232,
+      "b": 288,
+      "ly": 9.78,
+      "extra": true
+    },
+    {
+      "a": 166,
+      "b": 232,
+      "ly": 9.78,
+      "extra": true
+    },
+    {
+      "a": 105,
+      "b": 194,
+      "ly": 9.82,
+      "extra": true
+    },
+    {
+      "a": 202,
+      "b": 260,
+      "ly": 9.88,
+      "extra": true
+    },
+    {
+      "a": 228,
+      "b": 234,
+      "ly": 9.9,
+      "extra": true
+    },
+    {
+      "a": 133,
+      "b": 275,
+      "ly": 9.93,
+      "extra": true
+    },
+    {
+      "a": 103,
+      "b": 158,
+      "ly": 10.17,
+      "extra": true
+    },
+    {
+      "a": 156,
+      "b": 265,
+      "ly": 10.18,
+      "extra": true
+    },
+    {
+      "a": 85,
+      "b": 203,
+      "ly": 10.18,
+      "extra": true
+    },
+    {
+      "a": 113,
+      "b": 201,
+      "ly": 10.2,
+      "extra": true
+    },
+    {
+      "a": 287,
+      "b": 295,
+      "ly": 10.48,
+      "extra": true
+    },
+    {
+      "a": 257,
+      "b": 293,
+      "ly": 10.87,
+      "extra": true
+    },
+    {
+      "a": 114,
+      "b": 149,
+      "ly": 10.95,
+      "extra": true
+    },
+    {
+      "a": 179,
+      "b": 295,
+      "ly": 11.05,
+      "extra": true
+    },
+    {
+      "a": 259,
+      "b": 287,
+      "ly": 11.09,
+      "extra": true
+    },
+    {
+      "a": 149,
+      "b": 202,
+      "ly": 11.41,
+      "extra": true
+    },
+    {
+      "a": 248,
+      "b": 293,
+      "ly": 12.15,
+      "extra": true
+    }
+  ],
+  "continents": [
+    {
+      "id": 0,
+      "name": "Solar Core",
+      "territories": 17,
+      "borders": 8,
+      "bonus": 6,
+      "neighbours": [
+        2,
+        4,
+        5,
+        6,
+        8
+      ]
+    },
+    {
+      "id": 1,
+      "name": "Aquarius Expanse",
+      "territories": 39,
+      "borders": 9,
+      "bonus": 10,
+      "neighbours": [
+        2,
+        3,
+        4,
+        5,
+        11
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Ara March",
+      "territories": 30,
+      "borders": 9,
+      "bonus": 8,
+      "neighbours": [
+        0,
+        1,
+        6,
+        9
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Cassiopeia Verge",
+      "territories": 19,
+      "borders": 5,
+      "bonus": 5,
+      "neighbours": [
+        1,
+        7,
+        10
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Orion Deep",
+      "territories": 33,
+      "borders": 5,
+      "bonus": 7,
+      "neighbours": [
+        0,
+        1,
+        11,
+        13
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Hercules Cluster",
+      "territories": 37,
+      "borders": 4,
+      "bonus": 8,
+      "neighbours": [
+        0,
+        1,
+        7,
+        12
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Tucana Drift",
+      "territories": 25,
+      "borders": 2,
+      "bonus": 5,
+      "neighbours": [
+        0,
+        2
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Draco Frontier",
+      "territories": 10,
+      "borders": 2,
+      "bonus": 2,
+      "neighbours": [
+        3,
+        5
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Ursa Major Shoals",
+      "territories": 17,
+      "borders": 2,
+      "bonus": 4,
+      "neighbours": [
+        0,
+        13
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Ophiuchus Gulf",
+      "territories": 13,
+      "borders": 2,
+      "bonus": 3,
+      "neighbours": [
+        2
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Camelopardalis Spur",
+      "territories": 16,
+      "borders": 3,
+      "bonus": 4,
+      "neighbours": [
+        3
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Cetus Hollow",
+      "territories": 21,
+      "borders": 4,
+      "bonus": 5,
+      "neighbours": [
+        1,
+        4
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Centaurus Rim",
+      "territories": 16,
+      "borders": 1,
+      "bonus": 3,
+      "neighbours": [
+        5
+      ]
+    },
+    {
+      "id": 13,
+      "name": "Hydra Crossing",
+      "territories": 8,
+      "borders": 3,
+      "bonus": 2,
+      "neighbours": [
+        4,
+        8
+      ]
+    }
+  ]
+}

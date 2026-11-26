@@ -1,0 +1,1209 @@
+<title>Three Hundred Suns</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: full-window 3D board; continent roster floats left, the selected system's card floats right. Single dark theme on purpose. */
+:root {
+  --void: #05070c; --panel: rgba(12, 17, 28, .88); --ink: #e6ecf5; --muted: #8b97ab; --line: #26314a; --gate: #f4e3b5; --sol: #ffe7a3;
+  --display: "Chakra Petch", "Arial Narrow", sans-serif; --body: "IBM Plex Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--void); color: var(--ink); font-family: var(--body); font-size: 14px; overflow: hidden; }
+#stage { position: fixed; inset: 0; }
+canvas { display: block; }
+#labels { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+.cnt { position: absolute; font-family: var(--mono); font-weight: 700; line-height: 1; white-space: nowrap; transform: translate(-50%, -50%); pointer-events: none; font-variant-numeric: tabular-nums; }
+.lbl { position: absolute; font: 500 10.5px var(--mono); color: var(--muted); white-space: nowrap; transform: translate(-50%, 0); text-shadow: 0 0 4px #000, 0 0 2px #000; }
+.lbl.sol { color: var(--sol); font-weight: 700; }
+.lbl.sel { color: #fff; font-weight: 700; }
+.clbl { position: absolute; font: 700 13px var(--display); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; transform: translate(-50%, -50%); text-shadow: 0 0 6px #000, 0 0 3px #000; opacity: .9; }
+.box { position: fixed; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; backdrop-filter: blur(6px); padding: 14px 16px; display: grid; gap: 10px; align-content: start; }
+#ctl { top: calc(12px + env(safe-area-inset-top, 0px)); left: max(12px, env(safe-area-inset-left, 0px)); width: min(340px, calc(100vw - 24px)); max-height: calc(100% - 70px); overflow: auto; }
+#info { top: calc(12px + env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); width: min(290px, calc(100vw - 24px)); max-height: calc(100% - 24px); overflow: auto; }
+h1 { margin: 0; font: 700 1.55rem/1 var(--display); letter-spacing: .04em; text-transform: uppercase; }
+h2 { margin: 0; font: 700 1.15rem/1.15 var(--display); letter-spacing: .02em; }
+.sub { color: var(--muted); font-size: .84rem; line-height: 1.45; margin: 0; }
+.eyebrow { font: 500 .68rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+label.chk { display: flex; gap: 6px; align-items: center; font-size: .84rem; cursor: pointer; }
+table { border-collapse: collapse; width: 100%; font-size: .8rem; }
+th { font: 500 .64rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+td { padding: 4px 6px; border-bottom: 1px solid rgba(38, 49, 74, .5); font-variant-numeric: tabular-nums; }
+td.n, th.n { text-align: right; font-family: var(--mono); }
+tr.cont { cursor: pointer; }
+tr.cont:hover td, tr.cont.on td { background: rgba(255, 255, 255, .06); }
+.chip { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 7px; vertical-align: -1px; }
+dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 0; font-size: .84rem; }
+dt { color: var(--muted); }
+dd { margin: 0; font-family: var(--mono); font-size: .8rem; overflow-wrap: anywhere; }
+ul.lanes { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font: .78rem var(--mono); }
+ul.lanes li { display: flex; justify-content: space-between; gap: 8px; cursor: pointer; padding: 2px 4px; border-radius: 3px; }
+ul.lanes li:hover { background: rgba(255, 255, 255, .06); }
+ul.lanes li.gate span:first-child { color: var(--gate); }
+button, select { font: 500 .78rem var(--mono); background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; padding: 5px 9px; cursor: pointer; }
+select { background: var(--void); flex: 1; min-width: 0; }
+button:focus-visible, select:focus-visible, input:focus-visible, tr.cont:focus-visible { outline: 2px solid var(--gate); outline-offset: 2px; }
+.credit { font-size: .7rem; color: var(--muted); line-height: 1.4; margin: 0; }
+.credit a { color: var(--muted); }
+.key { display: flex; gap: 14px; flex-wrap: wrap; font-size: .76rem; color: var(--muted); }
+.key i { display: inline-block; width: 14px; height: 2px; vertical-align: 3px; margin-right: 6px; }
+.gamebox { display: grid; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 5px; background: rgba(5, 7, 12, .55); }
+.gamebox h3 { margin: 0; font: 700 .95rem var(--display); letter-spacing: .04em; text-transform: uppercase; }
+.gamebox .row { gap: 8px; }
+.btn { font: 600 .8rem var(--mono); border-radius: 4px; padding: 6px 10px; cursor: pointer; border: 1px solid var(--line); background: rgba(255, 255, 255, .04); color: var(--ink); }
+.btn.go { background: var(--gate); color: #11161c; border-color: var(--gate); }
+.btn:disabled { opacity: .4; cursor: default; }
+.seats { display: grid; gap: 3px; font-size: .8rem; }
+.seat { display: flex; align-items: center; gap: 7px; padding: 2px 4px; border-radius: 3px; }
+.seat.turn { background: rgba(255, 255, 255, .08); font-weight: 600; }
+.seat .tag { margin-left: auto; font: .7rem var(--mono); color: var(--muted); }
+.games { display: grid; gap: 4px; }
+.gamerow { display: flex; align-items: center; gap: 8px; font-size: .8rem; padding: 4px 6px; border: 1px solid var(--line); border-radius: 4px; }
+.gamerow .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.log { max-height: 120px; overflow: auto; font: .74rem/1.45 var(--mono); color: var(--muted); display: grid; gap: 2px; }
+.pace { gap: 10px; align-items: center; }
+.pace .dot { display: grid; justify-items: center; gap: 3px; background: none; border: 0; padding: 2px 3px; cursor: pointer; color: var(--muted); font: .62rem var(--mono); text-transform: uppercase; letter-spacing: .06em; }
+.pace .dot i { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--muted); display: block; }
+.pace .dot.on { color: var(--gate); }
+.pace .dot.on i { background: var(--gate); border-color: var(--gate); box-shadow: 0 0 8px var(--gate); }
+.pace .dot:hover i { border-color: var(--ink); }
+.hand { display: grid; gap: 5px; }
+.card { font: 500 .72rem var(--mono); padding: 3px 6px; border-radius: 4px; border: 1px solid var(--line); background: rgba(255, 255, 255, .04); white-space: nowrap; }
+.card.k0 { border-color: #3fcf6a; } .card.k1 { border-color: #3e9bff; } .card.k2 { border-color: #ff8a2a; } .card.k3 { border-color: #f4e3b5; color: #f4e3b5; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
+.cardface { border: 1px solid var(--line); border-top: 3px solid var(--cc, var(--line)); border-radius: 6px; padding: 7px 8px; background: rgba(255, 255, 255, .035); display: grid; gap: 4px; font-size: .74rem; min-width: 0; }
+.cardface.k0 { --cc: #ff5a3c; } .cardface.k1 { --cc: #ffa340; } .cardface.k2 { --cc: #fff1b8; } .cardface.k3 { --cc: #f4e3b5; }
+.cardface .cf-top { display: flex; gap: 6px; align-items: center; font-size: .8rem; overflow-wrap: anywhere; }
+.cardface .cf-type { color: var(--muted); }
+.cardface dl { grid-template-columns: auto 1fr; gap: 1px 8px; font-size: .72rem; }
+.cardface dd { font-size: .7rem; }
+.cf-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; box-shadow: 0 0 6px currentColor; flex: none; }
+.cf-fact { margin: 0; font-size: .72rem; color: var(--gate); line-height: 1.35; }
+.dice { font: 600 .9rem var(--mono); letter-spacing: .1em; }
+.hint { font-size: .8rem; color: var(--gate); margin: 0; }
+.mini { font-size: .74rem; color: var(--muted); }
+input.num { width: 4.5em; font: .8rem var(--mono); background: var(--void); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; padding: 4px 6px; }
+input[type=color] { width: 30px; height: 24px; border: 1px solid var(--line); background: transparent; padding: 0 2px; border-radius: 4px; cursor: pointer; }
+.turnbar { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 5; width: min(560px, calc(100vw - 32px)); display: grid; gap: 6px; justify-items: center; text-align: center; padding: 14px 20px 16px; border-radius: 10px; background: rgba(8, 11, 19, .92); border: 2px solid var(--line); backdrop-filter: blur(8px); box-shadow: 0 10px 40px rgba(0, 0, 0, .6); }
+.turnbar .big { font: 700 clamp(1.4rem, 4vw, 2rem)/1 var(--display); letter-spacing: .08em; text-transform: uppercase; }
+.turnbar .what { font-size: .95rem; color: var(--ink); max-width: 46ch; }
+.turnbar.mine { border-color: var(--tb, var(--gate)); box-shadow: 0 0 0 1px var(--tb, var(--gate)), 0 0 34px color-mix(in srgb, var(--tb, var(--gate)) 45%, transparent), 0 10px 40px rgba(0, 0, 0, .6); }
+.turnbar.mine .big { color: var(--tb, var(--gate)); }
+.turnbar.wait .big { color: var(--muted); }
+.turnbar .row { justify-content: center; }
+.turnbar .btn { font-size: .9rem; padding: 8px 16px; }
+@media (prefers-reduced-motion: no-preference) { .turnbar.pop { animation: tbpop .9s ease-out 2; } .turnbar.shake { animation: tbshake .45s ease-in-out; } }
+@keyframes tbpop { 0% { transform: translateX(-50%) scale(1); } 35% { transform: translateX(-50%) scale(1.07); } 100% { transform: translateX(-50%) scale(1); } }
+@keyframes tbshake { 0%, 100% { transform: translateX(-50%); } 20% { transform: translateX(calc(-50% - 10px)); } 40% { transform: translateX(calc(-50% + 10px)); } 60% { transform: translateX(calc(-50% - 6px)); } 80% { transform: translateX(calc(-50% + 6px)); } }
+#hide { position: fixed; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); left: max(12px, env(safe-area-inset-left, 0px)); background: var(--panel); }
+@media (max-width: 700px) { #info { top: auto; bottom: calc(52px + env(safe-area-inset-bottom, 0px)); max-height: 38%; } #ctl { max-height: 48%; } }
+</style>
+
+<div id="stage"></div>
+<div id="labels"></div>
+
+<div class="box" id="ctl">
+  <div class="eyebrow">Star conquest map · real star positions</div>
+  <h1>Three Hundred Suns</h1>
+  <section id="game" class="gamebox" aria-live="polite"><p class="sub">Connecting to the game server…</p></section>
+  <p class="sub">Sol (Earth) and the 300 nearest star systems, out to 33.7 light years, placed where they really are. Each system is a territory. Hyperlanes join systems within 7 ly; any system left with fewer than two lanes gets lanes to its nearest neighbours. Continents are real clusters of neighbouring stars, named after the constellation most of their stars lie in. Gold lanes cross between continents.</p>
+  <div class="key"><span><i style="background:var(--gate)"></i>lane between continents</span><span><i style="background:#56607a"></i>lane inside a continent</span></div>
+  <div class="row">
+    <label for="players" class="eyebrow explore">Players</label>
+    <select id="players" class="explore" style="flex:0 0 auto"><option>2</option><option>3</option><option>4</option><option>5</option><option selected>6</option><option>7</option><option>8</option><option>10</option><option>12</option><option>16</option></select>
+    <button type="button" id="deal" class="explore">Deal a new game</button>
+  </div>
+  <p class="sub">Fleets orbit the systems they hold and merge into the biggest ships they can: frigate 1, destroyer 5, battleship 10, dreadnought 25 armies. A ship's size matches its mass, so a dreadnought is as heavy as 25 frigates.</p><p class="sub explore">With no game open this is an example deal: systems are shared out at random, each gets 1 ship, then each player places as many again, mostly on border systems.</p>
+  <div id="roster" class="key explore"></div>
+  <table>
+    <thead><tr><th>Continent</th><th class="n">Systems</th><th class="n">Borders</th><th class="n">Bonus</th><th class="n">Leader</th></tr></thead>
+    <tbody id="conts"></tbody>
+  </table>
+  <div class="row">
+    <label class="chk"><input type="checkbox" id="allNames"> All names</label>
+    <label class="chk"><input type="checkbox" id="drops"> Height lines</label>
+    <label class="chk"><input type="checkbox" id="spin"> Rotate</label>
+    <label class="chk"><input type="checkbox" id="ownerStars" checked> Stars show owner</label>
+  </div>
+  <div class="row"><label for="find" class="eyebrow">Go to</label><select id="find"></select></div>
+  <p class="credit">Bonus = (systems + 2 × border systems) / 6, rounded. Bigger, harder-to-hold continents pay more.<br>Positions: <a href="https://github.com/astronexus/HYG-Database" target="_blank" rel="noopener">HYG Database v4.1</a> by David Nash (astronexus), CC BY-SA 4.0. Luhman 16, WISE 0855-0714, Teegarden's Star and SCR 1845-6357 were added from published positions. Drag to orbit, scroll to zoom, click a star or a continent.</p>
+</div>
+
+<div class="box" id="info"></div>
+<div id="turnBar" class="turnbar" hidden aria-live="assertive"></div>
+<button id="hide" type="button">Hide panels</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const MAP = /*DATA*/null;
+const S = MAP.systems, n = S.length, C = MAP.continents;
+const disp = s => s.name === "Sol" ? "Sol (Earth)" : s.name;
+const P = S.map(s => new THREE.Vector3(s.x, s.z, -s.y));
+const hue = k => (k * 360 / C.length + 12) % 360;
+const ccss = (k, l = 62) => `hsl(${hue(k)}, 72%, ${l}%)`;
+const ccol = (k, l = .62) => new THREE.Color().setHSL(hue(k) / 360, .72, l);
+const adj = S.map(() => []);
+MAP.lanes.forEach(e => { adj[e.a].push({ j: e.b, d: e.ly }); adj[e.b].push({ j: e.a, d: e.ly }); });
+const isBorder = S.map((s, i) => adj[i].some(x => S[x.j].continent !== s.continent));
+
+const stage = document.getElementById("stage");
+const renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setPixelRatio(Math.min(2, devicePixelRatio)); stage.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color("#05070c");
+const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 800); camera.position.set(44, 34, 58);
+const controls = new THREE.OrbitControls(camera, renderer.domElement); controls.enableDamping = true; controls.dampingFactor = .08; controls.minDistance = 4; controls.maxDistance = 200;
+{ const ringMat = new THREE.LineBasicMaterial({ color: 0x161f36 });
+  for (const r of [10, 20, 30]) { const pts = []; for (let k = 0; k <= 160; k++) { const t = k / 160 * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(t) * r, 0, Math.sin(t) * r)); } scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), ringMat)); } }
+{ const g = new THREE.BufferGeometry(), v = []; let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let k = 0; k < 2000; k++) { const u = rnd() * 2 - 1, t = rnd() * Math.PI * 2, r = 300; v.push(Math.sqrt(1 - u * u) * Math.cos(t) * r, u * r, Math.sqrt(1 - u * u) * Math.sin(t) * r); }
+  g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3)); scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0x343f58, size: .8 }))); }
+
+const tex = (() => { const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d"); const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(.3, "rgba(255,255,255,.5)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
+const meshes = [], sprites = [];
+S.forEach((s, i) => {
+  const size = s.name === "Sol" ? .42 : Math.max(.16, Math.min(.5, .2 + Math.log10(1 + s.lum * 40) * .22));
+  const col = s.name === "Sol" ? new THREE.Color("#ffe7a3") : ccol(s.continent);
+  const m = new THREE.Mesh(new THREE.SphereGeometry(size, 14, 10), new THREE.MeshBasicMaterial({ color: col, transparent: true }));
+  m.position.copy(P[i]); m.userData.i = i; scene.add(m); meshes.push(m);
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: col, transparent: true, depthWrite: false, opacity: .7 }));
+  sp.scale.setScalar(size * 5.5); sp.position.copy(P[i]); scene.add(sp); sprites.push(sp);
+});
+// lanes: one LineSegments per continent (inside lanes) plus one for crossings, so highlighting is cheap
+const laneGroups = C.map(() => []), gates = [];
+MAP.lanes.forEach(e => { const ca = S[e.a].continent, cb = S[e.b].continent; (ca === cb ? laneGroups[ca] : gates).push(e); });
+const mkLines = (list, color, opacity) => { const v = []; list.forEach(e => v.push(P[e.a].x, P[e.a].y, P[e.a].z, P[e.b].x, P[e.b].y, P[e.b].z));
+  const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3));
+  const o = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color, transparent: true, opacity })); scene.add(o); return o; };
+const laneObjs = laneGroups.map((l, k) => mkLines(l, ccol(k, .45), .5));
+const gateObj = mkLines(gates, new THREE.Color("#f4e3b5"), .9);
+const dropGeo = new THREE.BufferGeometry(); { const v = []; P.forEach(p => v.push(p.x, p.y, p.z, p.x, 0, p.z)); dropGeo.setAttribute("position", new THREE.Float32BufferAttribute(v, 3)); }
+const drops = new THREE.LineSegments(dropGeo, new THREE.LineBasicMaterial({ color: 0x222c44 })); drops.visible = false; scene.add(drops);
+
+// ---- players, deal, and orbiting fleets ----
+// Each seat has a name, a main colour and a sub (highlight) colour. Example deals use this neon palette.
+const PALETTE = ["#ff4d5a", "#3e9bff", "#f5d90a", "#3fcf6a", "#b06bff", "#ff8a2a", "#22d3c5", "#ff6fb5", "#9dff3a", "#ffffff", "#5b6bff", "#ff3df2", "#00e5ff", "#ffb3a7", "#c9a227", "#7cffc4"];
+const PSUB = ["#ffe066", "#ffffff", "#ff4d5a", "#0b0f18", "#3fcf6a", "#3e9bff", "#ff6fb5", "#22d3c5", "#b06bff", "#ff4d5a", "#f5d90a", "#ffffff", "#ff8a2a", "#3e9bff", "#0b0f18", "#b06bff"];
+const PNAME = ["Crimson", "Azure", "Gold", "Jade", "Violet", "Ember", "Teal", "Rose", "Lime", "White", "Indigo", "Magenta", "Cyan", "Coral", "Brass", "Mint"];
+const HEX = /^#[0-9a-fA-F]{6}$/;
+let players = 6, seed = 1, owner = new Array(n).fill(0), armies = new Array(n).fill(1);
+let styles = [];   // per seat: {name, main, sub} — the example palette, or the live game's seats
+const exampleStyles = k => [...Array(k).keys()].map(i => ({ name: PNAME[i % 16], main: PALETTE[i % 16], sub: PSUB[i % 16], hull: ["triangle", "brick", "tube", "orb", "saucer"][i % 5] }));
+const st = p => p < 0 ? { name: "Unclaimed", main: "#3a4458", sub: "#3a4458" } : styles[p] || { name: PNAME[p % 16] || "Player", main: PALETTE[p % 16] || "#cccccc", sub: PSUB[p % 16] || "#ffffff" };
+const mainOf = p => HEX.test(st(p).main) ? st(p).main : "#cccccc";
+const subOf = p => HEX.test(st(p).sub) ? st(p).sub : "#ffffff";
+const swatch = (p, size = 10) => `<span class="chip" style="background:${mainOf(p)};box-shadow:0 0 0 1.5px ${subOf(p)};width:${size}px;height:${size}px"></span>`;
+const rng = s => () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+function deal() {
+  const r = rng(seed * 7919 + players);
+  const order = [...Array(n).keys()]; for (let i = n - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  order.forEach((sys, k) => { owner[sys] = k % players; armies[sys] = 1; });
+  for (let p = 0; p < players; p++) {
+    const mine = order.filter(i => owner[i] === p), w = mine.map(i => isBorder[i] || adj[i].some(x => owner[x.j] !== p) ? 4 : 1), tot = w.reduce((a, b) => a + b, 0);
+    for (let k = 0; k < mine.length; k++) { let x = r() * tot, i = 0; while ((x -= w[i]) > 0) i++; armies[mine[i]]++; }
+  }
+}
+function contLeader(k) {
+  const cnt = new Array(Math.max(players, 16)).fill(0); S.forEach((s, i) => { if (s.continent === k && owner[i] >= 0) cnt[owner[i]]++; });
+  const m = Math.max(...cnt); if (m === 0) return { p: -1, n: 0, full: false }; const p = cnt.indexOf(m); return { p, n: m, full: m === C[k].territories };
+}
+
+// ---- ship classes: value in armies; hulls sized so volume (mass) matches value: length ∝ cube root ----
+const CLASSES = [
+  { key: "frigate", name: "frigate", value: 1 },
+  { key: "destroyer", name: "destroyer", value: 5 },
+  { key: "battleship", name: "battleship", value: 10 },
+  { key: "dreadnought", name: "dreadnought", value: 25 },
+];
+const FRIGATE_LEN = 1.02;   // 3x the first size (Paul, 2026-11-25)
+CLASSES.forEach(c => c.len = FRIGATE_LEN * Math.cbrt(c.value));
+function merge(parts) {
+  const pos = [];
+  for (const g of parts) { const a = (g.index ? g.toNonIndexed() : g).getAttribute("position").array; for (let k = 0; k < a.length; k++) pos.push(a[k]); }
+  const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); return g;
+}
+const Z = g => { g.rotateX(Math.PI / 2); return g; };   // cylinders and cones point along +Z (nose forward)
+// ---- hull styles: each player picks one; every ship they own is that shape, sized by class ----
+// built about 1 unit across, nose toward +Z; the detail part (sub colour) is kept small
+const HULLS = [
+  { key: "triangle", name: "Triangle", glyph: "▲", make: () => ({
+      hull: merge([Z(new THREE.ConeGeometry(.5, 1, 3)).scale(1, .22, 1), new THREE.BoxGeometry(.13, .16, .2).translate(0, .1, -.28)]),
+      detail: merge([new THREE.BoxGeometry(.52, .05, .04).translate(0, 0, -.5), new THREE.BoxGeometry(.15, .03, .05).translate(0, .19, -.28)]) }) },
+  { key: "brick", name: "Brick", glyph: "■", make: () => ({
+      hull: merge([new THREE.BoxGeometry(.58, .58, .58)]),
+      detail: merge([[0, 1], [0, -1], [1, 0], [-1, 0]].map(([x, y]) => new THREE.BoxGeometry(x ? .02 : .2, y ? .02 : .2, .2).translate(x * .3, y * .3, .1))) }) },
+  { key: "tube", name: "Tube", glyph: "▬", make: () => ({
+      hull: merge([Z(new THREE.CylinderGeometry(.1, .1, 1.1, 12)), Z(new THREE.ConeGeometry(.1, .14, 12)).translate(0, 0, .62)]),
+      detail: merge([-.36, 0, .36].map(z => new THREE.TorusGeometry(.125, .025, 6, 18).translate(0, 0, z))) }) },
+  { key: "orb", name: "Orb", glyph: "●", make: () => ({
+      hull: merge([new THREE.IcosahedronGeometry(.34, 1)]),
+      detail: merge([new THREE.TorusGeometry(.355, .028, 6, 28).rotateX(Math.PI / 2)]) }) },
+  { key: "saucer", name: "Saucer", glyph: "◓", make: () => ({
+      hull: merge([new THREE.CylinderGeometry(.5, .44, .09, 30), new THREE.SphereGeometry(.19, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2).translate(0, .04, 0)]),
+      detail: merge([new THREE.TorusGeometry(.5, .026, 6, 36).rotateX(Math.PI / 2)]) }) },
+];
+const HULL_KEYS = HULLS.map(h => h.key);
+const hullOf = p => { const h = p >= 0 && styles[p] && styles[p].hull; return HULL_KEYS.includes(h) ? h : HULL_KEYS[Math.max(0, p) % HULLS.length]; };
+const MAXDRAW = { frigate: 4, destroyer: 2, battleship: 2, dreadnought: 6 };   // drawn per system; the card gives exact counts
+const fleetMeshes = {};   // "<hull>:<class index>" -> {hull, detail, count}
+HULLS.forEach(h => CLASSES.forEach((c, ci) => {
+  const d = h.make(); d.hull.scale(c.len, c.len, c.len); d.detail.scale(c.len, c.len, c.len);
+  const cap = n * MAXDRAW[c.key];
+  const hull = new THREE.InstancedMesh(d.hull, new THREE.MeshBasicMaterial({ color: 0xffffff }), cap);
+  const detail = new THREE.InstancedMesh(d.detail, new THREE.MeshBasicMaterial({ color: 0xffffff }), cap);
+  hull.frustumCulled = detail.frustumCulled = false; scene.add(hull, detail);
+  const w = new THREE.Color(1, 1, 1); hull.setColorAt(0, w); detail.setColorAt(0, w);   // colour buffers are sized from count, so make them while count is the full capacity
+  hull.count = detail.count = 0;
+  fleetMeshes[h.key + ":" + ci] = { hull, detail, count: 0 };
+}));
+const tilt = S.map((s, i) => { const r = rng(i * 131 + 7); return new THREE.Quaternion().setFromEuler(new THREE.Euler((r() - .5) * 1.3, r() * Math.PI * 2, (r() - .5) * 1.3)); });
+const starR = S.map(s => s.name === "Sol" ? .42 : Math.max(.16, Math.min(.5, .2 + Math.log10(1 + s.lum * 40) * .22)));
+// consolidate armies into the fewest, largest ships
+function fleetOf(a) { let left = a; const out = {}; for (const c of CLASSES.slice().reverse()) { out[c.key] = Math.floor(left / c.value); left -= out[c.key] * c.value; } return out; }
+// ---- persistent fleets with animation ----
+// Each system keeps its own ships between updates. On a change we diff the wanted ships against the ones there:
+// ships that stay keep orbiting; new ones launch from the sun, fly in along a lane, or emerge from a wreck;
+// lost ones explode (after the laser fire reaches them) or break apart into smaller ships.
+const clock = () => performance.now() / 1000;
+const ease = k => k * k * (3 - 2 * k);
+let fleet = S.map(() => []);   // per system: [{cls, hk, owner, r, phase, speed, from, t0, dur}]
+let dying = [];                // units shown until they explode or break apart: {u, i, die, kind}
+const dummy = new THREE.Object3D(), tmp = new THREE.Vector3(), ahead = new THREE.Vector3(), tgt = new THREE.Vector3();
+function orbitPos(u, i, t, out) { const a = u.phase + t * u.speed; return out.set(Math.cos(a) * u.r, 0, Math.sin(a) * u.r).applyQuaternion(tilt[i]).add(P[i]); }
+function unitPos(u, i, t, out) {
+  if (!u.from || t >= u.t0 + u.dur) return orbitPos(u, i, t, out);
+  orbitPos(u, i, t, tgt);
+  const k = Math.max(0, (t - u.t0) / u.dur);
+  return out.lerpVectors(u.from, tgt, ease(k));
+}
+function wanted(i) {   // ship classes this system should show, largest first
+  const out = []; if (owner[i] < 0) return out;
+  const fl = fleetOf(armies[i]);
+  for (let ci = CLASSES.length - 1; ci >= 0; ci--) for (let k = 0; k < Math.min(fl[CLASSES[ci].key], MAXDRAW[CLASSES[ci].key]); k++) out.push(ci);
+  return out;
+}
+const mkUnit = (i, ci, hk, from, t0, dur) => ({ cls: ci, hk, owner: owner[i], r: starR[i] * 2 + .7 + ci * .55 + (Math.random() < .5 ? 0 : .18), phase: Math.random() * Math.PI * 2, speed: [.9, .6, .42, .28][ci], from, t0, dur });
+function buildFleets(fx = []) {
+  const t = clock();
+  const rf = new Set(), moveTo = {}, moveFrom = new Set(), loss = {};
+  for (const f of fx) {
+    if (f.t === "rf") rf.add(f.s);
+    else if (f.t === "mv") { moveTo[f.to] = f.from; moveFrom.add(f.from); }
+    else if (f.t === "bt") {
+      loss[f.from] = (loss[f.from] || 0) + (f.la || 0); loss[f.to] = (loss[f.to] || 0) + (f.ld || 0);
+      if (f.cap) { moveTo[f.to] = f.from; moveFrom.add(f.from); }
+      fireBattle(f, t);
+    }
+  }
+  const pool = {};   // positions of ships that left or broke apart this update, per system
+  const plans = S.map((s, i) => {
+    const want = wanted(i), cur = fleet[i], hk = owner[i] >= 0 ? hullOf(owner[i]) : null;
+    const same = cur.length > 0 && cur[0].owner === owner[i] && cur[0].hk === hk;
+    const keep = [], removed = [], need = want.slice();
+    if (same) for (const u of cur) { const j = need.indexOf(u.cls); if (j >= 0) { need.splice(j, 1); keep.push(u); } else removed.push(u); }
+    else removed.push(...cur);
+    // losses explode (smallest first); a ship bigger than the remaining loss breaks apart instead; the rest leave or merge
+    let lossLeft = loss[i] || 0;
+    removed.sort((a, b) => a.cls - b.cls).forEach(u => {
+      const v = CLASSES[u.cls].value, p = unitPos(u, i, t, new THREE.Vector3());
+      if (lossLeft > 0 && v <= lossLeft) { lossLeft -= v; dying.push({ u, i, die: t + .45 + Math.random() * .45, kind: "boom" }); }
+      else if (lossLeft > 0) { lossLeft = 0; dying.push({ u, i, die: t + .55, kind: "break" }); (pool[i] = pool[i] || []).push({ p, at: t + .55 }); }
+      else (pool[i] = pool[i] || []).push({ p, at: t });
+    });
+    return { keep, need, hk };
+  });
+  plans.forEach((pl, i) => {
+    const units = pl.keep, src = moveTo[i];
+    pl.need.forEach((ci, k) => {
+      let from, t0 = t, dur;
+      if (src !== undefined) { const q = (pool[src] || []).shift(); from = q ? q.p : P[src].clone(); t0 = (q ? q.at : t) + k * .09; dur = 1.25 + Math.random() * .3; }
+      else if ((pool[i] || []).length) { const q = pool[i][k % pool[i].length]; from = q.p.clone(); t0 = q.at; dur = .75; }
+      else { from = P[i].clone(); t0 = t + k * (rf.has(i) ? .12 : .04); dur = rf.has(i) ? 1.1 : .9; }
+      units.push(mkUnit(i, ci, pl.hk, from, t0, dur));
+    });
+    fleet[i] = units;
+  });
+}
+// ---- laser fire ----
+const MAXBOLTS = 160;
+const boltGeo = new THREE.BufferGeometry();
+boltGeo.setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array(MAXBOLTS * 6), 3));
+boltGeo.setAttribute("color", new THREE.Float32BufferAttribute(new Float32Array(MAXBOLTS * 6), 3));
+const boltLines = new THREE.LineSegments(boltGeo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+boltLines.frustumCulled = false; scene.add(boltLines);
+let bolts = [];   // {s, e, t0, dur, c}
+function fireBattle(f, t) {
+  const shots = Math.min(16, 3 + ((f.la || 0) + (f.ld || 0)) * 2);
+  const ca = new THREE.Color(mainOf(f.a)), cd = new THREE.Color(f.d >= 0 ? mainOf(f.d) : "#ffffff");
+  for (let k = 0; k < shots; k++) {
+    const back = k % 3 === 2 && f.d >= 0;   // the defender shoots back about a third of the time
+    const a = back ? f.to : f.from, b = back ? f.from : f.to;
+    const jit = () => new THREE.Vector3((Math.random() - .5) * 1.6, (Math.random() - .5) * 1.6, (Math.random() - .5) * 1.6);
+    bolts.push({ s: P[a].clone().add(jit()), e: P[b].clone().add(jit()), t0: t + k * .055, dur: .38, c: back ? cd : ca });
+  }
+  if (bolts.length > MAXBOLTS) bolts = bolts.slice(-MAXBOLTS);
+}
+// ---- explosions and debris ----
+const MAXP = 2400;
+const pGeo = new THREE.BufferGeometry();
+const pPos = new Float32Array(MAXP * 3), pCol = new Float32Array(MAXP * 3), pVel = new Float32Array(MAXP * 3), pLife = new Float32Array(MAXP), pBase = new Float32Array(MAXP * 3);
+pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3)); pGeo.setAttribute("color", new THREE.BufferAttribute(pCol, 3));
+const sparks = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: .22, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+sparks.frustumCulled = false; scene.add(sparks);
+let pNext = 0;
+function boom(p, owner, cls, small) {
+  const c = new THREE.Color(mainOf(owner)), w = new THREE.Color("#ffffff"), sub = new THREE.Color(subOf(owner));
+  const count = small ? 10 + cls * 6 : 18 + cls * 16, speed = small ? 1.2 : 2.2 + cls * .5;
+  for (let k = 0; k < count; k++) {
+    const j = pNext; pNext = (pNext + 1) % MAXP;
+    const dir = new THREE.Vector3(Math.random() - .5, Math.random() - .5, Math.random() - .5).normalize().multiplyScalar(speed * (.3 + Math.random()));
+    pPos.set([p.x, p.y, p.z], j * 3); pVel.set([dir.x, dir.y, dir.z], j * 3);
+    const base = k % 4 === 0 ? w : k % 5 === 0 ? sub : c; pBase.set([base.r, base.g, base.b], j * 3);
+    pLife[j] = .7 + Math.random() * .5;
+  }
+}
+// ---- per-frame drawing ----
+let lastT = clock();
+function moveFleets() {
+  const t = clock(), dt = Math.min(.1, t - lastT); lastT = t;
+  // ships that are about to explode or break apart keep orbiting until their moment
+  dying = dying.filter(d => {
+    if (t < d.die) return true;
+    unitPos(d.u, d.i, t, tmp); boom(tmp.clone(), d.u.owner, d.u.cls, d.kind === "break"); return false;
+  });
+  Object.values(fleetMeshes).forEach(fm => fm.count = 0);
+  const col = new THREE.Color();
+  const draw = (u, i) => {
+    const fm = fleetMeshes[u.hk + ":" + u.cls]; if (!fm) return;
+    const idx = fm.count; if (idx >= fm.hull.instanceMatrix.count) return; fm.count++;
+    unitPos(u, i, t, tmp); unitPos(u, i, t + .05, ahead);
+    if (ahead.distanceToSquared(tmp) < 1e-8) ahead.set(tmp.x, tmp.y, tmp.z + .01);
+    dummy.position.copy(tmp); dummy.lookAt(ahead); dummy.updateMatrix();
+    fm.hull.setMatrixAt(idx, dummy.matrix); fm.detail.setMatrixAt(idx, dummy.matrix);
+    fm.hull.setColorAt(idx, col.set(mainOf(u.owner))); fm.detail.setColorAt(idx, col.set(subOf(u.owner)));
+  };
+  for (let i = 0; i < n; i++) for (const u of fleet[i]) draw(u, i);
+  for (const d of dying) draw(d.u, d.i);
+  Object.values(fleetMeshes).forEach(fm => { fm.hull.count = fm.detail.count = fm.count; fm.hull.instanceMatrix.needsUpdate = fm.detail.instanceMatrix.needsUpdate = true; fm.hull.instanceColor.needsUpdate = fm.detail.instanceColor.needsUpdate = true; });
+  // bolts: a short bright dash travelling from shooter to target
+  const bp = boltGeo.attributes.position.array, bc = boltGeo.attributes.color.array; let nb = 0;
+  bolts = bolts.filter(b => t < b.t0 + b.dur);
+  for (const b of bolts) {
+    if (t < b.t0 || nb >= MAXBOLTS) continue;
+    const k = (t - b.t0) / b.dur, h = Math.min(1, k), tl = Math.max(0, k - .22);
+    const o = nb * 6;
+    bp[o] = b.s.x + (b.e.x - b.s.x) * tl; bp[o + 1] = b.s.y + (b.e.y - b.s.y) * tl; bp[o + 2] = b.s.z + (b.e.z - b.s.z) * tl;
+    bp[o + 3] = b.s.x + (b.e.x - b.s.x) * h; bp[o + 4] = b.s.y + (b.e.y - b.s.y) * h; bp[o + 5] = b.s.z + (b.e.z - b.s.z) * h;
+    bc[o] = b.c.r * .4; bc[o + 1] = b.c.g * .4; bc[o + 2] = b.c.b * .4; bc[o + 3] = Math.min(1, b.c.r + .5); bc[o + 4] = Math.min(1, b.c.g + .5); bc[o + 5] = Math.min(1, b.c.b + .5);
+    nb++;
+  }
+  boltGeo.setDrawRange(0, nb * 2); boltGeo.attributes.position.needsUpdate = boltGeo.attributes.color.needsUpdate = true;
+  // debris: drift, slow down, fade out
+  for (let j = 0; j < MAXP; j++) {
+    if (pLife[j] <= 0) { if (pCol[j * 3] || pCol[j * 3 + 1] || pCol[j * 3 + 2]) pCol.fill(0, j * 3, j * 3 + 3); continue; }
+    pLife[j] -= dt; const f = Math.max(0, pLife[j]) / 1.1;
+    pPos[j * 3] += pVel[j * 3] * dt; pPos[j * 3 + 1] += pVel[j * 3 + 1] * dt; pPos[j * 3 + 2] += pVel[j * 3 + 2] * dt;
+    pVel[j * 3] *= .97; pVel[j * 3 + 1] *= .97; pVel[j * 3 + 2] *= .97;
+    pCol[j * 3] = pBase[j * 3] * f; pCol[j * 3 + 1] = pBase[j * 3 + 1] * f; pCol[j * 3 + 2] = pBase[j * 3 + 2] * f;
+  }
+  pGeo.attributes.position.needsUpdate = pGeo.attributes.color.needsUpdate = true;
+}
+// star outlines in the owner's sub colour: one billboarded ring per system
+// star outlines: a slightly larger sphere in the owner's sub colour behind each star (back faces only), so the rim is solid with no gap
+const ringGeo = new THREE.SphereGeometry(1, 28, 20);
+const rings = new THREE.InstancedMesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.BackSide }), n);
+rings.frustumCulled = false; scene.add(rings); rings.setColorAt(0, new THREE.Color(1, 1, 1));
+function placeRings() {
+  for (let i = 0; i < n; i++) { dummy.position.copy(P[i]); dummy.quaternion.identity(); dummy.scale.setScalar(starR[i] * 1.09); dummy.updateMatrix(); rings.setMatrixAt(i, dummy.matrix); }
+  rings.instanceMatrix.needsUpdate = true;
+}
+placeRings();
+function paintStars() {
+  const byOwner = document.getElementById("ownerStars").checked; const col = new THREE.Color();
+  S.forEach((s, i) => {
+    const c = owner[i] < 0 ? new THREE.Color("#eef2ff") : byOwner ? new THREE.Color(mainOf(owner[i])) : s.name === "Sol" ? new THREE.Color("#ffe7a3") : ccol(s.continent);   // unclaimed suns are plain white (Paul)
+    meshes[i].material.color.copy(c); sprites[i].material.color.copy(c);
+    rings.setColorAt(i, col.set(byOwner && owner[i] >= 0 ? subOf(owner[i]) : "#05070c"));
+  });
+  rings.visible = byOwner; if (rings.instanceColor) rings.instanceColor.needsUpdate = true;
+}
+function renderPlayers() {
+  document.getElementById("roster").innerHTML = [...Array(players).keys()].map(p => {
+    const sys = owner.filter(o => o === p).length, str = armies.reduce((a, v, i) => a + (owner[i] === p ? v : 0), 0);
+    return `<span>${swatch(p)}${esc(st(p).name)} ${sys} systems · ${str} armies</span>`; }).join("");
+}
+function newGame() { styles = exampleStyles(players); deal(); buildFleets(); paintStars(); renderPlayers(); renderRoster(); showSystem(sel); }
+const fleetText = i => { if (!armies[i]) return "none"; const f = fleetOf(armies[i]); return CLASSES.slice().reverse().filter(c => f[c.key]).map(c => `${f[c.key]} ${c.name}${f[c.key] > 1 ? "s" : ""}`).join(" + ") + ` (${armies[i]} ${armies[i] === 1 ? "army" : "armies"})`; };
+
+// continent roster
+const centroid = C.map(c => { const v = new THREE.Vector3(); let k = 0; S.forEach((s, i) => { if (s.continent === c.id) { v.add(P[i]); k++; } }); return v.divideScalar(k); });
+const tb = document.getElementById("conts");
+function renderRoster() {
+  tb.innerHTML = C.map(c => { const lead = contLeader(c.id); return `<tr class="cont${c.id === focusCont ? " on" : ""}" tabindex="0" data-k="${c.id}"><td><span class="chip" style="background:${ccss(c.id)}"></span>${c.name}</td><td class="n">${c.territories}</td><td class="n">${c.borders}</td><td class="n">${c.bonus}</td><td class="n" title="${lead.full ? "holds the whole continent" : "holds the most systems here"}">${swatch(lead.p)}${lead.full ? "★" : lead.n}</td></tr>`; }).join("");
+}
+let focusCont = -1;
+function setCont(k) {
+  focusCont = focusCont === k ? -1 : k;
+  tb.querySelectorAll("tr").forEach(r => r.classList.toggle("on", +r.dataset.k === focusCont));
+  meshes.forEach((m, i) => { const on = focusCont < 0 || S[i].continent === focusCont; m.material.opacity = on ? 1 : .15; sprites[i].material.opacity = on ? .7 : .08; });
+  laneObjs.forEach((o, kk) => o.material.opacity = focusCont < 0 || kk === focusCont ? .5 : .06);
+  gateObj.material.opacity = focusCont < 0 ? .9 : .35;
+  if (focusCont >= 0) { glide(centroid[focusCont]); showCont(focusCont); }
+}
+tb.addEventListener("click", e => { const r = e.target.closest("tr[data-k]"); if (r) setCont(+r.dataset.k); });
+tb.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { const r = e.target.closest("tr[data-k]"); if (r) { e.preventDefault(); setCont(+r.dataset.k); } } });
+
+// labels
+const labelsEl = document.getElementById("labels");
+const lbls = S.map(s => { const d = document.createElement("div"); d.className = "lbl" + (s.name === "Sol" ? " sol" : ""); d.textContent = disp(s); labelsEl.appendChild(d); return d; });
+const cnts = S.map(() => { const d = document.createElement("div"); d.className = "cnt"; labelsEl.appendChild(d); return d; });
+let hqOf = new Array(n).fill(-1), setupSet = new Set();   // HQ owner per system; systems you may pick as your HQ right now
+function relabel() { S.forEach((s, i) => { const t = (hqOf[i] >= 0 ? "★ " : "") + disp(s); if (lbls[i].textContent !== t) lbls[i].textContent = t; }); }
+const clbls = C.map(c => { const d = document.createElement("div"); d.className = "clbl"; d.style.color = ccss(c.id, 72); d.textContent = c.name; labelsEl.appendChild(d); return d; });
+
+// info card
+const info = document.getElementById("info");
+let sel = 0;
+function showSystem(i) {
+  sel = i; const s = S[i], c = C[s.continent];
+  const lanes = adj[i].slice().sort((a, b) => a.d - b.d);
+  const members = (s.members || []).filter(m => m !== s.name);
+  info.innerHTML = `<div class="eyebrow"><span class="chip" style="background:${ccss(s.continent)}"></span>${c.name}${isBorder[i] ? " · border system" : ""}</div><h2>${disp(s)}</h2>
+  <dl><dt>Held by</dt><dd>${swatch(owner[i])}${esc(st(owner[i]).name)}${hqOf[i] >= 0 ? ` · HQ of ${esc(st(hqOf[i]).name)}` : ""}</dd><dt>Fleet</dt><dd>${fleetText(i)}</dd>
+  <dt>From Sol</dt><dd>${s.name === "Sol" ? "home" : s.distLy.toFixed(2) + " ly"}</dd><dt>Stars</dt><dd>${s.stars}${members.length ? " (" + members.join(", ") + ")" : ""}</dd>
+  <dt>Sun</dt><dd><span class="cf-dot" style="background:${CARD_COLOR[SUN_TYPE[i]]}"></span>${CARD_NAMES[SUN_TYPE[i]]} · ${esc((s.spect || "?").trim())}</dd><dt>Surface</dt><dd>${surfaceTemp(s)}</dd><dt>Lanes</dt><dd>${lanes.length}</dd></dl>
+  ${STAR_FACTS[s.name] ? `<p class="cf-fact">${esc(STAR_FACTS[s.name])}</p>` : ""}
+  <ul class="lanes">${lanes.map(l => { const o = S[l.j], gate = o.continent !== s.continent; return `<li class="${gate ? "gate" : ""}" data-j="${l.j}" title="${C[o.continent].name} · ${esc(st(owner[l.j]).name)} · ${armies[l.j]} armies"><span>${swatch(owner[l.j], 7)}${disp(o)}${gate ? " ↗" : ""}</span><span>${armies[l.j]} · ${l.d.toFixed(1)} ly</span></li>`; }).join("")}</ul>`;
+  lbls.forEach((l, k) => l.classList.toggle("sel", k === i));
+  find.value = i;
+}
+function showCont(k) {
+  const c = C[k], mem = S.map((s, i) => i).filter(i => S[i].continent === k);
+  const borderSys = mem.filter(i => isBorder[i]);
+  info.innerHTML = `<div class="eyebrow">Continent</div><h2><span class="chip" style="background:${ccss(k)}"></span>${c.name}</h2>
+  <dl><dt>Leader</dt><dd>${(l => `${swatch(l.p)}${esc(st(l.p).name)} ${l.full ? "holds all of it" : `holds ${l.n} of ${c.territories}`}`)(contLeader(k))}</dd><dt>Systems</dt><dd>${c.territories}</dd><dt>Border systems</dt><dd>${c.borders}</dd><dt>Bonus</dt><dd>+${c.bonus} fleets a turn</dd><dt>Touches</dt><dd>${c.neighbours.map(x => C[x].name).join(", ")}</dd></dl>
+  <div class="eyebrow">Border systems to hold</div>
+  <ul class="lanes">${borderSys.map(i => `<li class="gate" data-j="${i}"><span>${disp(S[i])}</span><span>${S[i].distLy.toFixed(1)} ly</span></li>`).join("")}</ul>`;
+}
+info.addEventListener("click", e => { const li = e.target.closest("li[data-j]"); if (li) { focusOn(+li.dataset.j); onPick(+li.dataset.j); } });
+function glide(to) { const from = controls.target.clone(), t0 = performance.now(); const step = t => { const k = Math.min(1, (t - t0) / 650), e = k * (2 - k); controls.target.lerpVectors(from, to, e); if (k < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); }
+function focusOn(i) { showSystem(i); glide(P[i].clone()); }
+const find = document.getElementById("find");
+find.innerHTML = S.map((s, i) => [s, i]).sort((a, b) => a[0].name.localeCompare(b[0].name)).map(([s, i]) => `<option value="${i}">${disp(s)}${s.name === "Sol" ? "" : ` · ${s.distLy.toFixed(1)} ly`}</option>`).join("");
+find.addEventListener("change", () => focusOn(+find.value));
+
+// picking: click near a star (screen space)
+let down = null;
+renderer.domElement.addEventListener("pointerdown", e => down = [e.clientX, e.clientY]);
+renderer.domElement.addEventListener("pointerup", e => {
+  if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
+  let best = -1, bd = 16; const v = new THREE.Vector3();
+  P.forEach((p, i) => { v.copy(p).project(camera); if (v.z >= 1) return; const d = Math.hypot((v.x + 1) / 2 * innerWidth - e.clientX, (1 - v.y) / 2 * innerHeight - e.clientY); if (d < bd) { bd = d; best = i; } });
+  if (best >= 0) { focusOn(best); onPick(best); }
+});
+
+const allNames = document.getElementById("allNames"), dropsChk = document.getElementById("drops"), spin = document.getElementById("spin");
+dropsChk.addEventListener("change", () => drops.visible = dropsChk.checked);
+document.getElementById("hide").addEventListener("click", e => { const h = !document.getElementById("ctl").hidden; document.getElementById("ctl").hidden = h; info.hidden = h; e.target.textContent = h ? "Show panels" : "Hide panels"; });
+function resize() { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); }
+addEventListener("resize", resize); resize();
+const v = new THREE.Vector3();
+const place = (el, p) => { v.copy(p).project(camera); if (v.z >= 1) { el.style.display = "none"; return false; } el.style.display = ""; el.style.left = ((v.x + 1) / 2 * innerWidth) + "px"; el.style.top = ((1 - v.y) / 2 * innerHeight) + "px"; return true; };
+function frame() {
+  controls.autoRotate = spin.checked; controls.autoRotateSpeed = .5; controls.update();
+  moveFleets(performance.now() / 1000);
+  renderer.render(scene, camera);
+  // names sit centred under each sun; each sun shows its army total in the holder's sub colour
+  const fovK = (innerHeight / 2) / Math.tan(camera.fov * Math.PI / 360);
+  S.forEach((s, i) => {
+    v.copy(P[i]).project(camera); const on = v.z < 1 && Math.abs(v.x) < 1.1 && Math.abs(v.y) < 1.1;
+    const x = (v.x + 1) / 2 * innerWidth, y = (1 - v.y) / 2 * innerHeight;
+    const rpx = on ? starR[i] * 1.09 * fovK / camera.position.distanceTo(P[i]) : 0;
+    const l = lbls[i], showL = on && (allNames.checked || s.name === "Sol" || i === sel || hqOf[i] >= 0 || (focusCont >= 0 && s.continent === focusCont && isBorder[i]));
+    if (!showL) l.style.display = "none"; else { l.style.display = ""; l.style.left = x + "px"; l.style.top = (y + rpx + 3) + "px"; }
+    const c = cnts[i]; const setupMark = setupSet.has(i); if (!on || rpx < 5 || (owner[i] < 0 && !setupMark)) { c.style.display = "none"; return; }
+    c.style.display = ""; c.style.left = x + "px"; c.style.top = y + "px";
+    const txt = setupMark ? "+" : String(armies[i]); if (c.textContent !== txt) c.textContent = txt;
+    const fs = Math.round(Math.min(44, Math.max(8, rpx * (txt.length > 2 ? .72 : txt.length > 1 ? .95 : 1.15)))); if (c._fs !== fs) { c.style.fontSize = fs + "px"; c._fs = fs; }
+    const colr = setupMark ? "#f4e3b5" : subOf(owner[i]); if (c._c !== colr) { c.style.color = colr; c._c = colr; }
+  });
+  C.forEach((c, k) => place(clbls[k], centroid[k]));
+  requestAnimationFrame(frame);
+}
+document.getElementById("deal").addEventListener("click", () => { if (gameId) return; seed++; newGame(); });
+document.getElementById("players").addEventListener("change", e => { if (gameId) return; players = +e.target.value; newGame(); });
+document.getElementById("ownerStars").addEventListener("change", paintStars);
+// =====================================================================
+// MULTIPLAYER: games live in the artifact's shared db at games/<id>.
+// Only the player whose turn it is writes during play (computer players'
+// turns are run by one seated human's browser, chosen by a short lease).
+// Everything from the db is rendered with textContent / esc().
+// =====================================================================
+const G = document.getElementById("game");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+let DB = null, USER = null, myId = null, canWrite = true;
+let games = [], unsubList = null, unsubGame = null, gameId = null, game = null;
+let names = {};                 // uid -> display name (resolved each render, never stored)
+let pick = -1;                  // selected source system for attack / fortify
+let pending = {};               // reinforcements placed locally before Confirm
+let lastRoll = null, moveAfter = null, busy = false, writeChain = Promise.resolve();
+let aiSeat = -1, aiRunning = false;   // set while this browser plays a computer player's turn
+const HQ_ARMIES = 10, HQ_BONUS = 2, HQ_SPACING = 4;
+const BOT_NAMES = ["Unit Ceres", "Overmind Vega", "Captain Null", "Admiral Byte", "Warden Kepler", "The Archivist", "Marshal Orbit", "Sentinel Nine", "Lady Parsec", "Echo Prime", "Count Quasar", "Vector Seven"];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+const mySeat = () => game ? game.seats.findIndex(s => s.uid === myId) : -1;
+const actor = () => aiSeat >= 0 ? aiSeat : mySeat();
+const myTurn = () => game && game.status === "playing" && game.turn === mySeat() && mySeat() >= 0 && aiSeat < 0;
+const isBot = k => !!(game && game.seats[k] && game.seats[k].ai);
+const ownedBy = (seat, st = game) => st.owner.reduce((a, o) => a + (o === seat ? 1 : 0), 0);
+const seatName = i => { if (i < 0) return "Unclaimed"; const s = game.seats[i]; return (s && s.name) || (s && names[s.uid]) || PNAME[i % 16] + " player"; };
+function reinforcementsFor(seat, st) {
+  let r = Math.max(3, Math.floor(ownedBy(seat, st) / 3));
+  C.forEach(c => { if (S.every((s, i) => s.continent !== c.id || st.owner[i] === seat)) r += c.bonus; });
+  if (st.hq && st.hq[seat] >= 0 && st.owner[st.hq[seat]] === seat) r += HQ_BONUS;
+  return r;
+}
+const legacy = st => (st.mode || "dealt") === "legacy";
+const effPct = st => legacy(st) ? st.targetPct : Math.min(100, Math.max(st.targetPct, Math.ceil(100 / (st.status === "lobby" || !st.seats ? st.maxSeats : st.seats.length)) + 15));
+const target = st => Math.ceil(n * effPct(st) / 100);
+function commit(patch, logLine, fx) {
+  // one write at a time to the game doc; fx are animation events every viewer plays once
+  const body = { ...patch, rev: (game.rev || 0) + 1, updated: Date.now() };
+  if (logLine) body.log = [...(game.log || []), logLine].slice(-40);
+  if (fx && fx.length) body.fx = [...(game.fx || []), ...fx.map(e => ({ ...e, rev: body.rev }))].slice(-24);
+  Object.assign(game, body);
+  writeChain = writeChain.then(() => DB.doc("games/" + gameId).update(body)).catch(e => { G.querySelector(".err")?.remove(); const p = document.createElement("p"); p.className = "hint err"; p.textContent = "Could not save the move (" + (e && e.code || "error") + "). Reload the page."; G.prepend(p); });
+  applyGame(); return writeChain;
+}
+const L = (s, m, d) => ({ s, m, d: d ?? -1, t: Date.now() });
+let fxRev = 0, fxPrimed = false;
+function takeFx() {   // animation events not yet played in this browser (none on first load: no replaying history)
+  if (!game) return [];
+  const all = game.fx || [], top = Math.max(game.rev || 0, ...all.map(e => e.rev));
+  if (!fxPrimed) { fxPrimed = true; fxRev = top; return []; }
+  const fresh = all.filter(e => e.rev > fxRev); fxRev = Math.max(fxRev, top); return fresh;
+}
+
+// ---- applying shared state to the 3D board ----
+function applyGame() {
+  if (game) {
+    styles = game.seats.map((s, i) => ({ name: seatName(i), main: HEX.test(s.main || "") ? s.main : PALETTE[i % 16], sub: HEX.test(s.sub || "") ? s.sub : PSUB[i % 16], hull: HULL_KEYS.includes(s.hull) ? s.hull : HULL_KEYS[i % HULLS.length] }));
+    if (game.owner) {
+      players = game.seats.length;
+      owner = game.owner.slice(); armies = game.armies.slice();
+      for (const k in pending) armies[k] += pending[k];
+    } else { owner = new Array(n).fill(-1); armies = new Array(n).fill(0); }   // before the start: an empty white sky
+    hqOf = new Array(n).fill(-1); (game.hq || []).forEach((h, k) => { if (h >= 0) hqOf[h] = k; });
+    setupSet = game.status === "playing" && game.phase === "setup" && myTurn() ? new Set(hqChoices()) : new Set();
+  } else { hqOf = new Array(n).fill(-1); setupSet = new Set(); }
+  relabel(); buildFleets(takeFx()); paintStars(); renderRoster(); renderGame(); showSystem(sel);
+  maybeRunBot();
+}
+// a new seat: the viewer's remembered look, else the first palette colour nobody at the table uses
+function loadLook() { try { const l = JSON.parse(localStorage.getItem("hs_look") || "null"); if (l && HEX.test(l.main) && HEX.test(l.sub)) return l; } catch (e) {} return null; }
+function saveLook(l) { try { localStorage.setItem("hs_look", JSON.stringify(l)); } catch (e) {} }
+function freeLook(taken) {
+  const used = new Set(taken.map(s => (s.main || "").toLowerCase())); const free = PALETTE.findIndex(c => !used.has(c.toLowerCase()));
+  const k = free < 0 ? taken.length % 16 : free; return { main: PALETTE[k], sub: PSUB[k], used };
+}
+function newSeat(taken) {
+  const f = freeLook(taken), look = loadLook();
+  const main = look && !f.used.has(look.main.toLowerCase()) ? look.main : f.main, sub = look && main === look.main ? look.sub : f.sub;
+  return { uid: myId, name: ((look && look.name) || names[myId] || "Commander").slice(0, 24), main, sub, hull: look && HULL_KEYS.includes(look.hull) ? look.hull : HULL_KEYS[taken.length % HULLS.length] };
+}
+async function editSeats(fn, busyMsg) {
+  // read-modify-write of the seat list under a short lease (lobby joins, bots, looks)
+  const ref = DB.doc("games/" + gameId);
+  const lease = await ref.acquire({ holder: myId, ttlMs: 4000 });
+  if (!lease.acquired) { alertLine(busyMsg || "Busy, try again in a moment."); return false; }
+  const g = (await ref.get()).data(); if (!g) return false;
+  const seats = fn(g); if (!seats) return false;
+  await ref.update({ seats, updated: Date.now() }); return true;
+}
+async function saveSeatLook(name, main, sub, hull) {
+  name = String(name).trim().replace(/\s+/g, " ").slice(0, 24); if (!name || !HEX.test(main) || !HEX.test(sub)) return;
+  if (!HULL_KEYS.includes(hull)) hull = "triangle";
+  saveLook({ name, main, sub, hull });
+  try { await editSeats(g => { const k = g.seats.findIndex(s => s.uid === myId); return k < 0 ? null : g.seats.map((s, i) => i === k ? { ...s, name, main, sub, hull } : s); }); }
+  catch (e) { alertLine("Could not save your look (" + (e && e.code || "error") + ")."); }
+}
+async function addBot() {
+  try {
+    await editSeats(g => {
+      if (g.status !== "lobby" || g.seats.length >= g.maxSeats) return null;
+      return [...g.seats, botSeat(g.seats)];
+    });
+  } catch (e) { alertLine("Could not add a computer player (" + (e && e.code || "error") + ")."); }
+}
+async function removeSeat(uid) {
+  try { await editSeats(g => g.status !== "lobby" ? null : g.seats.filter(s => s.uid !== uid)); }
+  catch (e) { alertLine("Could not remove that seat (" + (e && e.code || "error") + ")."); }
+}
+
+// ---- lobby ----
+function listGames() {
+  if (unsubList) return;
+  unsubList = DB.collection("games").orderBy("created", "desc").limit(20).onSnapshot(snap => {
+    games = snap.docs.map(d => ({ id: d.id, ...d.data() })); resolveNames().then(renderGame);
+  }, () => { G.innerHTML = `<p class="sub">The game list could not be loaded.</p>`; });
+}
+async function resolveNames() {
+  if (!USER) return;
+  const ids = new Set(); games.forEach(g => (g.seats || []).forEach(s => { if (!s.ai) ids.add(s.uid); })); if (game) game.seats.forEach(s => { if (!s.ai) ids.add(s.uid); });
+  if (!ids.size) return;
+  const ps = await USER.profiles([...ids]); for (const id in ps) names[id] = ps[id].name || "";
+}
+function botSeat(taken) {
+  const f = freeLook(taken), used = new Set(taken.map(s => s.name));
+  const name = BOT_NAMES.find(b => !used.has(b)) || "Bot " + (taken.length + 1);
+  return { uid: "ai_" + Math.random().toString(36).slice(2, 10), name, main: f.main, sub: f.sub, hull: HULL_KEYS[taken.length % HULLS.length], ai: true };
+}
+async function createGame(allAI) {
+  const seats = +document.getElementById("newSeats").value, pct = +document.getElementById("newPct").value, mode = document.getElementById("newMode").value === "dealt" ? "dealt" : "legacy";
+  const ref = DB.collection("games").doc();
+  busy = true; renderGame();
+  try {
+    let list = [];
+    if (allAI) for (let k = 0; k < Math.max(2, seats); k++) list.push(botSeat(list)); else list = [newSeat([])];
+    await ref.set({ status: "lobby", mode, maxSeats: Math.max(2, seats), targetPct: pct, seats: list, creator: myId, created: Date.now(), updated: Date.now(), rev: 0, log: [] });
+    openGame(ref.id);
+    if (allAI) { for (let k = 0; k < 40 && !(game && game.status === "lobby"); k++) await sleep(100); if (game) await startGame(); }
+  } catch (e) { alertLine("Could not create the game (" + (e && e.code || "error") + ")."); }
+  busy = false;
+}
+// how fast computer players move in this browser (a per-viewer setting)
+const PACES = { slow: 900, normal: 450, fast: 150, instant: 25 };
+function botPace() { try { return PACES[localStorage.getItem("hs_pace")] || PACES.normal; } catch (e) { return PACES.normal; } }
+function paceKey() { try { const k = localStorage.getItem("hs_pace"); return PACES[k] ? k : "normal"; } catch (e) { return "normal"; } }
+async function joinGame(id) {
+  busy = true; renderGame(); gameId = id;
+  try {
+    let result = "";
+    const ok = await editSeats(g => {
+      if (g.status !== "lobby") { result = "That game has already started."; return null; }
+      if (g.seats.some(s => s.uid === myId)) return null;
+      if (g.seats.length >= g.maxSeats) { result = "That game is full."; return null; }
+      return [...g.seats, newSeat(g.seats)];
+    }, "Someone else is joining right now. Try again in a moment.");
+    openGame(id); if (!ok && result) alertLine(result);
+  } catch (e) { alertLine("Could not join (" + (e && e.code || "error") + ")."); }
+  finally { busy = false; renderGame(); }
+}
+function openGame(id) {
+  if (unsubGame) unsubGame();
+  gameId = id; game = null; pending = {}; pick = -1; lastRoll = null; moveAfter = null; fxPrimed = false;
+  unsubGame = DB.doc("games/" + id).onSnapshot(snap => {
+    if (!snap.exists) { game = null; renderGame(); return; }
+    const d = snap.data(); if (aiRunning && d.rev < (game ? game.rev : 0)) return;   // ignore our own stale echoes mid bot-turn
+    game = JSON.parse(JSON.stringify(d));
+    if (!myTurn()) { pending = {}; if (aiSeat < 0) moveAfter = null; }
+    resolveNames().then(applyGame);
+  }, () => { alertLine("Lost the connection to this game. Reload the page."); });
+}
+function leaveView() { if (unsubGame) unsubGame(); unsubGame = null; gameId = null; game = null; pending = {}; pick = -1; hqOf = new Array(n).fill(-1); setupSet = new Set(); relabel(); newGame(); renderGame(); }
+async function startGame() {
+  const seats = game.seats.length; if (seats < 2) return;
+  const first = Math.floor(Math.random() * seats);
+  if (legacy(game)) {
+    await commit({ status: "playing", owner: new Array(n).fill(-1), armies: new Array(n).fill(0), hq: game.seats.map(() => -1), turn: first, setupFirst: first, phase: "setup", reinforcements: 0, fortified: false, turnNo: 1, alive: game.seats.map(() => true), deck: newDeck(), discard: [], cards: {}, trades: 0, conq: false }, L(first, "chooses a home sun first"));
+  } else {
+    players = seats; seed = Math.floor(Math.random() * 1e9); deal();
+    await commit({ status: "playing", owner: owner.slice(), armies: armies.slice(), hq: game.seats.map(() => -1), turn: first, phase: "reinforce", reinforcements: reinforcementsFor(first, { owner: owner.slice() }), fortified: false, turnNo: 1, alive: game.seats.map(() => true), deck: newDeck(), discard: [], cards: {}, trades: 0, conq: false }, L(first, "goes first"));
+  }
+}
+const alertLine = msg => { const p = document.createElement("p"); p.className = "hint"; p.textContent = msg; G.appendChild(p); };
+
+// ---- cards: one per system (frigate, destroyer or battleship) plus two wilds ----
+// A turn with at least one conquest earns a card. Sets of three (all alike, one of each, or any two
+// plus a wild) trade for ships during reinforcement: 4, 6, 8, 10, 12, 15, then +5 each, counted across
+// the whole table. A traded card showing a system you hold puts 2 ships there. Five cards or more:
+// trade before placing. Wiping a player out takes their cards.
+// card types are the colour of each system's sun (Paul): red (M dwarfs and brown dwarfs), orange (K),
+// yellow-white (G, F, A and white dwarfs). Systems with no catalogued type go by brightness.
+const CARD_NAMES = ["red sun", "orange sun", "yellow-white sun", "wild"];
+const CARD_COLOR = ["#ff5a3c", "#ffa340", "#fff1b8", "#f4e3b5"];
+const CARD_GLYPH = ["●", "●", "●", "✦"];
+function specClass(s) {
+  let t = (s.spect || "").trim().toUpperCase();
+  if (/^D[ABOQZCX]/.test(t) || t === "D" || /^W[DN]?/.test(t) && !/^WR/.test(t)) return "D";
+  t = t.replace(/^(SD|K-M|D|E)/, "");
+  return /^[OBAFGKMLTY]/.test(t) ? t[0] : "";
+}
+const SUN_TYPE = S.map(s => {
+  const c = specClass(s);
+  if (c === "M" || c === "L" || c === "T" || c === "Y") return 0;
+  if (c === "K") return 1;
+  if (c) return 2;
+  return s.lum < 0.05 ? 0 : s.lum < 0.5 ? 1 : 2;
+});
+const cardKind = id => id >= n ? 3 : SUN_TYPE[id];
+// rough surface temperatures by spectral class (Kelvin), for the cards
+function surfaceTemp(s) {
+  const c = specClass(s), t = (s.spect || "").trim().toUpperCase().replace(/^(SD|D|E)/, ""), sub = parseFloat(t.slice(1)) || 5;
+  const base = { O: [40000, 30000], B: [28000, 10500], A: [9800, 7500], F: [7300, 6100], G: [6000, 5300], K: [5250, 3900], M: [3850, 2300], L: [2200, 1350], T: [1300, 600], Y: [550, 300] }[c];
+  if (c === "D") return "about 10,000 K (white dwarf)";
+  if (!base) return "unknown";
+  const k = Math.min(1, Math.max(0, sub / 9.5)), v = Math.round((base[0] + (base[1] - base[0]) * k) / 50) * 50;
+  return `about ${v.toLocaleString()} K`;
+}
+const SUN_WORDS = { O: "blue giant", B: "blue-white star", A: "white star", F: "yellow-white star", G: "yellow star like the Sun", K: "orange dwarf", M: "red dwarf", L: "brown dwarf", T: "brown dwarf", Y: "very cold brown dwarf", D: "white dwarf" };
+// a few well-documented facts about famous neighbours
+const STAR_FACTS = {
+  "Sol": "Home: eight planets, one known to hold life.",
+  "Alpha Centauri": "Three stars. Proxima Centauri has Proxima b, an Earth-mass planet in its habitable zone (found 2016).",
+  "Barnard's Star": "Fastest-moving star in our sky; small rocky planets found close in (2024-2025).",
+  "Luhman 16": "The nearest brown dwarfs: a pair whose cloud weather has been mapped.",
+  "WISE 0855-0714": "The coldest brown dwarf known, about as cold as the North Pole; likely water-ice clouds.",
+  "Wolf 359": "A small flare star that can brighten suddenly.",
+  "Sirius": "The brightest star in Earth's night sky; its companion Sirius B is a white dwarf.",
+  "Epsilon Eridani": "A young orange dwarf with a Jupiter-like planet and two dusty debris belts.",
+  "Ross 128": "Hosts Ross 128 b, a temperate Earth-mass planet.",
+  "61 Cygni": "The first star whose distance was measured (Bessel, 1838).",
+  "Procyon": "Its faint companion Procyon B is a white dwarf.",
+  "Epsilon Indi": "Epsilon Indi Ab, a cold giant planet, was photographed directly by JWST (2024); two brown dwarfs orbit far out.",
+  "Tau Ceti": "A Sun-like star with a heavy debris disc and several candidate planets.",
+  "Groombridge 34": "Two red dwarfs; the brighter one hosts at least two planets.",
+  "Luyten's Star": "Hosts two planets; Luyten b lies in the habitable zone.",
+  "Teegarden's Star": "Two Earth-mass planets, b and c, close to its habitable zone.",
+  "Kapteyn's Star": "A halo star orbiting the galaxy backwards, perhaps from a swallowed dwarf galaxy.",
+  "YZ Ceti": "Three small planets on very tight orbits.",
+  "Gliese 1061": "Three Earth-mass planets; c and d lie in or near the habitable zone.",
+  "Wolf 1061": "Three planets; Wolf 1061 c lies in the habitable zone.",
+  "Ross 248": "Heading our way: in about 36,000 years it will be the Sun's nearest star.",
+  "Lacaille 9352": "Two super-Earth planets.",
+  "Gliese 1002": "Two Earth-mass planets in its habitable zone (2022).",
+  "40 Eridani": "An orange dwarf, a white dwarf and a red dwarf. Star Trek put Vulcan here.",
+  "Gliese 876": "Four planets, two of them giants locked in step around a red dwarf.",
+  "Gliese 832": "A red dwarf with a Jupiter-like planet far out.",
+  "Gliese 445": "Voyager 1 will pass within about 1.6 light years of it in 40,000 years.",
+  "Gliese 581": "At least three planets around a quiet red dwarf.",
+  "Gliese 667": "Three stars; Gliese 667 C has several planets, some in its habitable zone.",
+  "Gliese 357": "Three planets; Gliese 357 d orbits near the habitable zone.",
+  "Altair": "Spins so fast it bulges at the equator, once every nine hours.",
+  "Fomalhaut": "Ringed by a wide debris belt; its supposed planet turned out to be a dust cloud.",
+  "Vega": "Once the measuring stick for star brightness; surrounded by a debris disc.",
+  "70 Ophiuchi": "A pair of orange dwarfs circling each other every 88 years.",
+};
+function cardFace(id) {
+  const k = cardKind(id);
+  if (id >= n) return `<div class="cardface k3"><div class="cf-top"><span class="cf-dot" style="background:${CARD_COLOR[3]}"></span><b>Wild</b></div><div class="mini">Counts as any sun colour.</div></div>`;
+  const s = S[id], c = specClass(s), fact = STAR_FACTS[s.name];
+  const light = s.lum >= 0.001 ? `${s.lum >= 10 ? Math.round(s.lum) : s.lum.toFixed(s.lum < 0.1 ? 3 : 2)} × Sun` : s.lum > 0 ? `${s.lum.toExponential(1)} × Sun` : "very faint";
+  return `<div class="cardface k${k}"><div class="cf-top"><span class="cf-dot" style="background:${CARD_COLOR[k]}"></span><b>${esc(disp(s))}</b></div>
+    <div class="cf-type">${CARD_NAMES[k]} · ${esc((s.spect || "").trim() || "type unknown")}${c ? ` (${SUN_WORDS[c] || ""})` : ""}</div>
+    <dl><dt>Surface</dt><dd>${surfaceTemp(s)}</dd><dt>Light</dt><dd>${light}</dd><dt>Stars</dt><dd>${s.stars}</dd><dt>From Earth</dt><dd>${s.name === "Sol" ? "home" : s.distLy.toFixed(1) + " ly"}</dd></dl>
+    ${fact ? `<div class="cf-fact">${esc(fact)}</div>` : ""}</div>`;
+}
+const cardSys = id => id >= n ? -1 : id;
+const TRADE_VALUES = [4, 6, 8, 10, 12, 15];
+const tradeValue = k => k < TRADE_VALUES.length ? TRADE_VALUES[k] : 15 + 5 * (k - TRADE_VALUES.length + 1);
+const shuffled = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const newDeck = () => shuffled([...Array(n + 2).keys()]);
+const handOf = seat => (game && game.cards && game.cards[seat]) || [];
+const mustTrade = seat => handOf(seat).length >= 5;
+function isSet(ids) {
+  const k = ids.map(cardKind); if (k.includes(3)) return true;
+  return (k[0] === k[1] && k[1] === k[2]) || new Set(k).size === 3;
+}
+function bestSet(seat) {
+  const h = handOf(seat); let best = null, bs = -Infinity;
+  for (let a = 0; a < h.length; a++) for (let b = a + 1; b < h.length; b++) for (let c = b + 1; c < h.length; c++) {
+    const ids = [h[a], h[b], h[c]]; if (!isSet(ids)) continue;
+    const sc = (ids.some(x => cardSys(x) >= 0 && game.owner[cardSys(x)] === seat) ? 2 : 0) - ids.filter(x => cardKind(x) === 3).length * 3;
+    if (sc > bs) { bs = sc; best = ids; }
+  }
+  return best;
+}
+async function tradeSet(seat, ids) {
+  ids = ids || bestSet(seat);
+  if (!ids || game.phase !== "reinforce" || game.turn !== seat) return;
+  const val = tradeValue(game.trades || 0);
+  const cards = { ...(game.cards || {}) }; cards[seat] = handOf(seat).filter(c => !ids.includes(c));
+  const arm = game.armies.slice(), bonus = ids.map(cardSys).find(s => s >= 0 && game.owner[s] === seat);
+  if (bonus !== undefined) arm[bonus] += 2;
+  await commit({ cards, discard: [...(game.discard || []), ...ids], trades: (game.trades || 0) + 1, reinforcements: game.reinforcements + val, armies: arm },
+    L(seat, `traded ${ids.map(x => CARD_NAMES[cardKind(x)]).join(", ")} for ${val} ships${bonus !== undefined ? ` (+2 at ${disp(S[bonus])})` : ""}`),
+    bonus !== undefined ? [{ t: "rf", s: bonus }] : null);
+}
+async function drawCardFor(seat) {
+  let deck = (game.deck === undefined ? newDeck() : game.deck).slice(), discard = (game.discard || []).slice();   // games begun before cards get a deck on their first card
+  if (!deck.length && discard.length) { deck = shuffled(discard); discard = []; }
+  if (!deck.length) return;
+  const c = deck.pop(), cards = { ...(game.cards || {}) }; cards[seat] = [...handOf(seat), c];
+  await commit({ deck, discard, cards, conq: false }, L(seat, "earned a card"));
+}
+function handHtml(seat) {
+  const h = handOf(seat); if (!h.length) return `<span class="mini">No cards yet. Take a system this turn to earn one.</span>`;
+  return h.map(cardFace).join("");
+}
+
+// ---- home suns (legacy start) ----
+function hops(from, maxD) {   // lane distance from a set of systems, up to maxD
+  const d = new Array(n).fill(Infinity), q = []; from.forEach(i => { d[i] = 0; q.push(i); });
+  while (q.length) { const u = q.shift(); if (d[u] >= maxD) continue; for (const x of adj[u]) if (d[x.j] === Infinity) { d[x.j] = d[u] + 1; q.push(x.j); } }
+  return d;
+}
+function hqChoices() {
+  const taken = (game.hq || []).filter(h => h >= 0);
+  for (let need = HQ_SPACING; need >= 1; need--) {
+    const d = hops(taken, need); const ok = []; for (let i = 0; i < n; i++) if (game.owner[i] < 0 && d[i] >= need) ok.push(i);
+    if (ok.length) return ok;
+  }
+  return [];
+}
+async function claimHQ(i) {
+  const me = actor(); if (game.phase !== "setup" || game.turn !== me || !hqChoices().includes(i)) return;
+  const own = game.owner.slice(), arm = game.armies.slice(), hq = game.hq.slice();
+  own[i] = me; arm[i] = HQ_ARMIES; hq[me] = i;
+  const seats = game.seats.length; let nx = me, done = true;
+  for (let k = 1; k <= seats; k++) { const c = (me + k) % seats; if (hq[c] < 0) { nx = c; done = false; break; } }
+  const patch = { owner: own, armies: arm, hq };
+  if (done) { const f = game.setupFirst ?? 0; Object.assign(patch, { phase: "reinforce", turn: f, reinforcements: reinforcementsFor(f, { owner: own, hq }) }); }
+  else patch.turn = nx;
+  await commit(patch, L(me, `founded their HQ at ${disp(S[i])}`), [{ t: "rf", s: i }]);
+}
+
+// ---- turn actions ----
+function onPick(i) {
+  if (game && game.status === "playing" && mySeat() >= 0 && !myTurn()) { nudge(); return; }
+  if (!myTurn() || busy) return;
+  const me = mySeat();
+  if (game.phase === "setup") { claimHQ(i); return; }
+  if (game.phase === "reinforce" && mustTrade(me)) { nudge.msg = "Trade a set of cards first."; return; }
+  if (game.phase === "reinforce") {
+    if (game.owner[i] !== me) return;
+    const left = game.reinforcements - Object.values(pending).reduce((a, b) => a + b, 0);
+    if (left <= 0) return;
+    pending[i] = (pending[i] || 0) + 1; applyGame(); return;
+  }
+  if (moveAfter) return;
+  if (game.phase === "attack") {
+    if (game.owner[i] === me && game.armies[i] >= 2) { pick = i; lastRoll = null; renderGame(); return; }
+    if (pick >= 0 && game.owner[i] !== me && adj[pick].some(x => x.j === i)) { attack(pick, i, false); }
+    return;
+  }
+  if (game.phase === "fortify" && !game.fortified) {
+    if (game.owner[i] === me && pick < 0 && game.armies[i] >= 2) { pick = i; renderGame(); return; }
+    if (pick >= 0 && i !== pick && game.owner[i] === me && connected(pick, i, me)) { moveAfter = { from: pick, to: i, min: 1, max: game.armies[pick] - 1, fortify: true }; renderGame(); }
+    else if (game.owner[i] === me && game.armies[i] >= 2) { pick = i; renderGame(); }
+  }
+}
+function connected(a, b, seat) {
+  const seen = new Set([a]), q = [a];
+  while (q.length) { const u = q.shift(); if (u === b) return true; for (const x of adj[u]) if (!seen.has(x.j) && game.owner[x.j] === seat) { seen.add(x.j); q.push(x.j); } }
+  return false;
+}
+async function confirmReinforce(placement) {
+  const arm = game.armies.slice(); let placed = 0; const pl = placement || pending;
+  for (const k in pl) { arm[k] += pl[k]; placed += pl[k]; }
+  pending = {};
+  await commit({ armies: arm, reinforcements: 0, phase: "attack" }, L(actor(), `brought ${placed} new ships into service`), Object.keys(pl).map(k => ({ t: "rf", s: +k })));
+}
+const roll = k => Array.from({ length: k }, () => 1 + Math.floor(Math.random() * 6)).sort((a, b) => b - a);
+async function attack(from, to, blitz) {
+  if (busy) return; busy = true;
+  try {
+    const me = actor(), def = game.owner[to];
+    if (game.owner[from] !== me || game.armies[from] < 2 || def === me) return;
+    const own = game.owner.slice(), arm = game.armies.slice();
+    let lostA = 0, lostD = 0, rounds = 0, a, d;
+    do {
+      a = roll(Math.min(3, arm[from] - 1)); d = roll(Math.min(2, arm[to]));
+      for (let k = 0; k < Math.min(a.length, d.length); k++) { if (a[k] > d[k]) { arm[to]--; lostD++; } else { arm[from]--; lostA++; } }
+      rounds++;
+    } while (blitz && arm[to] > 0 && arm[from] > 1);
+    lastRoll = { a, d, lostA, lostD, rounds };
+    if (arm[to] <= 0) {
+      // the ships that won the last roll move in; the player may send more after
+      own[to] = me; const dice = a.length;
+      arm[to] = dice; arm[from] -= dice;
+      moveAfter = { from, to, max: arm[from] - 1, fortify: false };
+      const aliveNow = game.seats.map((s, k) => own.some(o => o === k));
+      let line = def < 0 ? L(me, `claimed ${disp(S[to])}`) : L(me, `took ${disp(S[to])} from {d} (lost ${lostA}, destroyed ${lostD})`, def);
+      if (def >= 0 && hqOf[to] === def) line = L(me, `captured the HQ of {d} at ${disp(S[to])}`, def);
+      if (def >= 0 && !aliveNow[def]) line = L(me, `took ${disp(S[to])} and wiped out {d}`, def);
+      const patch = { owner: own, armies: arm, alive: aliveNow, conq: true };
+      if (def >= 0 && !aliveNow[def] && handOf(def).length) { const cards = { ...(game.cards || {}) }; cards[me] = [...handOf(me), ...handOf(def)]; cards[def] = []; patch.cards = cards; }   // the victor takes the beaten player's cards
+      const win = own.filter(o => o === me).length >= target(game) || aliveNow.filter(Boolean).length === 1;
+      if (win) { patch.status = "over"; patch.winner = me; moveAfter = null; }
+      await commit(patch, line, def < 0 ? [{ t: "mv", from, to }] : [{ t: "bt", from, to, a: me, d: def, la: lostA, ld: lostD, cap: true }]);   // unclaimed systems are simply occupied, no fire
+      if (win) await commit({}, L(me, `wins the game with ${own.filter(o => o === me).length} systems`));
+      if (moveAfter && moveAfter.max <= 0) moveAfter = null;
+      pick = moveAfter ? -1 : to;
+    } else {
+      const line = blitz || rounds > 1 || lostA + lostD > 1 ? L(me, `attacked ${disp(S[to])} held by {d}: lost ${lostA}, destroyed ${lostD}`, def) : null;
+      await commit({ armies: arm }, line, [{ t: "bt", from, to, a: me, d: def, la: lostA, ld: lostD, cap: false }]);
+      if (arm[from] < 2) pick = -1;
+    }
+  } finally { busy = false; if (aiSeat < 0) renderGame(); }
+}
+async function confirmMove(k) {
+  const m = moveAfter; if (!m) return; moveAfter = null;
+  const arm = game.armies.slice(); arm[m.from] -= k; arm[m.to] += k;
+  if (m.fortify) { pick = -1; await commit({ armies: arm, fortified: true }, L(actor(), `moved ${k} ships from ${disp(S[m.from])} to ${disp(S[m.to])}`), [{ t: "mv", from: m.from, to: m.to }]); }
+  else { pick = m.to; await commit({ armies: arm }, null, k > 0 ? [{ t: "mv", from: m.from, to: m.to }] : null); }
+}
+async function endAttack() { pick = -1; lastRoll = null; await commit({ phase: "fortify" }); }
+async function endTurn() {
+  pick = -1; lastRoll = null; moveAfter = null;
+  if (game.conq) await drawCardFor(game.turn);
+  const seats = game.seats.length; let nx = game.turn;
+  for (let k = 0; k < seats; k++) { nx = (nx + 1) % seats; if (game.owner.some(o => o === nx)) break; }
+  await commit({ turn: nx, phase: "reinforce", reinforcements: reinforcementsFor(nx, game), fortified: false, turnNo: (game.turnNo || 1) + 1 }, L(nx, "begins their turn"));
+}
+async function skipTurn() {
+  if (game.creator !== myId || game.turn === mySeat()) return;
+  const who = game.turn;
+  if (game.phase === "setup") { const ch = hqChoices(); aiSeat = who; await claimHQ(ch[Math.floor(Math.random() * ch.length)]); aiSeat = -1; await commit({}, L(who, "had a home sun picked for them")); return; }
+  await endTurn(); await commit({}, L(who, "was skipped by the game's creator"));
+}
+
+// ---- computer players: simple, readable heuristics ----
+function frontier(seat) { return game.owner.map((o, i) => o === seat && adj[i].some(x => game.owner[x.j] !== seat) ? i : -1).filter(i => i >= 0); }
+function threat(i, seat) { return adj[i].reduce((a, x) => a + (game.owner[x.j] >= 0 && game.owner[x.j] !== seat ? game.armies[x.j] : 0), 0); }
+function goalContinent(seat) {
+  // the continent closest to completion that this seat already touches
+  let best = -1, bs = -1;
+  C.forEach(c => {
+    let mine = 0, touch = false;
+    S.forEach((s, i) => { if (s.continent !== c.id) return; if (game.owner[i] === seat) { mine++; touch = true; } else if (adj[i].some(x => game.owner[x.j] === seat)) touch = true; });
+    if (!touch || mine === c.territories) return;
+    const sc = mine / c.territories + c.bonus / c.territories * .5 + (mine > 0 ? .2 : 0);
+    if (sc > bs) { bs = sc; best = c.id; }
+  });
+  return best;
+}
+async function botTurn(seat) {
+  const pace = botPace();
+  if (game.phase === "setup") {
+    const ch = hqChoices(); if (!ch.length) return;
+    const free2 = i => hops([i], 2).filter(d => d <= 2).length;
+    const best = ch.map(i => [i, adj[i].length * 2 + free2(i) + Math.random() * 3]).sort((a, b) => b[1] - a[1])[0][0];
+    await sleep(pace); await claimHQ(best); return;
+  }
+  if (game.phase === "reinforce") for (let k = 0; k < 6 && bestSet(seat); k++) { await sleep(pace); await tradeSet(seat); }   // bots trade whenever they hold a set
+  if (game.phase === "reinforce") {
+    const goal = goalContinent(seat), fr = frontier(seat), r = game.reinforcements;
+    const score = i => threat(i, seat) - game.armies[i] * .5 + (adj[i].some(x => game.owner[x.j] !== seat && S[x.j].continent === goal) ? 6 : 0) + (adj[i].some(x => game.owner[x.j] < 0) ? 3 : 0) + (hqOf[i] === seat ? 2 : 0);
+    const ranked = (fr.length ? fr : game.owner.map((o, i) => o === seat ? i : -1).filter(i => i >= 0)).sort((a, b) => score(b) - score(a));
+    const place = {}; const main = Math.ceil(r * (ranked.length > 1 ? .7 : 1));
+    place[ranked[0]] = main; if (r - main > 0) place[ranked[1]] = r - main;
+    await sleep(pace); await confirmReinforce(place);
+  }
+  if (game.phase === "attack") {
+    for (let step = 0; step < 30 && game.status === "playing"; step++) {
+      const goal = goalContinent(seat); let best = null, bs = -Infinity;
+      game.owner.forEach((o, i) => {
+        if (o !== seat || game.armies[i] < 2) return;
+        for (const x of adj[i]) {
+          const j = x.j, dOwn = game.owner[j]; if (dOwn === seat) continue;
+          const att = game.armies[i] - 1, def = game.armies[j];
+          const ok = dOwn < 0 ? att >= 1 : (att >= def + 2 && att >= def * 1.4);
+          if (!ok) continue;
+          const sc = (dOwn < 0 ? 4 : 2.5) + (S[j].continent === goal ? 3 : 0) + Math.min(3, (att - def) / (def + 1)) + (hqOf[j] >= 0 && dOwn >= 0 ? 2 : 0) - (hqOf[i] === seat && threat(i, seat) > 0 ? 2 : 0);
+          if (sc > bs) { bs = sc; best = [i, j]; }
+        }
+      });
+      if (!best) break;
+      await sleep(pace); await attack(best[0], best[1], true);
+      if (moveAfter) {
+        const m = moveAfter, aheadOpen = adj[m.to].some(x => game.owner[x.j] !== seat), behindRisk = threat(m.from, seat) > 0 || hqOf[m.from] === seat;
+        const k = aheadOpen ? (behindRisk ? Math.floor(m.max / 2) : m.max) : Math.floor(m.max / 4);
+        await confirmMove(Math.max(0, k));
+      }
+    }
+    if (game.status !== "playing") return;
+    await sleep(pace); await endAttack();
+  }
+  if (game.phase === "fortify") {
+    const inner = game.owner.map((o, i) => o === seat && game.armies[i] >= 3 && !adj[i].some(x => game.owner[x.j] !== seat) ? i : -1).filter(i => i >= 0).sort((a, b) => game.armies[b] - game.armies[a]);
+    if (inner.length && !game.fortified) {
+      const src = inner[0], dst = frontier(seat).filter(i => connected(src, i, seat)).sort((a, b) => threat(b, seat) - threat(a, seat))[0];
+      if (dst !== undefined) { moveAfter = { from: src, to: dst, max: game.armies[src] - 1, fortify: true }; await sleep(pace); await confirmMove(moveAfter.max); }
+    }
+    await sleep(pace); await endTurn();
+  }
+}
+async function maybeRunBot() {
+  const humans = game ? game.seats.filter(s => !s.ai).length : 0;
+  const runner = (mySeat() >= 0 && !isBot(mySeat())) || (humans === 0 && canWrite);   // seated humans run bots; in computer-only games, anyone watching who may play does
+  if (aiRunning || !game || game.status !== "playing" || !isBot(game.turn) || !runner) return;
+  aiRunning = true; const seat = game.turn, key = `${game.turnNo}:${seat}`;
+  try {
+    const lock = DB.doc("games/" + gameId + "/locks/bot");
+    const lease = await lock.acquire({ holder: myId, ttlMs: 120000 });
+    if (!lease.acquired) { setTimeout(() => maybeRunBot(), 15000); return; }
+    aiSeat = seat;
+    for (let guard = 0; guard < 4 && game.status === "playing" && game.turn === seat && `${game.turnNo}:${game.turn}` === key; guard++) await botTurn(seat);
+  } catch (e) { alertLine("A computer player's turn failed (" + (e && e.code || e && e.message || "error") + ")."); }
+  finally { aiSeat = -1; aiRunning = false; moveAfter = null; pick = -1; if (game) setTimeout(applyGame, 50); }
+}
+
+let lookOpen = false;
+function lookEditor(me) {
+  const s = game.seats[me], main = HEX.test(s.main || "") ? s.main : mainOf(me), sub = HEX.test(s.sub || "") ? s.sub : subOf(me);
+  const clash = game.seats.some((o, k) => k !== me && (o.main || "").toLowerCase() === main.toLowerCase() && (o.sub || "").toLowerCase() === sub.toLowerCase());
+  return `<details id="lookBox" ${lookOpen ? "open" : ""}><summary class="mini" style="cursor:pointer">Your name and colours</summary>
+    <div class="row" style="margin-top:6px"><span id="lkPrev" class="chip" style="background:${main};box-shadow:0 0 0 2px ${sub};width:14px;height:14px"></span>
+    <input id="lkName" class="num" style="width:11em" maxlength="24" value="${esc(s.name || seatName(me))}" aria-label="Your name">
+    <label class="mini" for="lkMain">Main</label><input id="lkMain" type="color" value="${main}">
+    <label class="mini" for="lkSub">Sub</label><input id="lkSub" type="color" value="${sub}">
+    </div><div class="row" style="margin-top:6px"><label class="mini" for="lkHull">Ships</label><select id="lkHull" style="flex:0 0 auto">${HULLS.map(h => `<option value="${h.key}" ${hullOf(me) === h.key ? "selected" : ""}>${h.glyph} ${h.name}</option>`).join("")}</select>
+    <button class="btn" id="gLook">Save</button></div>
+    ${clash ? `<p class="hint">Another player has the same colours. Pick a different main or sub colour so people can tell you apart.</p>` : `<p class="mini">Main colours your stars and ships; the sub colour is a thin outline and small ship details. Ships sets the shape of your whole fleet.</p>`}</details>`;
+}
+// ---- the big turn banner near the bottom ----
+const TB = document.getElementById("turnBar");
+let tbKey = "", tbNudge = "";
+function nudge() { tbNudge = "Hey, wait your turn."; renderTurnBar(); TB.classList.remove("shake"); void TB.offsetWidth; TB.classList.add("shake"); clearTimeout(nudge.t); nudge.t = setTimeout(() => { tbNudge = ""; renderTurnBar(); }, 2200); }
+function renderTurnBar() {
+  if (!gameId || !game || game.status === "lobby") { TB.hidden = true; tbKey = ""; return; }
+  TB.hidden = false;
+  const me = mySeat(), cur = game.turn, mine = myTurn();
+  TB.classList.toggle("mine", mine || (game.status === "over" && game.winner === me)); TB.classList.toggle("wait", !mine && game.status !== "over");
+  TB.style.setProperty("--tb", mine ? mainOf(me) : game.status === "over" ? mainOf(game.winner) : "");
+  let big, what, btn = "";
+  if (game.status === "over") { big = game.winner === me ? "Victory" : `${esc(seatName(game.winner))} wins`; what = game.winner === me ? "The stars are yours." : "The campaign is over."; }
+  else if (mine) {
+    big = "Your turn";
+    if (game.phase === "setup") { what = "Choose your home sun: click any system marked +."; btn = `<button class="btn" data-tb="randhq">Pick one for me</button>`; }
+    else if (game.phase === "reinforce") {
+      const left = game.reinforcements - Object.values(pending).reduce((a, b) => a + b, 0);
+      const set = bestSet(me), tv = tradeValue(game.trades || 0);
+      if (mustTrade(me)) { what = `You hold ${handOf(me).length} cards: trade a set before placing ships.`; btn = `<button class="btn go" data-tb="trade">Trade a set for +${tv}</button>`; }
+      else {
+        what = left > 0 ? `Reinforce: click your systems to place ${left} more ship${left === 1 ? "" : "s"}.` : "All ships placed.";
+        btn = (set ? `<button class="btn" data-tb="trade">Trade cards for +${tv}</button>` : "") + `<button class="btn go" data-tb="place" ${left > 0 ? "disabled" : ""}>Confirm placements</button>`;
+      }
+    } else if (moveAfter) {
+      const m = moveAfter, half = Math.max(1, Math.floor(m.max / 2));
+      what = m.fortify ? `Move ships from <b>${esc(disp(S[m.from]))}</b> to <b>${esc(disp(S[m.to]))}</b>: how many?`
+        : `<b>${esc(disp(S[m.to]))}</b> is yours. ${armies[m.to]} ship${armies[m.to] === 1 ? "" : "s"} moved in. Send more from <b>${esc(disp(S[m.from]))}</b> (${m.max} can go)?`;
+      btn = (m.fortify ? `<button class="btn" data-tb="mvx">Cancel</button>` : `<button class="btn" data-tb="mv0">None</button>`)
+        + (half < m.max ? `<button class="btn" data-tb="mvh">${half} (half)</button>` : "")
+        + `<button class="btn go" data-tb="mva">All ${m.max}</button>`;
+    } else if (game.phase === "attack") { what = pick < 0 ? "Attack or expand: pick one of your systems with 2+ ships, then a neighbour." : `From ${esc(disp(S[pick]))}: click a neighbour to attack or claim it.`; btn = `<button class="btn go" data-tb="endatk">Done attacking</button>`; }
+    else { what = game.fortified ? "Fortified. End your turn when ready." : "Fortify: optionally move ships between two of your connected systems."; btn = `<button class="btn go" data-tb="end">End turn</button>`; }
+  } else {
+    big = tbNudge ? "Wait your turn" : me >= 0 ? "Wait your turn" : "Watching";
+    const verb = { setup: "is choosing a home sun", reinforce: "is reinforcing", attack: "is attacking", fortify: "is fortifying" }[game.phase] || "is moving";
+    what = `${tbNudge ? tbNudge + " " : ""}${swatch(cur, 12)} <b>${esc(seatName(cur))}</b> ${verb}${isBot(cur) ? " (computer)" : ""}.`;
+  }
+  TB.innerHTML = `<div class="big">${big}</div><div class="what">${what}</div>${btn ? `<div class="row">${btn}</div>` : ""}`;
+  TB.querySelectorAll("[data-tb]").forEach(b => b.onclick = () => {
+    const a = b.dataset.tb;
+    if (a === "trade") { tradeSet(mySeat()); return; }
+    if (a === "place") confirmReinforce(); else if (a === "endatk") endAttack(); else if (a === "end") endTurn();
+    else if (a === "randhq") { const ch = hqChoices(); if (ch.length) claimHQ(ch[Math.floor(Math.random() * ch.length)]); }
+    else if (a === "mv0") confirmMove(0); else if (a === "mva") confirmMove(moveAfter.max); else if (a === "mvh") confirmMove(Math.max(1, Math.floor(moveAfter.max / 2))); else if (a === "mvx") { moveAfter = null; renderGame(); }
+  });
+  // pulse when it becomes your turn
+  const key = mine ? `${game.turnNo}:${cur}` : "";
+  if (key && key !== tbKey) { TB.classList.remove("pop"); void TB.offsetWidth; TB.classList.add("pop"); }
+  tbKey = key;
+}
+// ---- panel rendering ----
+function renderGame() {
+  document.querySelectorAll(".explore").forEach(e => e.hidden = !!gameId);
+  renderTurnBar();
+  if (!DB) return;
+  if (!gameId) return renderLobby();
+  if (!game) { G.innerHTML = `<p class="sub">Loading the game…</p>`; return; }
+  const me = mySeat(), seats = game.seats, isCreator = game.creator === myId;
+  const seatRows = seats.map((s, k) => {
+    const sys = game.owner ? ownedBy(k) : 0, str = game.armies ? game.armies.reduce((a, v, i) => a + (game.owner[i] === k ? v : 0), 0) : 0;
+    const out = game.owner && game.phase !== "setup" && sys === 0;
+    const rm = game.status === "lobby" && isCreator ? `<button class="btn" data-rm="${esc(s.uid)}" title="Remove this seat" style="padding:1px 6px">✕</button>` : "";
+    return `<div class="seat${game.status === "playing" && game.turn === k ? " turn" : ""}">${swatch(k)}<span>${esc(seatName(k))} <span class="mini" title="${HULLS.find(h => h.key === hullOf(k)).name} ships">${HULLS.find(h => h.key === hullOf(k)).glyph}</span>${s.uid === myId ? " (you)" : ""}${s.ai ? " · computer" : ""}</span><span class="tag">${out ? "out" : game.owner ? `${sys} sys · ${str}${handOf(k).length ? ` · ${handOf(k).length} ▤` : ""}` : ""}</span>${rm}</div>`;
+  }).join("");
+  let body = "";
+  const modeText = legacy(game) ? "Everyone starts from a single home sun and expands outward." : "The map is dealt out at the start.";
+  if (game.status === "lobby") {
+    const inGame = me >= 0;
+    body = `<p class="sub">${seats.length} of ${game.maxSeats} seats taken. ${modeText} First to ${effPct(game)}% of the systems (${target(game)}) wins, or the last one standing.</p>
+      <div class="row">${!inGame && seats.length < game.maxSeats ? `<button class="btn go" id="gJoin">Take a seat</button>` : ""}${isCreator && seats.length < game.maxSeats ? `<button class="btn" id="gBot">Add computer player</button>` : ""}${isCreator ? `<button class="btn go" id="gStart" ${seats.length < 2 ? "disabled" : ""}>Start the game</button>` : ""}</div>
+      ${isCreator && seats.length < 2 ? `<p class="mini">Add computer players or send the link to friends. You can start with 2 or more seats.</p>` : ""}`;
+  } else if (game.status === "over") {
+    body = `<h3>${esc(seatName(game.winner))} wins</h3><p class="sub">${game.winner === me ? "The stars are yours." : "Better luck next campaign."}</p>`;
+  } else {
+    const cur = game.turn, mine = myTurn();
+    const phaseName = { setup: "Choosing home suns", reinforce: "Reinforce", attack: "Attack", fortify: "Fortify" }[game.phase];
+    body = `<div class="row">${swatch(cur)}<b>${esc(seatName(cur))}</b><span class="mini">turn ${game.turnNo || 1} · ${phaseName}</span></div>`;
+    if (!mine) body += `<p class="sub">${isBot(cur) ? (aiRunning ? "Computer player is moving…" : seats.some(s => !s.ai) ? "Computer player's turn. It plays in a seated player's browser." : "Computer-only game: the bots play in the browser of whoever is watching.") : me >= 0 ? "Waiting for their move. The board updates live." : "You are watching this game."}</p>${isCreator && !isBot(cur) ? `<button class="btn" id="gSkip">Skip their turn</button>` : ""}`;
+    if (seats.some(s => s.ai)) body += `<div class="row pace" role="group" aria-label="Bot speed"><span class="mini">Bot speed</span>${Object.keys(PACES).map(k => `<button type="button" class="dot${paceKey() === k ? " on" : ""}" data-pace="${k}" aria-pressed="${paceKey() === k}" title="${k}"><i></i><span>${k}</span></button>`).join("")}</div>`;
+    else if (game.phase === "setup") {
+      body += `<p class="hint">Choose your home sun: click any system marked + (at least ${HQ_SPACING} jumps from other home suns where possible). It starts with ${HQ_ARMIES} ships, and holding it is worth +${HQ_BONUS} ships a turn.</p><div class="row"><button class="btn" id="gRandHQ">Pick one for me</button></div>`;
+    } else if (game.phase === "reinforce") {
+      const placed = Object.values(pending).reduce((a, b) => a + b, 0), left = game.reinforcements - placed;
+      body += `<p class="hint">Click your systems to add ships: ${left} of ${game.reinforcements} left to place.</p>
+        <div class="row"><button class="btn go" id="gPlace" ${left > 0 ? "disabled" : ""}>Confirm placements</button><button class="btn" id="gUndo" ${placed ? "" : "disabled"}>Undo all</button>${left > 0 && sel >= 0 && game.owner[sel] === me ? `<button class="btn" id="gAll">Place all ${left} at ${esc(disp(S[sel]))}</button>` : ""}</div>`;
+    } else if (moveAfter) {
+      const m = moveAfter;
+      body += `<p class="hint">${m.fortify ? `Move ships from ${esc(disp(S[m.from]))} to ${esc(disp(S[m.to]))}:` : `${esc(disp(S[m.to]))} is yours. Send more ships in from ${esc(disp(S[m.from]))}?`}</p>
+        <div class="row"><input class="num" id="gMoveN" type="number" min="${m.fortify ? 1 : 0}" max="${m.max}" value="${m.fortify ? m.max : 0}" aria-label="Ships to move"><button class="btn go" id="gMove">Move</button>${m.fortify ? `<button class="btn" id="gMoveX">Cancel</button>` : `<button class="btn" id="gMoveAll">All ${m.max}</button>`}</div>`;
+    } else if (game.phase === "attack") {
+      const tgts = pick >= 0 ? adj[pick].filter(x => game.owner[x.j] !== me) : [];
+      body += pick < 0 ? `<p class="hint">Pick one of your systems with 2+ ships to attack or expand from. Unclaimed systems are taken just by moving in.</p>`
+        : `<p class="hint">From ${esc(disp(S[pick]))} (${game.armies[pick]} ships). Click a neighbour, or blitz one:</p>
+           <div class="row">${tgts.map(x => `<button class="btn" data-blitz="${x.j}">${esc(disp(S[x.j]))} · ${game.owner[x.j] < 0 ? "unclaimed" : game.armies[x.j]}</button>`).join("") || `<span class="mini">Nothing to attack from here.</span>`}</div>`;
+      if (lastRoll && lastRoll.d.length) body += `<p class="dice">You ${lastRoll.a.join(" ")} vs ${lastRoll.d.join(" ")}</p><p class="mini">${lastRoll.rounds > 1 ? `${lastRoll.rounds} rounds: ` : ""}lost ${lastRoll.lostA}, destroyed ${lastRoll.lostD}</p>`;
+      body += `<div class="row"><button class="btn go" id="gEndAtk">Done attacking</button></div>`;
+    } else {
+      body += game.fortified ? `<p class="sub">Fortified.</p>` : `<p class="hint">Optional: pick one of your systems, then another you can reach through your own systems, to move ships once.</p>`;
+      body += `<div class="row"><button class="btn go" id="gEnd">End turn</button></div>`;
+    }
+  }
+  const log = (game.log || []).slice().reverse().map(e => `<div>${swatch(e.s, 7)}${esc(seatName(e.s))} ${esc(e.m).replace("{d}", e.d >= 0 ? esc(seatName(e.d)) : "")}</div>`).join("");
+  G.innerHTML = `<div class="row"><h3>Game</h3><button class="btn" id="gBack" style="margin-left:auto">All games</button></div><div class="seats">${seatRows}</div>${me >= 0 ? lookEditor(me) : ""}${me >= 0 && game.status === "playing" && game.phase !== "setup" ? `<div class="hand"><span class="mini">Your cards · next set trades for +${tradeValue(game.trades || 0)}</span><div class="cards">${handHtml(me)}</div>${myTurn() && game.phase === "reinforce" && bestSet(me) ? `<button class="btn go" id="gTrade">Trade a set for +${tradeValue(game.trades || 0)}</button>` : ""}</div>` : ""}${body}${log ? `<div class="log">${log}</div>` : ""}`;
+  const on = (id, f) => { const b = document.getElementById(id); if (b) b.onclick = f; };
+  G.querySelectorAll("[data-pace]").forEach(b => b.onclick = () => { try { localStorage.setItem("hs_pace", b.dataset.pace); } catch (e) {} G.querySelectorAll("[data-pace]").forEach(x => { const on = x === b; x.classList.toggle("on", on); x.setAttribute("aria-pressed", on); }); });
+  on("gBack", leaveView); on("gJoin", () => joinGame(gameId)); on("gStart", startGame); on("gSkip", skipTurn); on("gBot", addBot);
+  on("gRandHQ", () => { const ch = hqChoices(); if (ch.length) claimHQ(ch[Math.floor(Math.random() * ch.length)]); });
+  on("gPlace", () => confirmReinforce()); on("gUndo", () => { pending = {}; applyGame(); });
+  on("gAll", () => { const left = game.reinforcements - Object.values(pending).reduce((a, b) => a + b, 0); pending[sel] = (pending[sel] || 0) + left; applyGame(); });
+  on("gMove", () => { const k = Math.max(moveAfter.fortify ? 1 : 0, Math.min(moveAfter.max, +document.getElementById("gMoveN").value || 0)); confirmMove(k); });
+  on("gMoveAll", () => confirmMove(moveAfter.max)); on("gMoveX", () => { moveAfter = null; renderGame(); });
+  on("gEndAtk", endAttack); on("gEnd", endTurn); on("gTrade", () => tradeSet(mySeat()));
+  on("gLook", () => saveSeatLook(document.getElementById("lkName").value, document.getElementById("lkMain").value, document.getElementById("lkSub").value, document.getElementById("lkHull").value));
+  ["lkMain", "lkSub"].forEach(id => { const el = document.getElementById(id); if (el) el.oninput = () => { const pv = document.getElementById("lkPrev"); pv.style.background = document.getElementById("lkMain").value; pv.style.boxShadow = "0 0 0 2px " + document.getElementById("lkSub").value; }; });
+  const ld = document.getElementById("lookBox"); if (ld) ld.ontoggle = () => { lookOpen = ld.open; };
+  G.querySelectorAll("[data-blitz]").forEach(b => b.onclick = () => attack(pick, +b.dataset.blitz, true));
+  G.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => removeSeat(b.dataset.rm));
+}
+function renderLobby() {
+  const rows = games.map(g => {
+    const seats = g.seats || [], mine = seats.some(s => s.uid === myId);
+    const who = seats.map(s => s.name || names[s.uid] || "Someone").join(", ");
+    const state = g.status === "lobby" ? `${seats.length}/${g.maxSeats} seats` : g.status === "over" ? "finished" : `turn ${g.turnNo || 1}`;
+    return `<div class="gamerow"><span class="grow" title="${esc(who)}">${esc(who)}</span><span class="mini">${state}</span><button class="btn" data-open="${esc(g.id)}">${g.status === "lobby" && !mine && seats.length < g.maxSeats ? "Join" : mine ? "Open" : "Watch"}</button></div>`;
+  }).join("");
+  G.innerHTML = `<div class="row"><h3>Play online</h3></div>
+    ${canWrite ? `<div class="row"><label class="mini" for="newMode">Start</label><select id="newMode" style="flex:1"><option value="legacy" selected>One home sun each, expand outward</option><option value="dealt">Map dealt out at random</option></select></div>
+    <div class="row"><label class="mini" for="newSeats">Seats</label><select id="newSeats" style="flex:0 0 auto">${[2, 3, 4, 5, 6, 7, 8, 10, 12, 16].map(k => `<option ${k === 4 ? "selected" : ""}>${k}</option>`).join("")}</select>
+    <label class="mini" for="newPct">Win at</label><select id="newPct" style="flex:0 0 auto">${[25, 40, 50, 60, 75, 100].map(k => `<option value="${k}" ${k === 40 ? "selected" : ""}>${k}%</option>`).join("")}</select>
+    <button class="btn go" id="gNew" ${busy ? "disabled" : ""}>New game</button><button class="btn" id="gAllAI" ${busy ? "disabled" : ""} title="Every seat is a computer player; you watch">Computer-only game</button></div>` : `<p class="sub">You can watch games here, but your access to this page doesn't allow playing.</p>`}
+    <div class="games">${rows || `<p class="mini">No games yet. Start one, add computer players or share this page's link.</p>`}</div>
+    <p class="mini">With no game open, the map shows an example deal (controls below).</p>`;
+  const nb = document.getElementById("gNew"); if (nb) nb.onclick = () => createGame(false);
+  const na = document.getElementById("gAllAI"); if (na) na.onclick = () => createGame(true);
+  G.querySelectorAll("[data-open]").forEach(b => b.onclick = () => { const g = games.find(x => x.id === b.dataset.open); if (g && g.status === "lobby" && !(g.seats || []).some(s => s.uid === myId) && (g.seats || []).length < g.maxSeats) joinGame(g.id); else openGame(b.dataset.open); });
+}
+
+// highlight the picked system and its targets
+const pickRing = new THREE.Mesh(new THREE.TorusGeometry(.9, .05, 8, 48), new THREE.MeshBasicMaterial({ color: 0xf4e3b5 })); pickRing.visible = false; scene.add(pickRing);
+setInterval(() => { pickRing.visible = !!game && pick >= 0 && aiSeat < 0; if (pickRing.visible) { pickRing.position.copy(P[pick]); pickRing.quaternion.copy(camera.quaternion); } }, 50);
+
+// ---- start ----
+newGame(); frame();
+(async () => {
+  try { [DB, USER] = await Promise.all([claude.use("db"), claude.use("user")]); } catch (e) { DB = null; }
+  if (!DB) { G.innerHTML = `<p class="sub">Online play needs the page opened on claude.ai while signed in. The example deal below still works.</p>`; return; }
+  myId = USER ? await USER.id() : null;
+  if (USER && myId) { try { names[myId] = (await USER.me()).name || ""; } catch (e) {} }
+  if (!myId) { G.innerHTML = `<p class="sub">Sign in to play online. The example deal below still works.</p>`; DB = null; return; }
+  const cw = USER ? await USER.can("data.write") : null; canWrite = cw !== false;
+  listGames(); renderGame();
+})();
+</script>
