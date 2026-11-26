@@ -223,6 +223,10 @@ Sources:
   - https://forum.ironhelmet.com/t/a-bunch-of-collected-feedback-from-a-newbie/5320
 
 ## Bugs and balance
+- [ ] **Launch load (found 2026-11-26, Paul asked "what if 10K people hop on"):**
+  - [ ] **The lobby is a single hotspot.** Every room reports to the one Lobby object every 10 moves, and the lobby rewrites its whole room list to storage each time. With thousands of busy rooms that is hundreds of writes a second to one object. Report only when the listing changes (status, seats, AI seats), at most every ~20 s, and keep the list in memory with a slower save.
+  - [ ] **AI moves run on alarms**, so a room with AI seats stays awake and every move counts as a request. Free plan: 100,000 Durable Object requests a day, then online play fails until midnight UTC (solo play still works; it runs in the browser). Measure requests per online game with the local server, to size the free plan versus Workers Paid.
+  - [ ] Check that Quick play falls back to Play vs AI on a 500 or 503 as well as on no connection (it does on any non-OK reply; confirm once deployed).
 - [x] **The sun card swallowed taps on the top bar (round 39):** a tall sun card (photo and facts) sitting above a tall bar reached the top bar, and the two shared a layer, so taps on Cards (and the buttons beside it) hit the card instead. Not caused by the recap; any selected sun could do it. The card now stops below the top bar and scrolls inside, and the top bar is drawn above it. A browser check covers it, with a sun card open.
 - [x] **Invite links never loaded (round 32, there since round 3):** a fresh page at `/r/CODE` resolved `app.js`, `style.css` and the other files under `/r/` and got 404s. Creating a room only changed the address after load, so earlier tests missed it. Fixed with `<base href="/">`. The browser tests now open an invite link fresh.
 - [x] **Dark specks after battles (round 28):** debris and lasers used additive blending that also added opacity to the see-through canvas, so fading debris left black specks over the nebula backdrop. Light effects now add colour only (`lightOnly` in `client/scene.js`); checked clean after a 56-turn war.
