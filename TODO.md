@@ -98,9 +98,10 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
    - [x] An all-bot soak test (`run.ps1 soak`): 60 of 60 games finish, with a median of 1,712 turns.
    - [x] Screenshots at every screen size above. *(Round 13: `docs/shots/`: phone portrait, phone landscape, tablet, ultrawide, fog, results.)*
 8. **Going public (Paul only)**
-   - [ ] Paul makes a free Cloudflare account and signs in himself. Then `wrangler deploy` happens only on his go.
-   - [ ] Check the free plan's current limits (Workers requests, Durable Object requests and storage) against about 300 players.
+   - [x] Paul makes a free Cloudflare account and signs in himself. Then `wrangler deploy` happens only on his go.
+   - [x] Check the free plan's current limits (Workers requests, Durable Object requests and storage) against about 300 players.
    - [ ] A small friends test (5–10 people) before sharing widely.
+   - *(2026-11-26: the account is made and on Workers Paid ($5); deployed from GitHub, live at https://stellarchy.maiqs.workers.dev. The domain stellarchy-game.com is bought and on Cloudflare. Still to do in the dashboard: add the plain domain as a Production custom domain, and remove the Cloudflare Access login that guards www.)*
 
 ## Open for Paul
 - A domain? The free one is `<name>.workers.dev`; a custom domain costs money, so skip it unless he wants one.
@@ -186,7 +187,7 @@ Sources:
   - https://www.gamedeveloper.com/game-platforms/analysis-asynchronicity-in-game-design
   - https://forums.sorcererking.com/377297/reply/2555466
 
-- [ ] **Round 25 research:**
+- [x] **Round 25 research:**
   - [x] **AI difficulty, with friendly names:** beginners get pushed out by early AI aggression, and "Very Easy" labels feel embarrassing. Harder AI usually means hidden bonuses, which should be stated openly. *(Round 25: Recruit, Captain and Admiral.)*
   - [x] **Show the dice are fair:** digital conquest games draw constant "the dice cheat" complaints, and the official game had to post an FAQ. Colonist.io explaining its dice did not settle it. Ideas: *(Round 25: the rules count every die; the results show your average against 3.50; How to play explains server-rolled dice and the only AI bonus.)*
     - your own roll statistics against the expected average, on the results screen
@@ -204,7 +205,7 @@ Sources:
   - https://ie.trustpilot.com/review/colonist.io?page=2
   - https://community.playchessup.com/t/chess-com-rematch-button/2078
 
-- [ ] **Round 35 research:**
+- [x] **Round 35 research:**
   - [x] **Skip the AI's turns and the animations:** the most repeated ask found this round. Armello players call long AI turns unplayable and want a skip button; Gems of War asks for "Skip AI turn animation"; Hearthstone asks for a "Skip animations" option and speed settings; Board Game Arena asks for an option to turn off scoring animations, and another for no flashing or repeated animations. *(Round 35: Battle effects Full / Quick / Off and ⏩ Skip to my turn.)*
   - [x] **Slow it down for me only:** Lords of Waterdeep players found the AI too fast to follow and asked to slow it, but not for everyone. Online, our pace is per room; a per-viewer replay of the last turn ("What just happened?") would cover it without slowing others. *(Round 38: "While you waited": at the start of your turn the bar shows ⟲ lost N suns · held N (red when you lost any). It opens a list of each sun lost or held, who attacked, ships lost and destroyed, plus knock-outs and broken truces; tap a sun to fly there. `client/recap.js`, unit-tested.)*
   - [x] **Vote to end a stuck game:** war.app players can vote to end a game after someone disconnects and restart from a few turns back. For us: when only AI-covered seats are holding the game up, the humans can vote "end now, most suns wins". *(Round 42: Menu → ⚑ End the game now. Online, it asks everyone; a gold banner on every bar offers Agree or Keep playing. It ends only if every human still playing and present agrees within 2 minutes (AI-covered seats do not vote); Keep playing cancels it. Solo, it ends at once. Most suns wins; ties go to the most ships. `endByAgreement` and `leader` are in `shared/rules.js`.)*
@@ -223,7 +224,7 @@ Sources:
   - https://forum.ironhelmet.com/t/a-bunch-of-collected-feedback-from-a-newbie/5320
 
 ## Bugs and balance
-- [ ] **Launch load (found 2026-11-26, Paul asked "what if 10K people hop on"):**
+- [x] **Launch load (found 2026-11-26, Paul asked "what if 10K people hop on"):**
   - [x] **The lobby is a single hotspot.** Every room reports to the one Lobby object every 10 moves, and the lobby rewrites its whole room list to storage each time. With thousands of busy rooms that is hundreds of writes a second to one object. Report only when the listing changes (status, seats, AI seats), at most every ~20 s, and keep the list in memory with a slower save. *(Round 41: done. Private rooms never report. Listed rooms report only when the listing changes, or once a minute; a 75-turn public game now sends 5 reports, against about 85 before. The lobby saves at most every 10 s and tidies at most every 5 s. A room check covers it.)*
   - [x] **AI moves run on alarms**, so a room with AI seats stays awake and every move counts as a request. Free plan: 100,000 Durable Object requests a day, then online play fails until midnight UTC (solo play still works; it runs in the browser). Measure requests per online game with the local server, to size the free plan versus Workers Paid. *(Round 41: `.\run.ps1 measure`. A 4-seat, 100-sun game costs about 900–4,000 alarms (one per AI move), so roughly 1,000–4,000 requests a game, plus a few per human action. Free plan: about 25–100 online games a day. Paul is taking Workers Paid ($5).)*
   - [x] Check that Quick play falls back to Play vs AI on a 500 or 503 as well as on no connection (it does on any non-OK reply; confirm once deployed). *(Round 42: confirmed in the code. Any non-OK reply except 429 opens Play vs AI with a message; 429 shows the limit message.)*
@@ -577,3 +578,8 @@ Sources:
   - Ending by agreement (a player wish): ⚑ End the game now in the Menu. Online, every human still playing must agree within 2 minutes; solo, it ends at once. Most suns wins.
   - Confirmed that Quick play falls back to Play vs AI on any server error.
   - 53 of 53 unit tests, 22 of 22 browser checks and 39 of 39 room checks pass.
+- **Round 43 (2026-11-26):**
+  - Link previews: shared links now show a card (title, description, and a 1200×630 picture of the title screen, `client/og.jpg`, made by `tools/og_image.mjs`). The server fills in full addresses for whichever site is visited, and invite links say "Join my Stellarchy war · room CODE".
+  - TODO tidy: ticked the account, the plan limits, launch load and two research groups.
+  - Checked the live domain for Paul: the plain domain has no address yet, and www is behind a Cloudflare Access login.
+  - 53 of 53 unit tests, 23 of 23 browser checks and 40 of 40 room checks pass; a dry-run deploy builds.

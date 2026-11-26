@@ -21,6 +21,7 @@ try {
   await page.goto(BASE + "/"); await page.waitForSelector("#mSolo", { state: "visible" });
 
   // title screen
+  check(await page.evaluate(() => ["og:title", "og:image", "og:description"].every(p => document.querySelector(`meta[property=\"${p}\"]`))) && (await page.evaluate(() => document.querySelector('meta[property="og:image"]').content)).startsWith(BASE), "the page carries a link-preview card with a full picture address");
   check(await page.isVisible("text=Stellarchy") && await page.isVisible("#mQuick"), "title screen shows the wordmark and Quick play");
 
   // a note to the developer, from the title page

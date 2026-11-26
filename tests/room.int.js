@@ -236,6 +236,13 @@ for (const c of [a, bb, sneaky]) c.ws.close();
   check(asked && kept && a.state.status === "over" && a.state.game.winner >= 0, `ending by agreement: one ask waits for everyone, "keep playing" cancels it, and two yeses end it (winner seat ${a.state.game && a.state.game.winner})`);
   a.ws.close(); b.ws.close();
 }
+// link previews (round 43): the page carries a full picture address, and an invite link names its room
+{
+  const home = await (await fetch(BASE + "/")).text(), inv = await (await fetch(BASE + "/r/QX7K")).text();
+  const img = (home.match(/property="og:image" content="([^"]+)"/) || [])[1] || "";
+  const pic = await fetch(img).catch(() => null);
+  check(img.startsWith(BASE + "/og.jpg") && pic && pic.ok && /room QX7K/.test(inv) && inv.includes(BASE + "/r/QX7K"), `link previews: a full picture address (${img}) and invite cards that name the room`);
+}
 // an idle room closes itself (needs DEV=1 in .dev.vars for the short idle time)
 {
   const r = await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 2, public: true, idleMs: 1500 }) });

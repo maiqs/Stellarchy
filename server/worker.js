@@ -67,10 +67,24 @@ export default {
       return env.ROOMS.get(env.ROOMS.idFromName(code)).fetch(req);
     }
     // /r/CODE links open the page; the page reads the code from the address
-    if (/^\/r\/[A-Za-z0-9]{4}$/.test(p)) return env.ASSETS.fetch(new Request(new URL("/", url), req));
+    if (/^\/r\/[A-Za-z0-9]{4}$/.test(p)) return withPreview(await env.ASSETS.fetch(new Request(new URL("/", url), req)), url, p.slice(3).toUpperCase());
+    if (p === "/" || p === "/index.html") return withPreview(await env.ASSETS.fetch(req), url, null);
     return env.ASSETS.fetch(req);
   },
 };
+
+// link previews (round 43): full addresses for this site, and an invite's own title ("Join my Stellarchy war · room ABCD")
+function withPreview(res, url, code) {
+  if (!res.ok || !(res.headers.get("content-type") || "").includes("text/html")) return res;
+  const site = url.origin, setContent = v => ({ element(e) { e.setAttribute("content", v); } });
+  let rw = new HTMLRewriter()
+    .on('meta[property="og:image"]', setContent(site + "/og.jpg"))
+    .on('meta[property="og:url"]', setContent(code ? `${site}/r/${code}` : site + "/"));
+  if (code && CODE.test(code)) rw = rw
+    .on('meta[property="og:title"]', setContent(`Join my Stellarchy war · room ${code}`))
+    .on('meta[property="og:description"]', setContent("Tap to join the room: a free neon strategy war for the real stars. No account needed."));
+  return rw.transform(res);
+}
 
 // the lobby: public rooms report in; anything quiet for 15 minutes (or finished for 2) drops off the list
 export class Lobby {
