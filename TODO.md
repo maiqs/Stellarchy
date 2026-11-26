@@ -23,7 +23,7 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
    - [x] Wrangler (Cloudflare's CLI, via npm).
    - [x] Run everything locally with `wrangler dev`. No account and nothing public until Paul says go.
 2. **Project layout**
-   - [ ] `client/`: the page (Three.js, the same r128 neon renderer to start).
+   - [x] `client/`: the page (Three.js, the same r128 neon renderer to start).
    - [x] `server/`: the Worker plus the `Room` Durable Object.
    - [x] `shared/`: the rules (`rules.js`), the map helpers (`map.js`) and the bots (`bot.js`), used by both.
    - [ ] `data/star_map.json`: 301 systems, lanes and continents. HYG v4.1, CC BY-SA 4.0, credited.
@@ -31,12 +31,12 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
 3. **Server owns the game**
    - [x] Clients send intents (`place`, `attack`, `move`, `fortify`, `trade`, `endTurn`). The room checks them, rolls the dice, and broadcasts the state and the fx events over WebSocket.
    - [x] A late joiner gets the full state on connect.
-   - [ ] Reconnect keeps your seat: a per-browser player token in localStorage, no account. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
+   - [x] Reconnect keeps your seat: a per-browser player token in localStorage, no account. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
    - [x] Bots run in the room on alarms, so a game keeps going when every tab closes.
 4. **Rooms and lobby**
-   - [ ] Create a room (public or private, seats 2–16, start mode, win %, an all-computer game option). Get a code and a copy-link button. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
-   - [ ] The lobby lists open public rooms only: seats free, started or not. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
-   - [ ] Join by code or link. The creator can add or remove bots and start the game. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
+   - [x] Create a room (public or private, seats 2–16, start mode, win %, an all-computer game option). Get a code and a copy-link button. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
+   - [x] The lobby lists open public rooms only: seats free, started or not. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
+   - [x] Join by code or link. The creator can add or remove bots and start the game. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
    - [ ] A spectator mode for full or running rooms.
 4b. **Map size slider (Paul, 2026-11-25): 10 to 3,000 suns**
    - [ ] **Data:** rebuild the star file with the 3,000 nearest systems, sorted by distance from Sol. The C# builder in `../star_diplomacy/tools` has a 16 pc cap; lift it to about 35 pc. The file is about 400 KB raw and about 100 KB gzipped.
@@ -82,16 +82,16 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
    - [x] Rate limits per connection. Names are length-limited and escaped.
    - [ ] Empty rooms close after a while. Finished rooms are kept briefly to show the result, then removed.
 6. **UI pass (the big one)**
-   - [ ] Full-screen 3D map. The UI floats on it as neon glass panels, with no big side columns.
-   - [ ] One clear action bar at the bottom: "YOUR TURN: place 7 ships" → "Attack or end" → "Fortify". Big touch targets.
-   - [ ] Tap a star to select it; neighbours light up as targets. Drag or tap to attack, with a dice animation and the result inline.
-   - [ ] Collapsible drawers: players, cards, log. Hidden by default on phones.
-   - [ ] Responsive layout: portrait phone, landscape phone, tablet, desktop. Test at 360×640, 390×844, 768×1024, 1366×768, 1920×1080, 3440×1440.
+   - [x] Full-screen 3D map. The UI floats on it as neon glass panels, with no big side columns.
+   - [x] One clear action bar at the bottom: "YOUR TURN: place 7 ships" → "Attack or end" → "Fortify". Big touch targets.
+   - [ ] Tap a star to select it; neighbours light up as targets. Drag or tap to attack, with a dice animation and the result inline. *(Round 3: tap to select, then tap a target, is done; drag-to-attack and a dice animation are not.)*
+   - [x] Collapsible drawers: players, cards, log. Hidden by default on phones.
+   - [ ] Responsive layout: portrait phone, landscape phone, tablet, desktop. Test at 360×640, 390×844, 768×1024, 1366×768, 1920×1080, 3440×1440. *(Round 3: checked at phone portrait and 1024×768. Other sizes still to test.)*
    - [ ] First-game hints: three short coach marks, dismissable, shown once.
-   - [ ] A title screen with a slowly turning star map, plus Play / Create room / Join by code.
+   - [x] A title screen with a slowly turning star map, plus Play / Create room / Join by code.
    - [ ] Settings: bot speed, camera sensitivity, reduced motion, colour-blind-friendly outlines.
    - [ ] Performance: cap the pixel ratio on phones and keep 60 fps on a mid phone. Fall back to fewer effects.
-   - [ ] Credits page: HYG (CC BY-SA 4.0), Three.js (MIT), anything else used.
+   - [x] Credits page: HYG (CC BY-SA 4.0), Three.js (MIT), anything else used.
 7. **Tests**
    - [x] Rules tests in `tests/rules.test.js` (10 checks: setup spacing, illegal moves, cards, 2-, 4-, 9- and 16-way games to total conquest, dealt win target, AI hand-back).
    - [ ] Room tests: two to sixteen fake clients through a whole game, reconnects, timeouts, bad intents rejected. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
@@ -117,14 +117,14 @@ Paul: look online for features people want and give them to people. I looked at 
   - Add extra time when there are many ships to place.
   - Show "time banks" rather than an instant kick.
 - [ ] **Timer choice per room:** none (friends), 90 s, 3 min, or a long-turn mode (12 or 24 h) where AI covers a missed turn. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
-  - Long turns need turn alerts: the browser notification API, a flashing tab title and a sound. Email needs accounts, so skip it.
+  - Long turns need turn alerts: the browser notification API, a flashing tab title and a sound. Email needs accounts, so skip it. *(Round 3: the browser notification and the tab title are done; a sound is not.)*
 - [ ] **No pay-to-play limits, ever.** The big official game's most common complaint is free-tier token caps.
   - Say it on the title screen: "Free. No tokens, no timers on how much you play."
-- [ ] **Solo play against AI with no server.** The rules are shared, so a solo game can run fully in the browser.
+- [x] **Solo play against AI with no server.** The rules are shared, so a solo game can run fully in the browser.
   - Offline play is also a frequent ask. Make it work offline as an installable web app.
 - [ ] **Quick play:** one button joins an open room or starts one filled with bots that people can replace.
 - [ ] **Quick chat and emotes.** Players ask for "quick chats". Use preset lines and emotes, with no free text to moderate. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
-- [ ] **Finding things on big maps:**
+- [ ] **Finding things on big maps:** *(Round 3: search by name, plus "My home sun" and "My busiest border", are done; pins and the region list are not.)*
   - search for a sun by name
   - pin suns
   - jump to "my borders" and "my home sun"
@@ -136,7 +136,7 @@ Paul: look online for features people want and give them to people. I looked at 
   - each player's best moment
   - a replay you can scrub through
 - [ ] **Speed controls:** skip animations, and watch bots at speed.
-- [ ] **Undo before confirm:** take back placements until you press Confirm.
+- [x] **Undo before confirm:** take back placements until you press Confirm.
 - [ ] **Later:** a map editor and custom scenarios, which are big in Warzone.
 
 Sources:
@@ -172,3 +172,13 @@ Sources:
     - Also: rate limits, emotes, and 4-letter room codes.
   - Wrangler 4.168 runs locally.
   - Added `tests/room.int.js`, 12 checks against `wrangler dev`, all passing. 10 of 10 unit tests pass.
+- **Round 3 (2026-11-25):**
+  - Built the game screen in `client/`:
+    - a title screen with the slowly turning map, and the look editor (name, colours, hull, play style)
+    - Play vs AI, run entirely in the browser by `LocalRoom` with no server
+    - Create room, Join by code, the open-rooms list and `/r/CODE` links
+    - the room lobby: invite link, add AI players, start
+    - the HUD: one action bar per phase, the players drawer, log, cards with science faces, sun card, find-a-sun, toasts, the turn timer with an AI warning, a win screen, and turn notifications
+  - Ported the neon renderer to three.js r187 modules. Three.js and the fonts are served from our own folder, with no CDN (`tools/sync.mjs`).
+  - Checked in the preview at desktop and phone size, plus an online room against `wrangler dev`.
+  - 10 of 10 unit tests pass.

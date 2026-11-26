@@ -1,1 +1,63 @@
-<!doctype html><title>Stellarchy</title><p>Stellarchy client coming soon.</p>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070c">
+<meta name="description" content="Stellarchy: a free neon strategy war for Sol and the nearest real stars. Play in your browser with friends or against the AI. No account, no tokens.">
+<title>Stellarchy</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<script>try { const p = JSON.parse(localStorage.getItem("stellarchy_profile")); if (p && /^#[0-9a-f]{6}$/i.test(p.main)) document.documentElement.style.setProperty("--me", p.main); } catch (e) {}</script>
+<script type="importmap">{ "imports": { "three": "./vendor/three.module.js", "three/addons/": "./vendor/" } }</script>
+</head>
+<body>
+<div id="stage"></div>
+<div id="labels" aria-hidden="true"></div>
+
+<!-- title screen -->
+<section id="title" class="screen" aria-labelledby="wordmark">
+  <div class="title-inner">
+    <p class="eyebrow">A war for the real stars</p>
+    <h1 id="wordmark" class="wordmark">Stellarchy</h1>
+    <p class="tagline">Sol and its nearest neighbours, where they really are. Found a home sun, build your fleets, rule the stars.</p>
+    <div class="menu">
+      <button class="btn big go" id="mSolo" type="button"><span class="ico">◆</span>Play vs AI</button>
+      <button class="btn big" id="mCreate" type="button"><span class="ico">✦</span>Create a room</button>
+      <form class="joinrow" id="mJoin">
+        <label for="joinCode" class="sr">Room code</label>
+        <input id="joinCode" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CODE" inputmode="text">
+        <button class="btn" type="submit">Join</button>
+      </form>
+      <button class="btn ghost" id="mRooms" type="button">Open rooms</button>
+      <button class="btn ghost" id="mWatch" type="button">Watch an AI war</button>
+    </div>
+    <div class="you" id="youCard"></div>
+    <p class="fine">Free. No account, no tokens, no limits on how much you play. <a href="#" id="mCredits">Credits</a></p>
+  </div>
+</section>
+
+<!-- modals -->
+<dialog id="dlg" class="glass"></dialog>
+
+<!-- game HUD -->
+<div id="hud" hidden>
+  <header class="topbar">
+    <button class="chip brand" id="hMenu" type="button" aria-label="Menu"><span class="dotlogo"></span>Stellarchy</button>
+    <button class="chip code" id="hCode" type="button" hidden></button>
+    <div class="spacer"></div>
+    <button class="iconbtn" id="hPlayers" type="button" aria-label="Players" aria-expanded="false">☰<span class="lab">Players</span></button>
+    <button class="iconbtn" id="hCards" type="button" aria-label="Cards">▤<span class="lab">Cards</span><b class="badge" hidden></b></button>
+    <button class="iconbtn" id="hLog" type="button" aria-label="Log">≡<span class="lab">Log</span></button>
+    <button class="iconbtn" id="hFind" type="button" aria-label="Find a sun">⌕<span class="lab">Find</span></button>
+  </header>
+  <aside id="players" class="panel glass side" aria-label="Players"></aside>
+  <aside id="logPanel" class="panel glass side right" aria-label="Log" hidden></aside>
+  <section id="sunCard" class="glass suncard" hidden aria-live="polite"></section>
+  <section id="bar" class="glass actionbar" aria-live="polite"></section>
+  <div id="toasts" aria-live="polite"></div>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

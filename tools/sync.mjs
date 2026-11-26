@@ -1,0 +1,22 @@
+// Copies everything the page needs into client/: the shared rules, the star map, three.js and the fonts.
+// Run by run.ps1 before dev and test. The copies in client/ are generated: edit shared/ and data/, not these.
+import { cpSync, mkdirSync, readFileSync, writeFileSync, rmSync } from "node:fs";
+const root = new URL("../", import.meta.url), at = p => new URL(p, root);
+const copy = (from, to) => { mkdirSync(new URL(".", at(to)), { recursive: true }); cpSync(at(from), at(to), { recursive: true }); };
+
+rmSync(at("client/shared"), { recursive: true, force: true });
+copy("shared/", "client/shared/");
+copy("data/star_map.json", "client/data/star_map.json");
+copy("node_modules/three/build/three.module.js", "client/vendor/three.module.js");
+copy("node_modules/three/build/three.core.js", "client/vendor/three.core.js");
+copy("node_modules/three/examples/jsm/controls/OrbitControls.js", "client/vendor/OrbitControls.js");
+copy("node_modules/three/LICENSE", "client/vendor/three.LICENSE.txt");
+const fonts = [
+  ["@fontsource/chakra-petch", "chakra-petch-latin-500-normal.woff2"], ["@fontsource/chakra-petch", "chakra-petch-latin-700-normal.woff2"],
+  ["@fontsource/ibm-plex-sans", "ibm-plex-sans-latin-400-normal.woff2"], ["@fontsource/ibm-plex-sans", "ibm-plex-sans-latin-500-normal.woff2"],
+  ["@fontsource/ibm-plex-mono", "ibm-plex-mono-latin-500-normal.woff2"], ["@fontsource/ibm-plex-mono", "ibm-plex-mono-latin-700-normal.woff2"],
+];
+for (const [pkg, f] of fonts) copy(`node_modules/${pkg}/files/${f}`, `client/fonts/${f}`);
+copy("node_modules/@fontsource/chakra-petch/LICENSE", "client/fonts/OFL-chakra-petch.txt");
+copy("node_modules/@fontsource/ibm-plex-sans/LICENSE", "client/fonts/OFL-ibm-plex.txt");
+console.log("synced shared/, data/, three.js and fonts into client/");
