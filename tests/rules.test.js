@@ -165,3 +165,10 @@ test("flagships: start at home, and taking one knocks its player out", () => {
   assert.equal(g.owner.filter(o => o === def).length, 0);
   assert.deepEqual(invariants(MAP, g), []);
 });
+
+test("highlights: the biggest battle and knock-outs are recorded", () => {
+  const rng = mulberry32(61), g = newGame(MAP, { mode: "legacy", seats: seats(5) }, rng);
+  runGame(MAP, g, rng);
+  assert.equal(g.kos.reduce((a, b) => a + b, 0), 4, "everyone but the winner was knocked out by someone");
+  assert.ok(g.best.some(b => b && b.ld > 0 && b.to >= 0 && b.turn > 0));
+});

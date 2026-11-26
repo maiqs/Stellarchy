@@ -37,6 +37,7 @@ export function newGame(map, opts, rng) {
     targetPct: allAI ? 100 : clampPct(opts.targetPct ?? 100),   // computer-only games run to total conquest (Paul)
     cardMode: ["escalating", "fixed", "none"].includes(opts.cards) ? opts.cards : "escalating",   // room option: how card sets pay
     hqArmies: [10, 20, 40].includes(opts.hqArmies) ? opts.hqArmies : HQ_ARMIES,           // room option: the starting fleet at a home sun
+    best: seats.map(() => null), kos: seats.map(() => 0),   // highlights for the results: biggest battle, players knocked out
     flagships: !!opts.flagships, flag: seats.map(() => -1),   // room option: lose your flagship and you are out
     seats, owner: new Array(n).fill(-1), armies: new Array(n).fill(0), hq: seats.map(() => -1),
     turn: first, setupFirst: first, phase: "setup", reinforcements: 0, fortified: false, turnNo: 1,
@@ -175,6 +176,7 @@ const ACTIONS = {
     } while (blitz && g.armies[to] > 0 && g.armies[from] > 1);
     g.lastRoll = { a, d, lostA, lostD, rounds, from, to };
     const captured = g.armies[to] <= 0;
+    if (g.best && lostD > 0 && (!g.best[seat] || lostD > g.best[seat].ld)) g.best[seat] = { ld: lostD, la: lostA, to, turn: g.turnNo, cap: captured };
     ev.push({ t: "bt", from, to, a: seat, d: def, la: lostA, ld: lostD, rounds, cap: captured, dice: { a, d } });
     if (!captured) return;
     const moveIn = a.length;
@@ -186,7 +188,7 @@ const ACTIONS = {
       for (let i = 0; i < g.owner.length; i++) if (g.owner[i] === def) { g.owner[i] = -1; g.armies[i] = 0; }
     }
     if (!g.owner.includes(def)) {
-      g.alive[def] = false; ev.push({ t: "elim", seat: def, by: seat });
+      g.alive[def] = false; ev.push({ t: "elim", seat: def, by: seat }); if (g.kos) g.kos[seat]++;
       if (g.cards[def].length) { g.cards[seat].push(...g.cards[def]); g.cards[def] = []; }   // the victor takes the beaten player's cards
     }
     g.advance = g.armies[from] > 1 ? { from, to, max: g.armies[from] - 1 } : null;

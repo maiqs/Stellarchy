@@ -131,7 +131,7 @@ Paul: look online for features people want and give them to people. I looked at 
   - a region list showing bonuses and who holds what
 - [ ] **Bigger games:** Warzone players ask for 60–100 players. Consider up to 32 seats on maps of 500 suns or more.
 - [x] **Fog of war as a room option.** It's a Warzone staple: you see only your suns and their neighbours. *(Round 12: an option in Play vs AI and Create room. It's applied per viewer on the server and in solo play (`shared/fog.js`). Fogged suns are dim slate; battles out of sight are hidden; totals still show. Off during home-sun choice, after the game ends, and for players who are out.)*
-- [ ] **End-of-game screen:** *(Round 9: the graph of suns held over time and the standings are done; best moments and a scrubbable replay are not.)*
+- [ ] **End-of-game screen:** *(Round 9: the graph of suns held over time and the standings are done; Round 18: best moments are done (biggest battle, most knock-outs, closest rival's peak). A scrubbable replay is not.)*
   - a graph of systems held over time
   - each player's best moment
   - a replay you can scrub through
@@ -168,7 +168,7 @@ Sources:
 
 - [ ] **Round 15 research:**
   - [x] **Faster placing:** players find click-per-ship placing tedious ("hold to add" on itch.io), and Warlight's request board asks to "deploy reinforcements equally to all border territories". *(Round 15: hold a sun to pour ships in, plus a "Spread across borders" button.)*
-  - [ ] **Something to do while waiting:** the classic complaint about turn-based multiplayer is idle time. Ideas:
+  - [x] **Something to do while waiting:** the classic complaint about turn-based multiplayer is idle time. Ideas: *(Round 18: plan while you wait. Tap your suns during others' turns; the plan becomes your placement when your turn starts, capped at the real count, still for you to confirm.)*
     - plan next turn's placement during others' turns, applied when your turn starts
     - a live "what's happening" feed
   - [x] **Commander or flagship (room option):** Warzone's commanders put "yourself" on the board: a unit worth 7 armies, and losing it eliminates you. A flagship at your home sun would add a target and a story. *(Round 17: a Flagships option. ⚑ at the home sun (or the biggest dealt sun); +1 on the best defending die there; losing it knocks you out and your suns go dark. The AI guards its own and hunts others. Hidden under fog unless visible.)*
@@ -339,3 +339,7 @@ Sources:
   - The AI guards its own flagship and hunts the others. Flagships are hidden under fog unless you can see that sun.
   - Labels, the sun card, alerts and the log all show it, in online rooms and solo play.
   - 33 of 33 tests pass.
+- **Round 18 (2026-11-26):**
+  - Plan while you wait (a player wish): tap your suns during others' turns, and the waiting bar shows "Planned 3 of about 5", with a Clear plan button. The plan becomes your placement when your turn starts, capped at the real count, still for you to confirm.
+  - Best moments on the results screen: the biggest battle (ships destroyed, where, when), the most knock-outs, and the closest rival's peak. The rules record them. Online they're sent only at the end, since mid-game they would show where battles happened under fog.
+  - 34 of 34 tests pass.

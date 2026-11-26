@@ -289,7 +289,8 @@ export class Room {
     const s = this.s, g = s.game, base = this.view(), sockets = this.ctx.getWebSockets();
     this.sentTo = this.sentTo || new WeakMap();
     const pub = g ? { ...g, owner: undefined, armies: undefined, deck: undefined, discard: undefined, deckCount: g.deck.length, cards: undefined,
-                      hist: s.status === "over" ? g.hist : undefined, totals: totals(g), fog: !!s.opts.fog } : null;
+                      hist: s.status === "over" ? g.hist : undefined, best: s.status === "over" ? g.best : undefined, kos: s.status === "over" ? g.kos : undefined,
+                      totals: totals(g), fog: !!s.opts.fog } : null;   // highlights only at the end: they would show where battles were
     for (const ws of sockets) {
       const a = ws.deserializeAttachment() || {};
       let msg = base;

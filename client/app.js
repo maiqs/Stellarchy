@@ -2,7 +2,7 @@
 // The server (or LocalRoom for solo play) owns the game; this page only shows it and sends intents.
 import { prepareMap, specClass } from "./shared/map.js";
 import { buildMap, clampSize, SIZE_STEPS } from "./shared/mapgen.js";
-import { hqChoices, mustTrade, isSet, connected, cardKind, ownedBy, target, effPct, setValue } from "./shared/rules.js";
+import { hqChoices, mustTrade, isSet, connected, cardKind, ownedBy, target, effPct, setValue, reinforcementsFor } from "./shared/rules.js";
 import { STYLES, STYLE_KEYS } from "./shared/bot.js";
 import { createScene, HULLS, fleetOf, CLASSES } from "./scene.js";
 import { LocalRoom } from "./local.js";
@@ -75,12 +75,12 @@ function lookDialog(after) {
 
 // ---------- rooms ----------
 let room = null, st = null, mySeat = null, isCreator = false;
-const ui = { sel: -1, pending: {}, cards: new Set(), fort: null, adv: null, panel: wideScreen() ? "players" : null, // the players drawer starts open only on wide screens
+const ui = { plan: {}, sel: -1, pending: {}, cards: new Set(), fort: null, adv: null, panel: wideScreen() ? "players" : null, // the players drawer starts open only on wide screens
   lastTurnKey: "", lastRev: -1 };
 function wideScreen() { return innerWidth > 1000; }
 
 function startRoom(r) {
-  room = r; st = null; mySeat = null; ui.sel = -1; ui.pending = {}; ui.cards.clear(); ui.fort = null; ui.lastRev = -1; ui.board = null;
+  room = r; st = null; mySeat = null; ui.sel = -1; ui.pending = {}; ui.cards.clear(); ui.fort = null; ui.lastRev = -1; ui.board = null; ui.plan = {};
   r.on(m => {
     if (m.t === "welcome") { mySeat = m.seat; isCreator = !!m.creator; if (m.token && st && st.code) store.set("stellarchy_tok_" + st.code, m.token); }
     else if (m.t === "state") onState(m);
@@ -260,7 +260,7 @@ function onState(m) {
     scene.setBoard(g, lookOf, m.rev !== ui.lastRev ? m.events : []);
     // a new turn or phase clears selections
     const key = `${g.turnNo}:${g.phase}:${!!g.advance}`;
-    if (key !== ui.lastTurnKey) { ui.lastTurnKey = key; if (!g.advance) ui.adv = null; ui.fort = null; if (g.phase !== "reinforce") ui.pending = {}; if (g.phase !== "attack" && g.phase !== "fortify") selectSun(-1); }
+    if (key !== ui.lastTurnKey) { ui.lastTurnKey = key; if (!g.advance) ui.adv = null; ui.fort = null; if (g.phase !== "reinforce") ui.pending = {}; if (myTurn() && g.phase === "reinforce") applyPlan(g, k); if (g.phase !== "attack" && g.phase !== "fortify") selectSun(-1); }
     if (g.advance) ui.adv = ui.adv && ui.adv.to === g.advance.to ? ui.adv : { to: g.advance.to, n: g.advance.max };
     for (const e of (m.rev !== ui.lastRev ? m.events : [])) eventToast(e, k);
     if (prev && prev.game && prev.game.turn !== g.turn && g.turn === k && g.status === "playing") { toast("Your turn"); sound.turn(); if (document.hidden) notifyTurn(); }
@@ -299,6 +299,7 @@ function onPick(i) {
   if (!st || !st.game) { if (i >= 0) { selectSun(i); scene.focus(i); } return; }
   const g = st.game, k = seatIx();
   if (i < 0) { if (g.phase !== "reinforce") selectSun(-1); render(); return; }
+  if (!myTurn() && planAdd(g, k, i)) return;   // while waiting: tap your suns to plan next turn's ships
   if (!myTurn() || g.advance) { selectSun(i); render(); return; }
   if (g.phase === "setup") { if (hqChoices(MAP, g).includes(i)) send({ t: "hq", sys: i }); else { selectSun(i); toast("Pick one of the pulsing suns: they're far enough from other home suns."); } return; }
   if (g.phase === "reinforce") {
@@ -333,6 +334,7 @@ function renderMarks() {
   const k = seatIx(), mine = myTurn();
   if (g.phase === "setup" && mine) for (const i of hqChoices(MAP, g)) m.set(i, { color: "#f4e3b5", text: "+" });
   if (mine && g.phase === "reinforce") for (const i in ui.pending) m.set(+i, { color: lookOf(k).main, strong: true, text: `${g.armies[i]}+${ui.pending[i]}` });
+  if (!mine && k >= 0) for (const i in ui.plan) if (g.owner[i] === k) m.set(+i, { color: lookOf(k).main, text: `${g.armies[i]}+${ui.plan[i]}?` });   // planned, not placed
   if (mine && g.phase === "attack" && !g.advance) {
     if (ui.sel >= 0 && g.owner[ui.sel] === k && g.armies[ui.sel] >= 2) { m.set(ui.sel, { color: lookOf(k).main, strong: true }); for (const j of MAP.adj[ui.sel]) if (g.owner[j] !== k) m.set(j, { color: g.owner[j] < 0 ? "#ffffff" : "#ff4d5a" }); }
     else for (let i = 0; i < MAP.n; i++) if (g.owner[i] === k && g.armies[i] >= 2 && MAP.adj[i].some(j => g.owner[j] !== k)) m.set(i, { color: lookOf(k).main });
@@ -368,7 +370,8 @@ function renderBar() {
     const doing = g.phase === "setup" ? "choosing a home sun" : g.phase === "reinforce" ? "reinforcing" : g.phase === "attack" ? "attacking" : "fortifying";
     bar.innerHTML = `${phaseRow}<div class="big" style="color:${esc(lookOf(k2).main)}">${k < 0 ? "" : "Wait your turn · "}${esc(nameOf(k2))}</div>
       <div class="what">${esc(nameOf(k2))} is ${doing}${turnSeat.ai ? " (AI)" : away ? " (AI is playing for them)" : ""}.${timerText(g)}</div>
-      ${me2 && me2.away ? `<div class="row"><button class="btn go" id="bBack" type="button">Take my seat back</button></div>` : ""}${paceRow()}`;
+      ${planLine(g, k)}${me2 && me2.away ? `<div class="row"><button class="btn go" id="bBack" type="button">Take my seat back</button></div>` : ""}${paceRow()}`;
+    if ($("bClearPlan")) $("bClearPlan").onclick = () => { ui.plan = {}; render(); };
     if (me2 && me2.away) $("bBack").onclick = () => room.send({ t: "away", on: false });
     wirePace(); return;
   }
@@ -529,6 +532,7 @@ function winDialog() {
   openDialog(`<div class="dlg win" style="--wc:${esc(w)}"><div class="crown">♛</div><h2>${esc(nameOf(g.winner))} rules the stars</h2>
     <p class="hint">${g.winner === k ? "You are the Stellarch of the known stars." : "The war is over."} ${ownedBy(g, g.winner)} of ${MAP.n} suns after ${g.turnNo} turns.</p>
     ${historyChart(g)}
+    ${highlights(g)}
     <div class="standings">${order.map((o, r) => `<span class="${o.j === k ? "me" : ""}" style="--pc:${esc(lookOf(o.j).main)}"><b>${r + 1}</b><span class="swatch s" style="--sw-main:${esc(lookOf(o.j).main)};--sw-sub:${esc(lookOf(o.j).sub)}"></span>${esc(nameOf(o.j))}</span>`).join("")}</div>
     ${rec && k >= 0 ? `<p class="hint">Your record: <b>${rec.wins}</b> win${rec.wins === 1 ? "" : "s"} in ${rec.games} game${rec.games === 1 ? "" : "s"}${rec.fastest ? ` · fastest win ${rec.fastest} turns` : ""}</p>` : ""}
     <div class="row"><button class="btn" id="wClose" type="button">Look at the map</button><button class="btn go" id="wMenu" type="button">Menu</button></div></div>`, el => {
@@ -730,4 +734,43 @@ function spreadAcrossBorders() {
   let left = g.reinforcements - placed();
   for (let r = 0; left > 0; r++) { const i = border[r % border.length]; ui.pending[i] = (ui.pending[i] || 0) + 1; left--; }
   render();
+}
+
+// ---------- plan while you wait (a player wish: something to do during other turns) ----------
+// Tap your suns during other players' turns to plan where next turn's ships go; the plan becomes your
+// placement when your turn starts (you still confirm it, and can change it). The count is an estimate.
+const planned = () => Object.values(ui.plan).reduce((a, b) => a + b, 0);
+function planAdd(g, k, i) {
+  if (k < 0 || !g || g.status !== "playing" || g.phase === "setup" || !g.alive[k] || g.owner[i] !== k) return false;
+  if (planned() >= reinforcementsFor(MAP, g, k)) { toast("That's all the ships you'll have next turn (at your current size)."); return true; }
+  ui.plan[i] = (ui.plan[i] || 0) + 1; selectSun(i); render(); return true;
+}
+function applyPlan(g, k) {
+  let left = g.reinforcements, n = 0;
+  for (const i in ui.plan) { if (g.owner[i] !== k || left <= 0) continue; const c = Math.min(left, ui.plan[i]); ui.pending[i] = (ui.pending[i] || 0) + c; left -= c; n += c; }
+  ui.plan = {};
+  if (n) toast(`Your plan placed ${n} ship${n === 1 ? "" : "s"}. Confirm, or change them first.`);
+}
+function planLine(g, k) {
+  if (k < 0 || !g.alive[k] || g.phase === "setup") return "";
+  const p = planned(), est = reinforcementsFor(MAP, g, k);
+  return p ? `<div class="row"><span class="hint">Planned ${p} of about ${est} ships for your next turn.</span><button class="btn small ghost" id="bClearPlan" type="button">Clear plan</button></div>`
+           : `<div class="hint">While you wait, tap your suns to plan where your ${est} new ships go.</div>`;
+}
+
+// ---------- results: the war's best moments ----------
+function highlights(g) {
+  const out = [], name = k => `<b style="color:${esc(lookOf(k).main)}">${esc(nameOf(k))}</b>`;
+  if (g.best) {   // the biggest single battle
+    let k = -1; g.best.forEach((b, j) => { if (b && (k < 0 || b.ld > g.best[k].ld)) k = j; });
+    if (k >= 0) { const b = g.best[k]; out.push(`<li><span>💥</span>Biggest battle: ${name(k)} destroyed <b>${b.ld}</b> ships at ${esc(disp(S[b.to]))}${b.cap ? " and took it" : ""} (turn ${b.turn}).</li>`); }
+  }
+  if (g.kos) { const top = Math.max(...g.kos); if (top > 0) { const k = g.kos.indexOf(top); out.push(`<li><span>☠</span>Most knock-outs: ${name(k)}, ${top} player${top === 1 ? "" : "s"}.</li>`); } }
+  const s = g.hist && g.hist.samples;   // the strongest runner-up, at their peak
+  if (s && s.length > 2) {
+    let k = -1, peak = 0, turn = 0;
+    st.seats.forEach((_, j) => { if (j === g.winner) return; s.forEach(p => { if (p.held[j] > peak) { peak = p.held[j]; k = j; turn = p.turn; } }); });
+    if (k >= 0) out.push(`<li><span>📈</span>Closest rival: ${name(k)} held <b>${peak}</b> suns at turn ${turn}.</li>`);
+  }
+  return out.length ? `<ul class="moments">${out.join("")}</ul>` : "";
 }
