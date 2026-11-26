@@ -102,3 +102,29 @@ export function skyWindow(map, i) {
     return `<figure class="sky${src ? " photo" : ""}">${photo}<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(caption)}">${inner}</svg><figcaption>${esc(text)}${src ? `<span class="cr">${esc(credit)}</span>` : ""}</figcaption></figure>`;
   }
 }
+
+// ---------- a science line for every sun (the famous few have hand-written facts in STAR_FACTS) ----------
+// Built only from the catalogue: kind of star, brightness against the Sun, light travel time, companions, constellation.
+const KIND_NOTE = {
+  M: "A red dwarf: small, cool and frugal, it will outlive the Sun by trillions of years.",
+  K: "An orange dwarf: a little smaller and cooler than the Sun, and steady for tens of billions of years.",
+  G: "A yellow dwarf, the same kind of star as the Sun.",
+  F: "A yellow-white star, hotter and brighter than the Sun but shorter-lived.",
+  A: "A hot white star, burning fast: it will live only a billion years or so.",
+  D: "A white dwarf: the hot, Earth-sized core left when a Sun-like star dies.",
+  L: "A brown dwarf: too small to fuse hydrogen, it glows faintly as it cools.",
+  T: "A brown dwarf, cold enough for methane in its air.",
+  Y: "One of the coldest brown dwarfs known: barely warmer than a summer day.",
+};
+export function scienceLine(s, constellationNames = {}, year = new Date().getFullYear()) {
+  if (s.name === "Sol") return "";
+  const parts = [], c = specClass(s);
+  if (KIND_NOTE[c]) parts.push(KIND_NOTE[c]);
+  const L = s.lum || 0;
+  if (L > 0) parts.push(L >= 1.5 ? `It gives out ${L >= 10 ? Math.round(L) : L.toFixed(1)} times the Sun's light.` : L >= .7 ? "It shines about as brightly as the Sun." : `It gives out about 1/${Math.round(1 / L).toLocaleString()} of the Sun's light.`);
+  const left = Math.round(year - s.distLy);
+  parts.push(`The light reaching Earth tonight left it ${left >= year - 1 ? "about a year ago" : `around ${left}`}.`);
+  if (s.stars > 1) parts.push(s.stars === 2 ? "It is a pair of stars." : `It is a family of ${s.stars} stars.`);
+  if (s.con && constellationNames[s.con]) parts.push(`Look for it in ${constellationNames[s.con]}.`);
+  return parts.slice(0, 3).join(" ");
+}

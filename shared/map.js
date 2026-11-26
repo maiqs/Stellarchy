@@ -3,8 +3,10 @@
 
 // spectral class letter of a system ("" if unknown); "D" for white dwarfs
 export function specClass(s) {
-  let t = (s.spect || "").trim().toUpperCase();
-  if (/^D[ABOQZCX]/.test(t) || t === "D" || (/^W[DN]?/.test(t) && !/^WR/.test(t))) return "D";
+  const raw = (s.spect || "").trim();
+  let t = raw.toUpperCase();
+  // a capital D is a white dwarf (DA, DC, DG, DQ, DZ...); a small d is the old "dwarf" prefix (dM4 is a red dwarf)
+  if (/^D/.test(raw) || (/^W[DN]?/.test(t) && !/^WR/.test(t))) return "D";
   t = t.replace(/^(SD|K-M|D|E)/, "");
   return /^[OBAFGKMLTY]/.test(t) ? t[0] : "";
 }

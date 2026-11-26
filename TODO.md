@@ -463,7 +463,7 @@ Sources:
 - **Paul, 2026-11-26 (between rounds):**
   - Ships were too big everywhere. `FRIGATE_LEN` is now 0.62 (was 1.02, about 60%), with orbits tightened to match.
   - Paul prefers science on the cards to gameplay traits for suns. Card faces now show light (× Sun), star count, and the famous-star fact (34 stars have one); before, facts were only on the sun card.
-- [ ] **Open for Paul:** facts for every sun, not just the 34 famous ones? Generated from the data, for example "The light you see left it in 2014", which stars it holds, and how it compares to the Sun.
+- [x] **Done in round 33:** facts for every sun, not just the 34 famous ones? Generated from the data, for example "The light you see left it in 2014", which stars it holds, and how it compares to the Sun.
 - **Paul, 2026-11-26:** the ship sizes look better now.
 - **Sky window on every card (Paul's ask):**
   - A small night-sky picture shows the sun as seen from Earth, with its neighbouring suns in true star colours and real brightness.
@@ -502,3 +502,8 @@ Sources:
     - no script errors or 404s, and phone size with no sideways scrolling
   - The tests found a real bug at once: invite links never loaded (see Bugs). Fixed.
   - 50 of 50 unit tests and 14 of 14 browser checks pass.
+- **Round 33 (2026-11-26):**
+  - Every sun's card now has a science line made from the data: what kind of star it is, its light compared with the Sun's, the year its light left it, whether it's a pair or family, and the constellation to find it in.
+  - Fixed: Van Maanen's Star ("DG") counted as a yellow dwarf. A capital D now always means a white dwarf; a small d (dM4) is still a red dwarf.
+  - New `.\run.ps1 phone`: starts a server the phone can reach on home Wi-Fi (port 8790, its own storage) and prints the address and a QR code.
+  - 51 of 51 unit tests and 14 of 14 browser checks pass.
