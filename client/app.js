@@ -110,6 +110,7 @@ function startRoom(r) {
   setTimeout(() => showHints(), 600);
 }
 function leaveRoom() {
+  ui.skipping = null;
   if (ui.replay) { clearTimeout(ui.replay.timer); ui.replay = null; scene.endReplay(); }
   if (room) room.close(); room = null; st = null; mySeat = null;
   history.replaceState(null, "", "/"); $("hud").hidden = true; $("title").hidden = false; dlg.open && dlg.close();
@@ -286,6 +287,9 @@ function onState(m) {
   if (m.code && !prev) { $("hCode").hidden = false; $("hCode").textContent = m.code; }
   const g = m.game, k = seatIx();
   if (g) {
+    // skip to my turn (solo): the AI plays at full speed with no battle effects until my turn comes round, then the pace goes back
+    if (ui.skipping && (myTurn() || g.status === "over" || m.status === "over")) { const p = ui.skipping; ui.skipping = null; room.send({ t: "pace", pace: p }); }
+    scene.setEffects(effectsMode(m));
     if (!ui.replay) scene.setBoard(g, lookOf, m.rev !== ui.lastRev ? m.events : []);   // a replay keeps the screen until it is closed
     // a new turn or phase clears selections
     const key = `${g.turnNo}:${g.phase}:${!!g.advance}`;
@@ -406,10 +410,10 @@ function renderBar() {
     const doing = g.phase === "setup" ? "choosing a home sun" : g.phase === "reinforce" ? "reinforcing" : g.phase === "attack" ? "attacking" : "fortifying";
     bar.innerHTML = `${phaseRow}<div class="big" style="color:${esc(lookOf(k2).main)}">${k < 0 ? "" : "Wait your turn · "}${esc(nameOf(k2))}</div>
       <div class="what">${esc(nameOf(k2))} is ${doing}${turnSeat.ai ? " (AI)" : away ? " (AI is playing for them)" : ""}.${timerText(g)}</div>
-      ${planLine(g, k)}${me2 && me2.away ? `<div class="row"><button class="btn go" id="bBack" type="button">Take my seat back</button></div>` : ""}${paceRow()}`;
+      ${planLine(g, k)}${me2 && me2.away ? `<div class="row"><button class="btn go" id="bBack" type="button">Take my seat back</button></div>` : skipButton() ? `<div class="row">${skipButton()}</div>` : ""}${ui.skipping ? "" : paceRow()}`;
     if ($("bClearPlan")) $("bClearPlan").onclick = () => { ui.plan = {}; render(); };
     if (me2 && me2.away) $("bBack").onclick = () => room.send({ t: "away", on: false });
-    wirePace(); return;
+    wirePace(); wireSkip(); return;
   }
   // ---- my turn ----
   const awayBtn = st.local ? "" : `<button class="btn ghost small" id="bAway" type="button">Let AI play for me</button>`;
@@ -479,6 +483,16 @@ function timerText(g, mineOnly) {
   return mineOnly ? `<div class="timer ${warn ? "warn" : ""}">${say}</div>` : ` <span class="timer">${st.onBank ? "⏳ " : ""}${txt}</span>`;
 }
 setInterval(() => { if (st && st.deadline && st.game && st.status === "playing") { const t = document.querySelector(".timer"); if (t) renderBar(); } }, 1000);
+// battle effects: the viewer's choice, made quick automatically at the fast paces so effects never pile up
+function effectsMode(m = st) {
+  const pick = store.get("stellarchy_fx", "full"), pace = m && m.opts && m.opts.pace;
+  return ui.skipping ? "off" : pick === "full" && (pace === "fast" || pace === "instant") ? "quick" : pick;
+}
+function skipButton() {
+  const me = seatIx() >= 0 ? st.seats[seatIx()] : null;
+  return st.local && me && !me.away && st.status === "playing" ? `<button class="btn" id="bSkip" type="button" title="The AI plays at full speed until your turn">${ui.skipping ? "⏩ Skipping…" : "⏩ Skip to my turn"}</button>` : "";
+}
+function wireSkip() { const b = $("bSkip"); if (b) b.onclick = () => { if (ui.skipping) return; ui.skipping = (st.opts && st.opts.pace) || "normal"; room.send({ t: "pace", pace: "instant" }); }; }
 function paceRow() {
   const cur = (st.opts && st.opts.pace) || "normal";
   return `<div class="seg" style="justify-content:center" data-pace>${["slow", "normal", "fast", "instant"].map(p => `<button type="button" data-p="${p}" aria-pressed="${p === cur}">${p[0].toUpperCase() + p.slice(1)}</button>`).join("")}</div>`;
@@ -597,11 +611,13 @@ $("hMenu").onclick = () => openDialog(`<div class="dlg"><h2>Menu</h2>
   <p class="hint">Ship symbols put each holder's ship shape (▲ ■ ▬ ● ◓) beside the count, so colour is never the only clue.</p></div>
   <div class="field"><span>Camera speed</span><div class="seg" id="mCam">${[[.5, "Slow"], [1, "Normal"], [1.7, "Fast"]].map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${store.get("stellarchy_camspeed", 1) === v}">${l}</button>`).join("")}</div></div>
   <div class="field"><span>Sound</span><div class="seg"><button type="button" id="mSound" aria-pressed="${sound.on}">${sound.on ? "Sound on" : "Sound off"}</button></div><p class="hint">Quiet cues: your turn, your battles, captures, knock-outs and the win.</p></div>
+  <div class="field"><span>Battle effects</span><div class="seg" id="mFx">${[["full", "Full"], ["quick", "Quick"], ["off", "Off"]].map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${store.get("stellarchy_fx", "full") === v}">${l}</button>`).join("")}</div><p class="hint">Quick plays lasers and flights faster; Off moves ships at once with no lasers or debris. Fast and Instant paces use Quick automatically.</p></div>
   <div class="field"><span>Motion</span><div class="seg"><button type="button" id="mCalm" aria-pressed="${document.body.classList.contains("calm")}">Calm motion</button></div><p class="hint">No camera glides, spinning or bouncing interface. Battles still show.</p></div>
   ${"Notification" in window && Notification.permission === "default" ? `<button class="btn" id="mNotify" type="button">Alert me when it's my turn</button>` : ""}
   <div class="row end"><button class="btn ghost" id="mHowIn" type="button">How to play</button><button class="btn" id="mLeave" type="button">Leave game</button><button class="btn go" id="mBack" type="button">Back to the war</button></div></div>`, el => {
     el.querySelector("#mNames").onclick = () => { ui.allNames = !ui.allNames; scene.setAllNames(ui.allNames); dlg.close(); };
     el.querySelector("#mSpin").onclick = () => { ui.spin = !ui.spin; scene.setAutoRotate(ui.spin); dlg.close(); };
+    el.querySelectorAll("#mFx button").forEach(b => b.onclick = () => { store.set("stellarchy_fx", b.dataset.v); scene.setEffects(effectsMode()); dlg.close(); });
     el.querySelectorAll("#mCam button").forEach(b => b.onclick = () => { store.set("stellarchy_camspeed", +b.dataset.v); applyComfort(); dlg.close(); });
     el.querySelector("#mSound").onclick = () => { store.set("stellarchy_sound", !sound.on); applyComfort(); if (sound.on) sound.turn(); dlg.close(); };
     el.querySelector("#mCalm").onclick = () => { store.set("stellarchy_calm", !document.body.classList.contains("calm")); applyComfort(); dlg.close(); };

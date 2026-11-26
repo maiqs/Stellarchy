@@ -167,12 +167,14 @@ export function createScene({ container, labels, map }) {
   function wanted(i) { const out = []; if (owner[i] < 0) return out; const fl = fleetOf(armies[i]); for (let ci = CLASSES.length - 1; ci >= 0; ci--) for (let k = 0; k < Math.min(fl[CLASSES[ci].key], MAXDRAW[CLASSES[ci].key]); k++) out.push(ci); return out; }
   const mkUnit = (i, ci, hk, from, t0, dur) => ({ cls: ci, hk, owner: owner[i], r: starR[i] * 2 + .5 + ci * .38 + (Math.random() < .5 ? 0 : .12), phase: Math.random() * Math.PI * 2, speed: [.9, .6, .42, .28][ci], from, t0, dur });
 
+  // battle effects (player wish: skip animations): "full", "quick" (about 2.5x faster) or "off" (no lasers or debris)
+  let fxK = 1, fxOff = false;
   function buildFleets(fx = []) {
-    const t = clock(), rf = new Set(), moveTo = {}, loss = {};
+    const t = clock(), rf = new Set(), moveTo = {}, loss = {}, K = fxOff ? .25 : fxK;
     for (const f of fx) {
       if (f.t === "rf") rf.add(f.s);
       else if (f.t === "mv") moveTo[f.to] = f.from;
-      else if (f.t === "bt") { loss[f.from] = (loss[f.from] || 0) + (f.la || 0); loss[f.to] = (loss[f.to] || 0) + (f.ld || 0); if (f.cap) moveTo[f.to] = f.from; fireBattle(f, t); }
+      else if (f.t === "bt") { loss[f.from] = (loss[f.from] || 0) + (f.la || 0); loss[f.to] = (loss[f.to] || 0) + (f.ld || 0); if (f.cap) moveTo[f.to] = f.from; if (!fxOff) fireBattle(f, t); }
     }
     const pool = {};
     const plans = S.map((s, i) => {
@@ -183,8 +185,8 @@ export function createScene({ container, labels, map }) {
       let lossLeft = loss[i] || 0;
       removed.sort((a, b) => a.cls - b.cls).forEach(u => {
         const v = CLASSES[u.cls].value, p = unitPos(u, i, t, new THREE.Vector3());
-        if (lossLeft > 0 && v <= lossLeft) { lossLeft -= v; dying.push({ u, i, die: t + .45 + Math.random() * .45, kind: "boom" }); }
-        else if (lossLeft > 0) { lossLeft = 0; dying.push({ u, i, die: t + .55, kind: "break" }); (pool[i] = pool[i] || []).push({ p, at: t + .55 }); }
+        if (lossLeft > 0 && v <= lossLeft) { lossLeft -= v; dying.push({ u, i, die: t + (.45 + Math.random() * .45) * K, kind: "boom" }); }
+        else if (lossLeft > 0) { lossLeft = 0; dying.push({ u, i, die: t + .55 * K, kind: "break" }); (pool[i] = pool[i] || []).push({ p, at: t + .55 * K }); }
         else (pool[i] = pool[i] || []).push({ p, at: t });
       });
       return { keep, need, hk };
@@ -193,9 +195,9 @@ export function createScene({ container, labels, map }) {
       const units = pl.keep, src = moveTo[i];
       pl.need.forEach((ci, k) => {
         let from, t0 = t, dur;
-        if (src !== undefined) { const q = (pool[src] || []).shift(); from = q ? q.p : P[src].clone(); t0 = (q ? q.at : t) + k * .09; dur = 1.25 + Math.random() * .3; }
-        else if ((pool[i] || []).length) { const q = pool[i][k % pool[i].length]; from = q.p.clone(); t0 = q.at; dur = .75; }
-        else { from = P[i].clone(); t0 = t + k * (rf.has(i) ? .12 : .04); dur = rf.has(i) ? 1.1 : .9; }   // reinforcements launch out of the sun
+        if (src !== undefined) { const q = (pool[src] || []).shift(); from = q ? q.p : P[src].clone(); t0 = (q ? q.at : t) + k * .09 * K; dur = (1.25 + Math.random() * .3) * K; }
+        else if ((pool[i] || []).length) { const q = pool[i][k % pool[i].length]; from = q.p.clone(); t0 = q.at; dur = .75 * K; }
+        else { from = P[i].clone(); t0 = t + k * (rf.has(i) ? .12 : .04) * K; dur = (rf.has(i) ? 1.1 : .9) * K; }   // reinforcements launch out of the sun
         units.push(mkUnit(i, ci, pl.hk, from, t0, dur));
       });
       fleet[i] = units;
@@ -216,7 +218,7 @@ export function createScene({ container, labels, map }) {
     for (let k = 0; k < shots; k++) {
       const back = k % 3 === 2 && f.d >= 0, a = back ? f.to : f.from, b = back ? f.from : f.to;
       const jit = () => new THREE.Vector3((Math.random() - .5) * 1.6, (Math.random() - .5) * 1.6, (Math.random() - .5) * 1.6);
-      bolts.push({ s: P[a].clone().add(jit()), e: P[b].clone().add(jit()), t0: t + k * .055, dur: .38, c: back ? cd : ca });
+      bolts.push({ s: P[a].clone().add(jit()), e: P[b].clone().add(jit()), t0: t + k * .055 * fxK, dur: .38 * Math.max(.6, fxK), c: back ? cd : ca });
     }
     if (bolts.length > MAXBOLTS) bolts = bolts.slice(-MAXBOLTS);
   }
@@ -353,7 +355,7 @@ export function createScene({ container, labels, map }) {
     const t = clock(), dt = Math.min(.1, t - lastT); lastT = t;
     adapt(t - (frame.prev || t)); frame.prev = t;
     controls.update();
-    dying = dying.filter(d => { if (t < d.die) return true; unitPos(d.u, d.i, t, tmp); boom(tmp.clone(), d.u.owner, d.u.cls, d.kind === "break"); return false; });
+    dying = dying.filter(d => { if (t < d.die) return true; if (fxOff) return false; unitPos(d.u, d.i, t, tmp); boom(tmp.clone(), d.u.owner, d.u.cls, d.kind === "break"); return false; });
     Object.values(fleetMeshes).forEach(fm => fm.count = 0);
     const col = new THREE.Color();
     const draw = (u, i) => {
@@ -447,6 +449,7 @@ export function createScene({ container, labels, map }) {
     // replay: colours only (who held each sun), no fleets or counts; setBoard() afterwards restores the live board
     showOwners(arr) { replay = true; owner = arr.slice(); armies = new Array(n).fill(0); hqOf = new Array(n).fill(-1); flagAt = new Set(); paint(); buildFleets([]); },
     endReplay() { replay = false; },
+    setEffects(mode) { fxOff = mode === "off"; fxK = mode === "quick" ? .4 : 1; if (fxOff) { bolts = []; } },
     setCameraSpeed(k) { controls.rotateSpeed = k; controls.zoomSpeed = 1.1 * k; controls.panSpeed = k; },
     setCalm(on) { calm = on; if (on) controls.autoRotate = false; controls.enableDamping = !on; },   // colour-blind help: each holder's ship symbol beside the count
     screenOf,

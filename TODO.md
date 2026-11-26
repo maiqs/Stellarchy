@@ -135,7 +135,7 @@ Paul: look online for features people want and give them to people. I looked at 
   - a graph of systems held over time
   - each player's best moment
   - a replay you can scrub through
-- [ ] **Speed controls:** skip animations, and watch bots at speed.
+- [x] **Speed controls:** skip animations, and watch bots at speed. *(Round 35: Menu → Battle effects Full / Quick / Off, saved per player; Fast and Instant paces use Quick on their own. In solo games, ⏩ Skip to my turn runs the AI at full speed with no effects until your turn, then the pace goes back.)*
 - [x] **Undo before confirm:** take back placements until you press Confirm.
 - [ ] **Later:** a map editor and custom scenarios, which are big in Warzone. *(Round 22: first scenario step done: centre the map on one of 12 famous stars (Sirius, Vega, Tau Ceti and more), up to 1,000 suns off Sol. Round 24: setups can be shared as links (Copy setup link → a link that opens Play vs AI or Create room pre-filled). A full map editor is still open.)*
 
@@ -202,6 +202,24 @@ Sources:
   - https://steamcommunity.com/app/1128810/discussions/0/4353373425701669409
   - https://ie.trustpilot.com/review/colonist.io?page=2
   - https://community.playchessup.com/t/chess-com-rematch-button/2078
+
+- [ ] **Round 35 research:**
+  - [x] **Skip the AI's turns and the animations:** the most repeated ask found this round. Armello players call long AI turns unplayable and want a skip button; Gems of War asks for "Skip AI turn animation"; Hearthstone asks for a "Skip animations" option and speed settings; Board Game Arena asks for an option to turn off scoring animations, and another for no flashing or repeated animations. *(Round 35: Battle effects Full / Quick / Off and ⏩ Skip to my turn.)*
+  - [ ] **Slow it down for me only:** Lords of Waterdeep players found the AI too fast to follow and asked to slow it, but not for everyone. Online, our pace is per room; a per-viewer replay of the last turn ("What just happened?") would cover it without slowing others.
+  - [ ] **Vote to end a stuck game:** war.app players can vote to end a game after someone disconnects and restart from a few turns back. For us: when only AI-covered seats are holding the game up, the humans can vote "end now, most suns wins".
+  - [ ] **Order clean-up:** Warzone and itch.io players keep asking to reorder or cancel queued orders quickly. Our plan-while-waiting could show each planned sun as a chip with an ✕.
+  - [x] **Turn reminders and team planning:** a Neptune's Pride-style newcomer had to keep their own reminder list. Covered: browser notifications, the tab title and a chime (rounds 3 and 16).
+
+  Sources:
+  - https://steamcommunity.com/app/290340/discussions/0/527274088390616640
+  - https://community.gemsofwar.com/t/ability-to-skip-ai-turn-animation/83909
+  - https://us.forums.blizzard.com/en/hearthstone/t/feature-request-animation-turning-off-and-battle-skip/145908
+  - https://boardgamearena.com/bug?id=169514
+  - https://da.boardgamearena.com/bug?id=136777
+  - https://steamcommunity.com/app/644390/discussions/4/1474222595309098294
+  - https://war.app/blog/index.php/page/3/
+  - https://itch.io/post/402912
+  - https://forum.ironhelmet.com/t/a-bunch-of-collected-feedback-from-a-newbie/5320
 
 ## Bugs and balance
 - [x] **Invite links never loaded (round 32, there since round 3):** a fresh page at `/r/CODE` resolved `app.js`, `style.css` and the other files under `/r/` and got 404s. Creating a room only changed the address after load, so earlier tests missed it. Fixed with `<base href="/">`. The browser tests now open an invite link fresh.
@@ -511,3 +529,7 @@ Sources:
   - Fair turn clocks: the clock starts when your turn reaches your screen (up to 10 s of delay forgiven), and each player has a 30 s time bank per game before the AI takes over. The bar and How to play explain it.
   - The room checks run against their own server on port 8789; the new clock option `clockMs` works on the local server only.
   - 51 of 51 unit tests, 35 of 35 room checks and 14 of 14 browser checks pass.
+- **Round 35 (2026-11-26):**
+  - Research: the most repeated ask was skipping AI turns and animations (found 4 new wishes, with sources).
+  - Built speed controls. Menu → Battle effects Full / Quick / Off, and Fast and Instant paces turn Quick on by themselves. In solo games, ⏩ Skip to my turn races the AI to your next turn and then puts your pace back.
+  - 51 of 51 unit tests and 16 of 16 browser checks pass (2 of the browser checks are new).

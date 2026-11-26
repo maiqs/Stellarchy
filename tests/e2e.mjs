@@ -47,6 +47,30 @@ try {
   check(await page.isVisible("#rRange"), "the replay opens with its timeline");
   await page.click("#rExit"); check(!(await page.isVisible("#rRange")), "Done closes the replay");
 
+  // speed: Skip to my turn races the AI to my next turn and puts the pace back; the effects choice is saved
+  await page.click("#bAgain"); await page.waitForFunction(() => window.stellarchy.state && window.stellarchy.state.status === "playing");
+  await page.evaluate(() => window.stellarchy.room.send({ t: "pace", pace: "slow" }));
+  const skipped = await page.evaluate(async () => {
+    const W = window.stellarchy, me = () => W.state.seats.findIndex(s => s.name === "E2E"), mine = () => W.state.game.turn === me();
+    for (let k = 0; k < 400 && mine(); k++) {   // finish my own turn quickly so the AI's turn comes up
+      const g = W.state.game;
+      if (g.phase === "setup") W.room.send({ t: "hq", sys: g.owner.findIndex(o => o < 0) });
+      else if (g.phase === "reinforce") W.room.send({ t: "place", placement: { [g.owner.indexOf(me())]: g.reinforcements } });
+      else if (g.phase === "attack") W.room.send({ t: "endAttack" }); else W.room.send({ t: "endTurn" });
+      await new Promise(r => setTimeout(r, 30));
+    }
+    for (let k = 0; k < 100 && !document.getElementById("bSkip"); k++) await new Promise(r => setTimeout(r, 50));
+    const b = document.getElementById("bSkip"); if (!b) return "no button";
+    const t0 = performance.now(); b.click();
+    for (let k = 0; k < 400 && !(mine() || W.state.status === "over"); k++) await new Promise(r => setTimeout(r, 25));
+    await new Promise(r => setTimeout(r, 100));
+    return { ms: Math.round(performance.now() - t0), pace: W.state.opts.pace, back: mine() || W.state.status === "over" };
+  });
+  check(skipped.back && skipped.pace === "slow", `Skip to my turn reaches my turn fast and puts the pace back (${JSON.stringify(skipped)})`);
+  await page.click("#hMenu"); await page.click('#mFx [data-v="off"]');
+  check((await page.evaluate(() => localStorage.getItem("stellarchy_fx"))) === '"off"', "the battle effects choice is saved");
+  await page.evaluate(() => localStorage.setItem("stellarchy_fx", '"full"'));
+
   // cards show real photos
   await page.evaluate(() => { const W = window.stellarchy; W.state.game.cards[0] = [W.MAP.systems.findIndex(s => s.name === "Sirius")].filter(i => i >= 0); });
   if (await page.evaluate(() => window.stellarchy.state.game.cards[0].length)) {
