@@ -149,7 +149,7 @@ const ACTIONS = {
     if (!map.adj[from].includes(to) || g.owner[to] === seat) return "not a neighbouring target";
     const def = g.owner[to];
     if (def < 0) {   // unclaimed: simply moved into, no fire (Paul)
-      g.owner[to] = seat; g.armies[to] = 1; g.armies[from] -= 1; g.conq = true;
+      g.owner[to] = seat; g.armies[to] = 1; g.armies[from] -= 1; g.conq = true; g.lastRoll = null;
       ev.push({ t: "mv", from, to, n: 1, seat, claim: true });
       g.advance = g.armies[from] > 1 ? { from, to, max: g.armies[from] - 1 } : null;
       return winCheck(map, g, seat, ev);

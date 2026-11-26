@@ -73,7 +73,8 @@ function lookDialog(after) {
 
 // ---------- rooms ----------
 let room = null, st = null, mySeat = null, isCreator = false;
-const ui = { sel: -1, pending: {}, cards: new Set(), fort: null, adv: null, panel: wideScreen() ? "players" : null, lastTurnKey: "", lastRev: -1 };
+const ui = { sel: -1, pending: {}, cards: new Set(), fort: null, adv: null, panel: wideScreen() ? "players" : null, // the players drawer starts open only on wide screens
+  lastTurnKey: "", lastRev: -1 };
 function wideScreen() { return innerWidth > 1000; }
 
 function startRoom(r) {
@@ -230,6 +231,7 @@ function onState(m) {
   render();
 }
 function eventToast(e, k) {
+  if (e.t === "bt") { if (e.a === k) ui.rollRev = st.rev; floatLoss(e.from, e.la, e.a); floatLoss(e.to, e.ld, e.d); }
   if (e.t === "bt" && (e.a === k || e.d === k)) {
     const mine = e.a === k, where = disp(S[e.to]);
     toast(e.cap ? (mine ? `Captured ${where}! Lost ${e.la}, destroyed ${e.ld}.` : `${nameOf(e.a)} took ${where} from you.`) : `${mine ? "Attack on" : "Defended"} ${where}: lost ${mine ? e.la : e.ld}, destroyed ${mine ? e.ld : e.la}.`);
@@ -248,7 +250,8 @@ function notifyTurn() {
 addEventListener("focus", () => document.title = "Stellarchy");
 
 // ---------- picking suns ----------
-function selectSun(i) { ui.sel = i; scene.select(i); renderSunCard(); }
+function selectSun(i) { ui.sel = i; scene.select(i); if (i >= 0 && innerWidth <= 700 && ui.panel) { ui.panel = null; $("players").hidden = $("logPanel").hidden = true; } $("sunCard").classList.remove("open"); renderSunCard(); }
+$("sunCard").addEventListener("click", () => $("sunCard").classList.toggle("open"));
 function onPick(i) {
   if (!st || !st.game) { if (i >= 0) { selectSun(i); scene.focus(i); } return; }
   const g = st.game, k = seatIx();
@@ -327,7 +330,7 @@ function renderBar() {
   const awayBtn = st.local ? "" : `<button class="btn ghost small" id="bAway" type="button">Let AI play for me</button>`;
   if (g.advance) {
     const a = g.advance, n = Math.min(ui.adv ? ui.adv.n : a.max, a.max);
-    bar.innerHTML = `<div class="big">Move in</div><div class="what">How many ships follow into <b>${esc(disp(S[a.to]))}</b>? ${a.max} can go; at least 1 stays behind.</div>
+    bar.innerHTML = `<div class="big">Move in</div>${rollHtml(g)}<div class="what">How many ships follow into <b>${esc(disp(S[a.to]))}</b>? ${a.max} can go; at least 1 stays behind.</div>
       <div class="stepper"><button class="btn" id="aMinus" type="button">−</button><input type="range" id="aRange" min="0" max="${a.max}" value="${n}" aria-label="Ships to move"><button class="btn" id="aPlus" type="button">+</button></div>
       <div class="row"><button class="btn small" data-q="0" type="button">None</button><button class="btn small" data-q="half" type="button">Half</button><button class="btn small" data-q="all" type="button">All</button><button class="btn go" id="aGo" type="button">Move <output id="aOut">${n}</output></button></div>`;
     const set = v => { ui.adv.n = Math.max(0, Math.min(a.max, v)); $("aRange").value = ui.adv.n; $("aOut").textContent = ui.adv.n; };
@@ -356,7 +359,7 @@ function renderBar() {
   }
   if (g.phase === "attack") {
     const from = ui.sel >= 0 && g.owner[ui.sel] === k && g.armies[ui.sel] >= 2 ? ui.sel : -1;
-    const roll = g.lastRoll && g.lastRoll.from !== undefined ? `<div class="dice">${g.lastRoll.a.map(x => `<span class="die a">${x}</span>`).join("")}<span style="opacity:.5">vs</span>${g.lastRoll.d.map(x => `<span class="die d">${x}</span>`).join("")}</div>` : "";
+    const roll = rollHtml(g);
     bar.innerHTML = `${phaseRow}<div class="big">Attack</div><div class="what">${from >= 0 ? `From <b>${esc(disp(S[from]))}</b> (${g.armies[from]} ships): tap a <span style="color:#ff6b75">red</span> enemy or <b>white</b> empty sun.` : "Tap one of your glowing suns with 2+ ships, then a target next to it. Empty suns are taken without a fight."}</div>
       ${roll}<div class="row"><button class="btn go" id="bEndAtk" type="button">Done attacking</button>${awayBtn}</div>${timerText(g, true)}`;
     $("bEndAtk").onclick = () => send({ t: "endAttack" }); wireAway(); return;
@@ -516,7 +519,7 @@ async function share() {
 // a /r/CODE link opens that room directly
 const linked = location.pathname.match(/^\/r\/([A-Za-z0-9]{4})$/);
 if (linked) needName(() => joinCode(linked[1]));
-window.stellarchy = { MAP, scene, get state() { return st; }, ui };   // for debugging and tests
+window.stellarchy = { get MAP() { return MAP; }, get scene() { return scene; }, get state() { return st; }, ui };   // for debugging and tests (getters: the map and scene change with room size)
 // keep floating cards clear of the action bar, whatever its height
 new ResizeObserver(() => document.documentElement.style.setProperty("--barh", $("bar").offsetHeight + "px")).observe($("bar"));
 
@@ -556,4 +559,17 @@ function showHints(step = 0) {
       el.querySelector("#hSkip").onclick = () => { store.set("stellarchy_hints_done", true); dlg.close(); };
       el.querySelector("#hNext").onclick = () => { if (step + 1 >= HINTS.length) { store.set("stellarchy_hints_done", true); dlg.close(); } else showHints(step + 1); };
     });
+}
+
+// ---------- battle losses float up from the suns that lost ships ----------
+function floatLoss(i, n, who) {
+  if (!n || !scene) return; const at = scene.screenOf(i); if (!at || at[0] < 0 || at[0] > innerWidth || at[1] < 0 || at[1] > innerHeight) return;
+  const d = document.createElement("div"); d.className = "dmg"; d.textContent = "−" + n;
+  d.style.setProperty("--c", who >= 0 ? lookOf(who).main : "#ffffff"); d.style.setProperty("--at", `translate(${Math.round(at[0])}px, ${Math.round(at[1] - 18)}px)`);
+  $("bubbles").appendChild(d); setTimeout(() => d.remove(), 1500);
+  while ($("bubbles").querySelectorAll(".dmg").length > 24) $("bubbles").querySelector(".dmg").remove();
+}
+// the last roll: each attacking die against the defending die it met; won pairs glow, lost ones dim
+function rollHtml(g) {
+  const lr = g.lastRoll; return lr && lr.from !== undefined ? `<div class="dice${ui.rollRev === st.rev ? " fresh" : ""}" aria-label="Last roll">${lr.a.map((x, j) => `<span class="die a${j < lr.d.length ? (x > lr.d[j] ? " won" : " lost") : ""}" style="--j:${j}">${x}</span>`).join("")}<span class="vs">vs</span>${lr.d.map((x, j) => `<span class="die d${j < lr.a.length ? (lr.a[j] > x ? " lost" : " won") : ""}" style="--j:${j + 3}">${x}</span>`).join("")}<span class="tally">${lr.rounds > 1 ? `${lr.rounds} rolls · ` : ""}lost ${lr.lostA}, destroyed ${lr.lostD}</span></div>` : "";
 }

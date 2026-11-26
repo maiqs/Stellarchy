@@ -208,3 +208,20 @@ dialog::backdrop { background: rgba(2, 4, 8, .6); backdrop-filter: blur(3px); }
 @media (max-width: 700px) { .emotepop { left: var(--gut); right: var(--gutr); grid-template-columns: repeat(5, 1fr); } }
 dialog.tip::backdrop { background: rgba(2, 4, 8, .12); backdrop-filter: none; }
 dialog.tip { top: auto; bottom: calc(var(--bot) + var(--barh, 150px) + 16px); margin-bottom: 0; }
+
+/* ---------- dice and battle losses ---------- */
+.dice { align-items: center; flex-wrap: wrap; }
+.dice .vs { opacity: .5; font-size: .8rem; margin: 0 4px; }
+.dice .tally { flex-basis: 100%; font: 500 .78rem var(--mono); color: var(--muted); margin-top: 2px; }
+.die { transition: opacity .2s, box-shadow .2s; }
+.die.won { box-shadow: 0 0 12px currentColor; background: color-mix(in srgb, currentColor 16%, transparent); }
+.die.lost { opacity: .45; }
+.dice.fresh .die { animation: tumble .55s cubic-bezier(.2, .8, .3, 1.2) backwards; animation-delay: calc(var(--j) * 45ms); }
+@keyframes tumble { 0% { transform: translateY(-14px) rotate(-200deg) scale(.6); opacity: 0; } 70% { transform: translateY(2px) rotate(12deg) scale(1.08); opacity: 1; } 100% { transform: none; } }
+.dmg { position: absolute; left: 0; top: 0; font: 700 1.05rem var(--mono); color: var(--c); text-shadow: 0 0 10px var(--c), 0 0 2px #000; animation: dmg 1.4s ease-out forwards; pointer-events: none; }
+@keyframes dmg { 0% { opacity: 0; transform: var(--at) translate(-50%, 6px) scale(.8); } 15% { opacity: 1; transform: var(--at) translate(-50%, 0) scale(1.15); } 100% { opacity: 0; transform: var(--at) translate(-50%, -34px) scale(1); } }
+@media (max-width: 700px) {
+  .suncard:not(.open) dl dt:nth-of-type(n+3), .suncard:not(.open) dl dd:nth-of-type(n+3), .suncard:not(.open) .fact, .suncard:not(.open) .eyebrow { display: none; }
+  .suncard { cursor: pointer; }
+  .suncard:not(.open)::after { content: "Tap for the science"; font: 500 .66rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+}

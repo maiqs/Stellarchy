@@ -56,7 +56,7 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
      - fleets capped per star
      - the server sends changes, not the whole board
      - win-% presets lower by default
-   - [ ] **Tests:** *(Round 4: every size builds connected and the same each time, and games at 10, 25 and 200 suns finish (`tests/mapgen.test.js`). Games at 1,000+ do not finish yet; see Bugs.)*
+   - [x] **Tests:** *(Round 4: every size builds connected and the same each time, and games at 10, 25 and 200 suns finish (`tests/mapgen.test.js`). Games at 1,000+ do not finish yet; see Bugs.)*
      - every size from 10 to 3,000 builds a connected map
      - all-bot games finish at 10, 300 and 3,000
      - 60 fps on a mid phone at 3,000
@@ -84,9 +84,9 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
 6. **UI pass (the big one)**
    - [x] Full-screen 3D map. The UI floats on it as neon glass panels, with no big side columns.
    - [x] One clear action bar at the bottom: "YOUR TURN: place 7 ships" → "Attack or end" → "Fortify". Big touch targets.
-   - [ ] Tap a star to select it; neighbours light up as targets. Drag or tap to attack, with a dice animation and the result inline. *(Round 3: tap to select, then tap a target, is done; drag-to-attack and a dice animation are not.)*
+   - [ ] Tap a star to select it; neighbours light up as targets. Drag or tap to attack, with a dice animation and the result inline. *(Round 3: tap to select, then tap a target. Round 7: dice tumble in, each pair is marked won or lost, and losses float up over the suns. Drag-to-attack is not done.)*
    - [x] Collapsible drawers: players, cards, log. Hidden by default on phones.
-   - [ ] Responsive layout: portrait phone, landscape phone, tablet, desktop. Test at 360×640, 390×844, 768×1024, 1366×768, 1920×1080, 3440×1440. *(Round 3: checked at phone portrait and 1024×768. Other sizes still to test.)*
+   - [ ] Responsive layout: portrait phone, landscape phone, tablet, desktop. Test at 360×640, 390×844, 768×1024, 1366×768, 1920×1080, 3440×1440. *(Round 3: checked phone portrait and 1024×768. Round 7: checked 360×640 and a landscape phone (844×390); the sun card is compact on phones, tap for more. Still to check: tablet and ultrawide.)*
    - [x] First-game hints: three short coach marks, dismissable, shown once.
    - [x] A title screen with a slowly turning star map, plus Play / Create room / Join by code.
    - [ ] Settings: bot speed, camera sensitivity, reduced motion, colour-blind-friendly outlines.
@@ -240,3 +240,11 @@ Sources:
   - Idle rooms close and leave the lobby.
   - Fixed: the per-connection rate limit was never saved, so it didn't limit anything.
   - Tests: 28 of 28 unit tests and 14 of 14 room checks pass.
+- **Round 7 (2026-11-26):**
+  - Attack feedback: dice tumble in, each pair glows if won and dims if lost, a tally shows rolls and losses, and the roll stays visible in the move-in bar. Losses float up over both suns in every battle, including the AI's.
+  - Fixed:
+    - a die marked as won picked up the win screen's `.win` style and grew tall
+    - claiming an empty sun showed the previous fight's dice
+    - the debug hook kept the old map after a room changed size
+  - Phones: the sun card is compact (holder and ships, tap for the science), and selecting a sun closes the players sheet. Checked at 360×640 and 844×390.
+  - 28 of 28 tests pass.
