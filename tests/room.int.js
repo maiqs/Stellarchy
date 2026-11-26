@@ -30,6 +30,7 @@ function client(code, hello) {
       c.state = m; c.states++;
     }
     if (m.t === "error") c.errors.push(m.error);
+    if (m.t === "rematch") c.rematch = m.code;
   };
   c.ready = new Promise(r => ws.onopen = () => { ws.send(JSON.stringify({ t: "hello", ...hello })); r(); });
   c.send = o => ws.send(JSON.stringify(o));
@@ -90,6 +91,13 @@ while (Date.now() - t0 < 240000) {
 { const g = a.state.game; console.log("  errors:", JSON.stringify([...new Set([...a.errors, ...bb.errors])]).slice(0, 300), "elapsed", Math.round((Date.now() - t0) / 1000) + "s", "| end:", g.status, "turn", g.turnNo, "seat", g.turn, g.phase, "advance", JSON.stringify(g.advance), "seats", JSON.stringify(a.state.seats.map(s => [s.name, s.ai, s.away, s.online]))); }
 check(coveredByAI, "a dropped player's seat is played by the AI (after the grace period)");
 check(a.state.status === "over", `game finished (turn ${a.state.game.turnNo}, ${a.state.game.status})`);
+// rematch: same settings and AI players in a new room, and everyone in the old room hears about it
+{
+  a.send({ t: "rematch" }); await until(() => a.rematch && bb.rematch, 5000);
+  const sum = a.rematch ? await (await fetch(BASE + `/api/rooms/${a.rematch}`)).json() : {};
+  check(!!a.rematch && a.rematch === bb.rematch && a.rematch !== code, `a rematch room is set up and everyone is told (${a.rematch})`);
+  check(sum.status === "lobby" && sum.seats === 2 && sum.maxSeats === 4 && sum.mode === "dealt", `it keeps the settings and the 2 AI players (${sum.seats} seats, ${sum.mode})`);
+}
 const sneaky = client(code, { name: "Late" }); await sneaky.ready; await until(() => sneaky.state);
 check(sneaky.seat === null, "a late arrival watches instead of taking a seat");
 for (const c of [a, bb, sneaky]) c.ws.close();

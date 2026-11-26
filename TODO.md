@@ -190,7 +190,7 @@ Sources:
   - [x] **Show the dice are fair:** digital conquest games draw constant "the dice cheat" complaints, and the official game had to post an FAQ. Colonist.io explaining its dice did not settle it. Ideas: *(Round 25: the rules count every die; the results show your average against 3.50; How to play explains server-rolled dice and the only AI bonus.)*
     - your own roll statistics against the expected average, on the results screen
     - a line in How to play: online dice are rolled by the server with a fair generator
-  - [ ] **Rematch:** "play again with the same players". After an online game, one button sets up the same room again and invites everyone.
+  - [x] **Rematch:** "play again with the same players". After an online game, one button sets up the same room again and invites everyone. *(Round 26: Rematch on the online end bar sets up a new room with the same settings and AI count, and invites everyone. Solo Play again restarts at once with the same settings.)*
 
   Sources:
   - https://forums.ageofempires.com/t/aoe-de-is-too-hard-for-beginners/113044
@@ -415,3 +415,11 @@ Sources:
   - Built dice fairness: every die is counted. The results show your average against a fair 3.50, and How to play has a Fair dice section.
   - Tests cover AI levels (Recruit leaves the person alone for 4 rounds; Admiral gets exactly +3, for AI only), dice averaging about 3.5 over a game, and the dice line.
   - 43 of 43 pass.
+- **Round 26 (2026-11-26):**
+  - Rematch, a player wish:
+    - online, the end-of-game bar has a Rematch button; the room sets up a new room with the same settings and the same number of AI players
+    - whoever pressed it goes straight in, and everyone else gets a Join prompt
+    - repeat presses reuse the same new room
+    - in solo, Play again restarts at once with the same settings
+  - Room checks: the rematch room exists, everyone is told, and it keeps the settings and 2 AI players. 29 of 29 room checks pass undisturbed, and 43 of 43 unit tests pass.
+  - Not yet seen in the browser: solo Play again restarting (it needs a finished game).

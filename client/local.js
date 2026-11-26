@@ -12,7 +12,7 @@ import { fogActive, maskBoard, maskEvents, totals } from "./shared/fog.js";
 export class LocalRoom {
   // opts: {bots, mode, targetPct, pace, watch (computer-only game)}; me: {name, main, sub, hull, style}
   constructor(map, opts, me) {
-    this.map = map; this.listeners = []; this.timer = 0; this.rev = 0; this.log = [];
+    this.map = map; this.opts = { ...opts }; this.listeners = []; this.timer = 0; this.rev = 0; this.log = [];
     const seed = (Math.random() * 2 ** 31) | 0; let k = 0; this.rng = () => mulberry32(seed ^ Math.imul(++k, 0x9E3779B1))();
     this.pace = PACES[opts.pace] ? opts.pace : "normal"; this.fog = !!opts.fog;
     const seats = [];

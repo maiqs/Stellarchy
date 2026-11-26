@@ -58,6 +58,7 @@ export class Room {
       this.s.opts.size = Math.max(clampSize(o.size ?? 100), this.s.opts.maxSeats * SUNS_PER_SEAT);
       if (this.env.DEV && o.idleMs) this.s.opts.idleMs = clampInt(o.idleMs, 500, 3600000, 0);   // local tests only
       if (o.allAI) { for (let k = 0; k < this.s.opts.maxSeats; k++) this.addBot(); }
+      if (o.fillBots) { const k = clampInt(o.fillBots, 0, this.s.opts.maxSeats - 1, 0); for (let j = 0; j < k; j++) this.addBot(); }   // a rematch brings the same number of AI players
       await this.save(); await this.report();
       if (o.allAI) { this.start(); await this.commit(); } else await this.schedule();
       return Response.json({ ok: true });
@@ -133,6 +134,12 @@ export class Room {
         o.size = Math.max(o.size || 300, o.maxSeats * SUNS_PER_SEAT);
         break;
       }
+      case "rematch": {   // same settings, same number of AI players, a new room; everyone here is invited
+        if (s.status !== "over") return reply({ t: "error", error: "the game is not over yet" });
+        if (!s.rematch) s.rematch = await this.makeRematch();
+        if (!s.rematch) return reply({ t: "error", error: "could not set up a rematch" });
+        this.log(`${seat.name} set up a rematch`); this.broadcast({ t: "rematch", code: s.rematch, by: seat.name }); break;
+      }
       case "pace": if (PACES[m.pace]) s.opts.pace = m.pace; break;
       case "start": if (isCreator && s.status === "lobby" && s.seats.length >= 2) this.start(); else return reply({ t: "error", error: "only the room's creator can start, with 2 or more seats" });
         break;
@@ -189,6 +196,18 @@ export class Room {
                         style: STYLE_KEYS.includes(m.style) ? m.style : "balanced", ai: false, away: false, online: true });
     this.s.tokens[id] = rid() + rid();
     this.log(`${this.s.seats.at(-1).name} joined`); return id;
+  }
+  // a new room with this room's settings (the worker's room-code rules: 4 letters, no look-alike characters)
+  async makeRematch() {
+    const s = this.s, ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+    const o = { ...s.opts, public: s.public, fillBots: s.seats.filter(x => x.ai).length };
+    delete o.quick; delete o.idleMs;
+    for (let tries = 0; tries < 6; tries++) {
+      const code = Array.from(crypto.getRandomValues(new Uint8Array(4)), b => ALPHABET[b % ALPHABET.length]).join("");
+      const r = await this.env.ROOMS.get(this.env.ROOMS.idFromName(code)).fetch("https://room/init", { method: "POST", body: JSON.stringify({ ...o, code }) });
+      if (r.status === 200) return code;
+    }
+    return null;
   }
   // a newcomer takes over a computer player that is still in the game; it keeps its colour so the map stays readable
   takeOverAI(m) {

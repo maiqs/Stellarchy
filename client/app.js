@@ -89,6 +89,10 @@ function startRoom(r) {
     else if (m.t === "emote") showEmote(m.seat, m.e);
     else if (m.t === "closed") toast("Connection lost. Reconnecting…", "err");
     else if (m.t === "gone") { leaveRoom(); toast("That room has closed.", "err"); }
+    else if (m.t === "rematch") {   // whoever asked goes straight in; everyone else is invited
+      const go = () => { leaveRoom(); joinCode(m.code); };
+      if (ui.wantRematch) { ui.wantRematch = false; go(); } else promptToast(`${m.by} set up a rematch.`, "Join", go);
+    }
   });
   $("title").hidden = true; $("hud").hidden = false; scene.setAutoRotate(false);
   setTimeout(() => showHints(), 600);
@@ -372,8 +376,11 @@ function renderBar() {
   }
   const turnSeat = st.seats[g.turn], phaseRow = `<div class="phases">${PHASES.map(([p, l]) => `<i class="${g.phase === p ? "on" : ""}">${l}</i>`).join("")}</div>`;
   if (st.status === "over" || g.status === "over") {
-    bar.innerHTML = `<div class="big" style="color:${esc(lookOf(g.winner).main)}">${esc(nameOf(g.winner))} rules the stars</div><div class="row"><button class="btn go" id="bAgain" type="button">${st.local ? (mySeat ? "Play again" : "Watch another war") : "Back to menu"}</button><button class="btn" id="bWin" type="button">Results</button></div>`;
-    $("bAgain").onclick = () => { const local = st.local, watching = !mySeat; leaveRoom(); if (local) $(watching ? "mWatch" : "mSolo").click(); }; $("bWin").onclick = winDialog;
+    bar.innerHTML = `<div class="big" style="color:${esc(lookOf(g.winner).main)}">${esc(nameOf(g.winner))} rules the stars</div><div class="row">${!st.local && mySeat ? `<button class="btn go" id="bRematch" type="button">Rematch</button>` : ""}<button class="btn ${st.local ? "go" : ""}" id="bAgain" type="button">${st.local ? (mySeat ? "Play again" : "Watch another war") : "Back to menu"}</button><button class="btn" id="bWin" type="button">Results</button></div>`;
+    // solo "Play again" restarts at once with the same settings (a rematch); watchers get another AI war
+    $("bAgain").onclick = () => { const local = st.local, watching = !mySeat, opts = room && room.opts; leaveRoom(); if (local && !watching && opts) { useMap(opts.size || 100, opts.centre || "Sol"); startRoom(new LocalRoom(MAP, opts, me)); } else if (local) $("mWatch").click(); };
+    if ($("bRematch")) $("bRematch").onclick = () => { ui.wantRematch = true; room.send({ t: "rematch" }); };
+    $("bWin").onclick = winDialog;
     return;   // (this return was lost in round 9, so the end-of-game bar never showed)
   }
   if (!myTurn()) {
