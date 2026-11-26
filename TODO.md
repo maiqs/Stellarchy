@@ -166,6 +166,25 @@ Sources:
   - https://www.lovethework.com/work-awards/campaigns/accessible-design-of-infinite-boreders-1590685
   - https://steamdb.info/patchnotes/13285693
 
+- [ ] **Round 15 research:**
+  - [x] **Faster placing:** players find click-per-ship placing tedious ("hold to add" on itch.io), and Warlight's request board asks to "deploy reinforcements equally to all border territories". *(Round 15: hold a sun to pour ships in, plus a "Spread across borders" button.)*
+  - [ ] **Something to do while waiting:** the classic complaint about turn-based multiplayer is idle time. Ideas:
+    - plan next turn's placement during others' turns, applied when your turn starts
+    - a live "what's happening" feed
+  - [ ] **Commander or flagship (room option):** Warzone's commanders put "yourself" on the board: a unit worth 7 armies, and losing it eliminates you. A flagship at your home sun would add a target and a story.
+  - [ ] **Simultaneous turns (big, later):** fixes waiting but changes the game; some players warn it becomes a clicking contest. Note it, don't build yet.
+  - [x] **Turn notifications:** Wargroove's turn pop-ups kept multiplayer alive for players. We have browser notifications and the tab title; the long-turn sound is still open.
+
+  Sources:
+  - https://itch.io/post/12314386
+  - https://warlight.uservoice.com/forums/77051-warzone-features/filters/new?page=4
+  - https://devforum.roblox.com/t/hexagone-a-game-of-territory-conquest/2183029
+  - https://pcgamer.com/wargroove-uses-a-little-known-steam-feature-to-great-effect
+  - https://forum.ironhelmet.com/t/a-bunch-of-collected-feedback-from-a-newbie/5320
+  - https://warzone.com/wiki/Commanders
+  - https://www.gamedeveloper.com/game-platforms/analysis-asynchronicity-in-game-design
+  - https://forums.sorcererking.com/377297/reply/2555466
+
 ## Bugs and balance
 - [x] **Hidden information leaked (round 8):** every update carried the whole deck in draw order and every player's hand, readable in the browser's developer tools. Now each viewer gets only their own hand (others as counts) and a deck count. Room checks cover it.
 - [x] **Big maps never end (top bug, round 4):** a 6-player game on 1,000 suns had not finished after 12,000 turns, at about 11 ms a turn. Fixes to try:
@@ -299,3 +318,10 @@ Sources:
   - The players panel has its own truce column and is a little wider.
   - Room tests: the 16-seat game gets more time (one run reached turn 551), and the AI-takeover check now compares seat identity.
   - 32 of 32 unit tests and 26 of 26 room checks pass.
+- **Round 15 (2026-11-26):**
+  - Online research added to Player wishes: faster placing, something to do while waiting, a commander or flagship option, simultaneous turns (noted, not planned), and turn notifications (already have them).
+  - Built faster placing:
+    - hold a sun to pour ships in, speeding up the longer you hold (a drag still turns the map)
+    - a "Spread on borders" button that places one at a time across the suns facing an enemy, most threatened first
+  - Confirmed last round's room test change with a full run.
+  - 32 of 32 unit tests pass.

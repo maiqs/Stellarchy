@@ -375,6 +375,7 @@ export function createScene({ container, labels, map }) {
     onPick(fn) { pickCb = fn; }, onHover(fn) { hoverCb = fn; },
     // drag to attack: {sources: Set of suns, targetsOf(from) -> Set, onDrop(from, to), color}, or null to turn it off
     setDrag(cfg) { dragCfg = cfg; },
+    pickAt(x, y, touch) { return nearest(x, y, touch ? 34 : 20); },   // the sun under a screen point, or -1
     setAutoRotate(on) { controls.autoRotate = on; },
     setAllNames(on) { showAllNames = on; },
     setSymbols(on) { symbols = on; },

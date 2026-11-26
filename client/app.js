@@ -293,7 +293,9 @@ function onPick(i) {
   if (g.phase === "reinforce") {
     if (mustTrade(g, k)) { openCards(); return; }
     if (g.owner[i] !== k) { selectSun(i); render(); return; }
-    const left = g.reinforcements - placed(); if (left > 0) ui.pending[i] = (ui.pending[i] || 0) + 1;
+    const left = g.reinforcements - placed();
+    if (ui.holdUsed) ui.holdUsed = false;   // the release after a hold-to-pour adds nothing more
+    else if (left > 0) ui.pending[i] = (ui.pending[i] || 0) + 1;
     selectSun(i); render(); return;
   }
   if (g.phase === "attack") {
@@ -379,14 +381,16 @@ function renderBar() {
   if (g.phase === "reinforce") {
     const left = g.reinforcements - placed(), hand = g.cards[k] || [], force = mustTrade(g, k);
     bar.innerHTML = `${phaseRow}<div class="big">${force ? "Trade cards" : left > 0 ? `Place ${left} ship${left === 1 ? "" : "s"}` : "Ready"}</div>
-      <div class="what">${force ? "You hold 5 cards: trade a set first." : left > 0 ? "Tap your suns to add ships. Borders next to enemies need them most." : "All ships placed. Confirm to start attacking."}</div>
+      <div class="what">${force ? "You hold 5 cards: trade a set first." : left > 0 ? "Tap your suns to add ships (hold to pour them in). Borders next to enemies need them most." : "All ships placed. Confirm to start attacking."}</div>
       <div class="row">${hand.length >= 3 ? `<button class="btn" id="bCards" type="button">Cards (${hand.length})</button>` : ""}
         <button class="btn" id="bUndo" type="button" ${placed() ? "" : "disabled"}>Undo</button>
         ${ui.sel >= 0 && g.owner[ui.sel] === k && left > 0 ? `<button class="btn" id="bAllHere" type="button">All ${left} here</button>` : ""}
+        ${left > 1 && !force ? `<button class="btn" id="bSpread" type="button" title="One at a time across the suns that face an enemy, most threatened first">Spread on borders</button>` : ""}
         <button class="btn go" id="bPlace" type="button" ${left === 0 && !force ? "" : "disabled"}>Confirm</button>${awayBtn}</div>${timerText(g, true)}`;
     if ($("bCards")) $("bCards").onclick = openCards;
     $("bUndo").onclick = () => { const keys = Object.keys(ui.pending); const last = ui.sel >= 0 && ui.pending[ui.sel] ? ui.sel : keys[keys.length - 1]; if (last !== undefined) { ui.pending[last]--; if (!ui.pending[last]) delete ui.pending[last]; } render(); };
     if ($("bAllHere")) $("bAllHere").onclick = () => { ui.pending[ui.sel] = (ui.pending[ui.sel] || 0) + left; render(); };
+    if ($("bSpread")) $("bSpread").onclick = spreadAcrossBorders;
     $("bPlace").onclick = () => { send({ t: "place", placement: { ...ui.pending } }); ui.pending = {}; };
     wireAway(); return;
   }
@@ -684,4 +688,32 @@ function truceToast(e, k) {
   if (e.t === "truce" && (e.a === k || e.b === k)) toast(`Truce agreed with ${nameOf(e.a === k ? e.b : e.a)} for 3 rounds. 🤝`);
   if (e.t === "truce" && e.a !== k && e.b !== k) toast(`${nameOf(e.a)} and ${nameOf(e.b)} agreed a truce.`);
   if (e.t === "truceBroken") toast(e.with === k ? `${nameOf(e.by)} broke your truce! 💀` : `${nameOf(e.by)} broke the truce with ${nameOf(e.with)}!`, e.with === k ? "err" : undefined);
+}
+
+// ---------- faster placing: hold a sun to pour ships in; or spread them across your borders ----------
+let hold = null;
+$("stage").addEventListener("pointerdown", e => {
+  const g = st && st.game, k = seatIx();
+  if (!scene || !g || !myTurn() || g.phase !== "reinforce" || mustTrade(g, k)) return;
+  const i = scene.pickAt(e.clientX, e.clientY, e.pointerType === "touch");
+  if (i < 0 || g.owner[i] !== k) return;
+  hold = { i, x: e.clientX, y: e.clientY, poured: 0, timer: setTimeout(function pour() {
+    if (!hold) return; const left = g.reinforcements - placed(); if (left <= 0) return;
+    ui.pending[hold.i] = (ui.pending[hold.i] || 0) + 1; hold.poured++; selectSun(hold.i); render();
+    hold.timer = setTimeout(pour, Math.max(40, 110 - hold.poured * 6));   // speeds up the longer you hold
+  }, 380) };
+}, true);
+const endHold = e => { if (!hold) return; clearTimeout(hold.timer); if (hold.poured) ui.holdUsed = true; hold = null; };
+addEventListener("pointerup", endHold, true); addEventListener("pointercancel", endHold, true);
+addEventListener("pointermove", e => { if (hold && Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > 10) endHold(); }, true);   // a drag turns the map instead
+
+// spread: one each round-robin across the suns that touch an enemy, most threatened first
+function spreadAcrossBorders() {
+  const g = st.game, k = seatIx(), threat = i => MAP.adj[i].reduce((a, j) => a + (g.owner[j] >= 0 && g.owner[j] !== k ? g.armies[j] : 0), 0);
+  let border = []; for (let i = 0; i < MAP.n; i++) if (g.owner[i] === k && MAP.adj[i].some(j => g.owner[j] !== k)) border.push(i);
+  if (!border.length) border = g.owner.map((o, i) => o === k ? i : -1).filter(i => i >= 0);
+  border.sort((a, b) => threat(b) - threat(a));
+  let left = g.reinforcements - placed();
+  for (let r = 0; left > 0; r++) { const i = border[r % border.length]; ui.pending[i] = (ui.pending[i] || 0) + 1; left--; }
+  render();
 }
