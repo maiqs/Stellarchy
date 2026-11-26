@@ -517,7 +517,7 @@ function cardFace(id, pressed) {
   if (id >= MAP.n) return `<button type="button" class="cardface k3" data-card="${id}" aria-pressed="${pressed}"><span class="top"><span class="sundot" style="color:${CARD_COLOR[3]};background:${CARD_COLOR[3]}"></span>Wild</span><span class="ty">Counts as any sun colour.</span></button>`;
   const s = S[id], c = specClass(s), held = st.game.owner[id] === seatIx();
   return `<button type="button" class="cardface k${k}" data-card="${id}" aria-pressed="${pressed}"><span class="top"><span class="sundot" style="color:${CARD_COLOR[k]};background:${CARD_COLOR[k]}"></span>${esc(disp(s))}</span>
-    <span class="ty">${CARD_NAMES[k]}${c ? ` · ${SUN_WORDS[c]}` : ""}</span><span class="ty">${surfaceTemp(s)} · ${s.name === "Sol" ? "home" : s.distLy.toFixed(1) + " ly"}</span>${held ? `<span class="fact">You hold it: +2 ships there when traded.</span>` : ""}</button>`;
+    <span class="ty">${CARD_NAMES[k]}${c ? ` · ${SUN_WORDS[c]}` : ""}</span><span class="ty">${surfaceTemp(s)} · ${lightText(s)} · ${s.name === "Sol" ? "home" : s.distLy.toFixed(1) + " ly"}${s.stars > 1 ? ` · ${s.stars} stars` : ""}</span>${STAR_FACTS[s.name] ? `<span class="sci">${esc(STAR_FACTS[s.name])}</span>` : ""}${held ? `<span class="fact">You hold it: +2 ships there when traded.</span>` : ""}</button>`;
 }
 function openCards() {
   const g = st && st.game, k = seatIx(); if (!g || k < 0) return;

@@ -9,7 +9,7 @@ export const CLASSES = [
   { key: "battleship", name: "battleship", value: 10 },
   { key: "dreadnought", name: "dreadnought", value: 25 },
 ];
-const FRIGATE_LEN = 1.02;
+const FRIGATE_LEN = 0.62;   // Paul, 2026-11-26: ships were too big everywhere (was 1.02); about 60% of the old size
 CLASSES.forEach(c => c.len = FRIGATE_LEN * Math.cbrt(c.value));
 export function fleetOf(a) { let left = a; const out = {}; for (const c of CLASSES.slice().reverse()) { out[c.key] = Math.floor(left / c.value); left -= out[c.key] * c.value; } return out; }
 const MAXDRAW = { frigate: 4, destroyer: 2, battleship: 2, dreadnought: 6 };
@@ -147,7 +147,7 @@ export function createScene({ container, labels, map }) {
   const orbitPos = (u, i, t, out) => { const a = u.phase + t * u.speed; return out.set(Math.cos(a) * u.r, 0, Math.sin(a) * u.r).applyQuaternion(tilt[i]).add(P[i]); };
   const unitPos = (u, i, t, out) => { if (!u.from || t >= u.t0 + u.dur) return orbitPos(u, i, t, out); orbitPos(u, i, t, tgt); return out.lerpVectors(u.from, tgt, ease(Math.max(0, (t - u.t0) / u.dur))); };
   function wanted(i) { const out = []; if (owner[i] < 0) return out; const fl = fleetOf(armies[i]); for (let ci = CLASSES.length - 1; ci >= 0; ci--) for (let k = 0; k < Math.min(fl[CLASSES[ci].key], MAXDRAW[CLASSES[ci].key]); k++) out.push(ci); return out; }
-  const mkUnit = (i, ci, hk, from, t0, dur) => ({ cls: ci, hk, owner: owner[i], r: starR[i] * 2 + .7 + ci * .55 + (Math.random() < .5 ? 0 : .18), phase: Math.random() * Math.PI * 2, speed: [.9, .6, .42, .28][ci], from, t0, dur });
+  const mkUnit = (i, ci, hk, from, t0, dur) => ({ cls: ci, hk, owner: owner[i], r: starR[i] * 2 + .5 + ci * .38 + (Math.random() < .5 ? 0 : .12), phase: Math.random() * Math.PI * 2, speed: [.9, .6, .42, .28][ci], from, t0, dur });
 
   function buildFleets(fx = []) {
     const t = clock(), rf = new Set(), moveTo = {}, loss = {};

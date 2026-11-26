@@ -459,3 +459,7 @@ Sources:
   - Fixed one more `onclick =()` spacing artefact.
   - Moved setup links into `client/setup.js` (pure: `SETUP_KEYS`, `readSetup`, `setupLink`), with tests that a link round-trips and that hostile links (injection, wrong types, unknown or overlong keys) are dropped.
   - 46 of 46 unit tests and 29 of 29 room checks pass undisturbed. The browser loads with 0 errors.
+- **Paul, 2026-11-26 (between rounds):**
+  - Ships were too big everywhere. `FRIGATE_LEN` is now 0.62 (was 1.02, about 60%), with orbits tightened to match.
+  - Paul prefers science on the cards to gameplay traits for suns. Card faces now show light (× Sun), star count, and the famous-star fact (34 stars have one); before, facts were only on the sun card.
+- [ ] **Open for Paul:** facts for every sun, not just the 34 famous ones? Generated from the data, for example "The light you see left it in 2014", which stars it holds, and how it compares to the Sun.
