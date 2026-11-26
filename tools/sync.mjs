@@ -6,7 +6,7 @@ const copy = (from, to) => { mkdirSync(new URL(".", at(to)), { recursive: true }
 
 rmSync(at("client/shared"), { recursive: true, force: true });
 copy("shared/", "client/shared/");
-copy("data/star_map.json", "client/data/star_map.json");
+copy("data/stars.json", "client/data/stars.json");
 copy("node_modules/three/build/three.module.js", "client/vendor/three.module.js");
 copy("node_modules/three/build/three.core.js", "client/vendor/three.core.js");
 copy("node_modules/three/examples/jsm/controls/OrbitControls.js", "client/vendor/OrbitControls.js");

@@ -82,11 +82,27 @@ export function createScene({ container, labels, map }) {
     stars.setColorAt(i, new THREE.Color(UNCLAIMED)); rims.setColorAt(i, new THREE.Color("#05070c"));
   }
   scene.add(stars, rims);
-  const glows = S.map((s, i) => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: UNCLAIMED, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: .55 }));
-    sp.scale.setScalar(starR[i] * 6.5); sp.position.copy(P[i]); scene.add(sp); return sp; });
+  // glows and marks are each one point cloud (one draw call), so 3,000 suns stay smooth:
+  // per-point colour, world size and alpha; marks pulse on a shared clock
+  const pointLayer = (tex, sizeOf, alpha0) => {
+    const g = new THREE.BufferGeometry(), pos = new Float32Array(n * 3), col = new Float32Array(n * 3), size = new Float32Array(n), alpha = new Float32Array(n), pulse = new Float32Array(n);
+    P.forEach((p, i) => { pos.set([p.x, p.y, p.z], i * 3); col.set([1, 1, 1], i * 3); size[i] = sizeOf(i); alpha[i] = alpha0; });
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3)); g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    g.setAttribute("size", new THREE.BufferAttribute(size, 1)); g.setAttribute("alpha", new THREE.BufferAttribute(alpha, 1)); g.setAttribute("pulse", new THREE.BufferAttribute(pulse, 1));
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { map: { value: tex }, scale: { value: 1 }, time: { value: 0 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: `attribute float size; attribute float alpha; attribute float pulse; attribute vec3 color; uniform float scale; uniform float time; varying vec3 vC; varying float vA;
+        void main() { float p = 0.55 + 0.45 * sin(time * 5.0); vC = color; vA = alpha * mix(1.0, 0.4 + 0.6 * p, pulse);
+          vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = min(size * (1.0 + 0.08 * p * pulse) * scale / -mv.z, 110.0 * scale / 700.0); gl_Position = projectionMatrix * mv; }`,
+      fragmentShader: `uniform sampler2D map; varying vec3 vC; varying float vA; void main() { vec4 t = texture2D(map, gl_PointCoord); gl_FragColor = vec4(vC * t.rgb, t.a * vA); if (gl_FragColor.a < 0.004) discard;
+        #include <colorspace_fragment>
+      }`,
+    });
+    const pts = new THREE.Points(g, mat); pts.frustumCulled = false; scene.add(pts); return { pts, col, alpha, pulse, g, mat };
+  };
+  const glowL = pointLayer(glowTex, i => starR[i] * 6.5, .55);
   // marks: pulsing rings for "you can pick this" (home sun choices, attack targets, your selection)
-  const marks = S.map((s, i) => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: ringTex, color: "#ffffff", transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0 }));
-    sp.scale.setScalar(starR[i] * 4.2 + .6); sp.position.copy(P[i]); sp.visible = false; scene.add(sp); return sp; });
+  const markL = pointLayer(ringTex, i => starR[i] * 4.2 + .6, 0);
 
   // lanes: drawn faint, with the lanes between regions a little brighter
   const laneVerts = [], gateVerts = [];
@@ -204,11 +220,11 @@ export function createScene({ container, labels, map }) {
   function paint() {
     const col = new THREE.Color();
     for (let i = 0; i < n; i++) {
-      const m = mainOf(owner[i]); stars.setColorAt(i, col.set(m)); glows[i].material.color.set(m);
+      const m = mainOf(owner[i]); stars.setColorAt(i, col.set(m)); glowL.col.set([col.r, col.g, col.b], i * 3);
       rims.setColorAt(i, col.set(subOf(owner[i])));
       const t = (hqOf[i] >= 0 ? "★ " : "") + disp(S[i]); if (lbls[i].textContent !== t) lbls[i].textContent = t;
     }
-    stars.instanceColor.needsUpdate = rims.instanceColor.needsUpdate = true;
+    stars.instanceColor.needsUpdate = rims.instanceColor.needsUpdate = true; glowL.g.attributes.color.needsUpdate = true;
   }
   function paintHighlight() {
     const arr = hiGeo.attributes.position.array; let k = 0;
@@ -281,8 +297,8 @@ export function createScene({ container, labels, map }) {
     }
     pGeo.attributes.position.needsUpdate = pGeo.attributes.color.needsUpdate = true;
     // marks pulse; glows breathe a little
-    const pulse = .55 + .45 * Math.sin(t * 5);
-    for (const [i, c] of markSet) { const m = marks[i]; m.material.opacity = c.strong ? .95 : .35 + .5 * pulse; m.scale.setScalar((starR[i] * 4.2 + .6) * (c.strong ? 1 : 1 + .08 * pulse)); }
+    const ps = H * renderer.getPixelRatio() / (2 * Math.tan(camera.fov * Math.PI / 360));   // world size to device pixels
+    glowL.mat.uniforms.scale.value = markL.mat.uniforms.scale.value = ps; markL.mat.uniforms.time.value = t;
     renderer.render(scene, camera);
     // labels
     const fovK = (H / 2) / Math.tan(camera.fov * Math.PI / 360);
@@ -305,7 +321,7 @@ export function createScene({ container, labels, map }) {
   requestAnimationFrame(frame);
 
   return {
-    P, starR, camera, controls,
+    P, starR, camera, controls, renderer, layers: { glowL, markL },
     setBoard(b, lookFn, events) {
       owner = b.owner.slice(); armies = b.armies.slice(); look = lookFn;
       hqOf = new Array(n).fill(-1); (b.hq || []).forEach((h, k) => { if (h >= 0 && owner[h] === k) hqOf[h] = k; });
@@ -314,8 +330,11 @@ export function createScene({ container, labels, map }) {
     clearBoard() { owner = new Array(n).fill(-1); armies = new Array(n).fill(0); hqOf = new Array(n).fill(-1); fleet = S.map(() => []); dying = []; paint(); },
     // marks: Map(i -> {color, strong, text})
     setMarks(m) {
-      for (const [i] of markSet) if (!m.has(i)) { marks[i].visible = false; }
-      markSet = m; for (const [i, c] of m) { marks[i].visible = true; marks[i].material.color.set(c.color || "#ffffff"); }
+      const col = new THREE.Color();
+      for (const [i] of markSet) if (!m.has(i)) markL.alpha[i] = 0;
+      markSet = m;
+      for (const [i, c] of m) { col.set(c.color || "#ffffff"); markL.col.set([col.r, col.g, col.b], i * 3); markL.alpha[i] = c.strong ? .95 : .9; markL.pulse[i] = c.strong ? 0 : 1; }
+      markL.g.attributes.color.needsUpdate = markL.g.attributes.alpha.needsUpdate = markL.g.attributes.pulse.needsUpdate = true;
     },
     select(i) { selected = i; paintHighlight(); },
     focus(i, dist) { glide(P[i].clone(), dist); },
@@ -325,5 +344,6 @@ export function createScene({ container, labels, map }) {
     setAllNames(on) { showAllNames = on; },
     screenOf,
     stop() { running = false; },
+    dispose() { running = false; removeEventListener("resize", resize); renderer.dispose(); renderer.domElement.remove(); labels.innerHTML = ""; scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); },
   };
 }

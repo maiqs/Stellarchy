@@ -1,6 +1,7 @@
 // Stellarchy game screen: title, look editor, rooms (online or solo), and the in-game HUD.
 // The server (or LocalRoom for solo play) owns the game; this page only shows it and sends intents.
 import { prepareMap, specClass } from "./shared/map.js";
+import { buildMap, clampSize, SIZE_STEPS } from "./shared/mapgen.js";
 import { hqChoices, mustTrade, isSet, connected, cardKind, ownedBy, target, effPct, tradeValue } from "./shared/rules.js";
 import { STYLES, STYLE_KEYS } from "./shared/bot.js";
 import { createScene, HULLS, fleetOf, CLASSES } from "./scene.js";
@@ -15,10 +16,18 @@ const SUBS = ["#ffffff", "#0b0f18", "#ffe066", "#ff4d5a", "#3e9bff", "#3fcf6a", 
 const store = { get(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 
 // ---------- boot ----------
-const MAP = prepareMap(await (await fetch("data/star_map.json")).json());
-const S = MAP.systems;
-const scene = createScene({ container: $("stage"), labels: $("labels"), map: MAP });
-scene.setAutoRotate(true);
+const STARS = await (await fetch("data/stars.json")).json();
+const mapCache = new Map();
+const mapOf = size => { size = clampSize(size); if (!mapCache.has(size)) mapCache.set(size, prepareMap(buildMap(STARS, size))); return mapCache.get(size); };
+let MAP = mapOf(300), S = MAP.systems, scene = null;
+// the 3D scene is built for one map; a room with another size rebuilds it
+function useMap(size) {
+  const m = mapOf(size); if (scene && m === MAP) return;
+  if (scene) scene.dispose();
+  MAP = m; S = MAP.systems; scene = createScene({ container: $("stage"), labels: $("labels"), map: MAP }); scene.onPick(onPick);
+}
+
+useMap(300); scene.setAutoRotate(true);
 
 // ---------- your look (kept in this browser; no account) ----------
 let me = store.get("stellarchy_profile", null);
@@ -71,6 +80,7 @@ function startRoom(r) {
     else if (m.t === "error") toast(m.error, "err");
     else if (m.t === "emote") { const s = st && st.seats.find(x => x.id === m.seat); if (s) toast(`${s.name}: ${m.e}`); }
     else if (m.t === "closed") toast("Connection lost. Reconnecting…", "err");
+    else if (m.t === "gone") { leaveRoom(); toast("That room has closed.", "err"); }
   });
   $("title").hidden = true; $("hud").hidden = false; scene.setAutoRotate(false);
 }
@@ -87,7 +97,14 @@ class NetRoom {
     const ws = this.ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host + `/api/rooms/${this.code}/ws`);
     ws.onopen = () => { this.tries = 0; ws.send(JSON.stringify({ t: "hello", token: store.get("stellarchy_tok_" + this.code, null), ...me })); };
     ws.onmessage = ev => { let m; try { m = JSON.parse(ev.data); } catch (e) { return; } if (m.t === "welcome" && m.token) store.set("stellarchy_tok_" + this.code, m.token); this.fns.forEach(f => f(m)); };
-    ws.onclose = () => { if (this.closed) return; this.fns.forEach(f => f({ t: "closed" })); setTimeout(() => !this.closed && this.connect(), Math.min(8000, 500 * 2 ** this.tries++)); };
+    ws.onclose = async () => {
+      if (this.closed) return;
+      // a room that no longer exists (or a server that's gone) stops the retries instead of looping forever
+      const r = await fetch(`/api/rooms/${this.code}`).catch(() => null);
+      if (r && r.status === 404) { this.closed = true; this.fns.forEach(f => f({ t: "gone" })); return; }
+      if (this.tries > 8) { this.closed = true; this.fns.forEach(f => f({ t: "gone" })); return; }
+      this.fns.forEach(f => f({ t: "closed" })); setTimeout(() => !this.closed && this.connect(), Math.min(8000, 500 * 2 ** this.tries++));
+    };
   }
   on(f) { this.fns.push(f); }
   send(m) { if (this.ws.readyState === 1) this.ws.send(JSON.stringify(m)); }
@@ -105,7 +122,7 @@ async function joinCode(code) {
 // ---------- title menu ----------
 const needName = then => { if (me.name) return then(); lookDialog(then); };
 $("mSolo").onclick = () => needName(soloDialog);
-$("mWatch").onclick = () => startRoom(new LocalRoom(MAP, { bots: 7, watch: true, mode: "legacy", pace: "fast" }, me));
+$("mWatch").onclick = () => { useMap(300); startRoom(new LocalRoom(MAP, { bots: 7, watch: true, mode: "legacy", pace: "fast" }, me)); };
 $("mCreate").onclick = () => needName(createDialog);
 $("mJoin").onsubmit = e => { e.preventDefault(); needName(() => joinCode($("joinCode").value)); };
 $("mRooms").onclick = roomsDialog;
@@ -114,26 +131,36 @@ $("mCredits").onclick = e => { e.preventDefault(); creditsDialog(); };
 function optionSeg(name, opts, cur) { return `<div class="seg" data-seg="${name}">${opts.map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${String(v) === String(cur)}">${esc(l)}</button>`).join("")}</div>`; }
 function wireSegs(el, state, redraw) { el.querySelectorAll("[data-seg]").forEach(seg => seg.querySelectorAll("button").forEach(b => b.onclick = () => { const v = b.dataset.v; state[seg.dataset.seg] = isNaN(+v) ? v : +v; redraw(); })); }
 
+// map size picker: suns from 10 to 3,000, never fewer than 4 per seat
+const sizeWords = n => n <= 25 ? "a few minutes" : n <= 100 ? "about 15–40 minutes" : n <= 300 ? "an hour or more" : n <= 1000 ? "a long campaign" : "epic: best over days, with long turns";
+function sizeField(o, seats) {
+  const min = seats * 4, steps = SIZE_STEPS.filter(s => s >= min);
+  if (o.size < min) o.size = steps.find(s => s >= min) || 3000;
+  return `<div class="field"><span>Map size: ${o.size.toLocaleString()} suns</span>${optionSeg("size", steps.map(s => [s, s >= 1000 ? (s / 1000) + "k" : String(s)]), o.size)}
+    <p class="hint">The ${o.size.toLocaleString()} nearest real star systems to Earth${o.size >= 1000 ? ", out to " + Math.round(mapOf(o.size).systems.at(-1).distLy) + " light years" : ""}. A game takes ${sizeWords(o.size)}.${o.size >= 1000 ? " Fainter stars are missing from the catalogue this far out, so big maps lean towards brighter stars." : ""}</p></div>`;
+}
 function soloDialog() {
-  const o = store.get("stellarchy_solo", { bots: 5, mode: "legacy", targetPct: 100, pace: "normal" });
+  const o = { size: 300, ...store.get("stellarchy_solo", { bots: 5, mode: "legacy", targetPct: 100, pace: "normal" }) };
   const draw = () => openDialog(`<form class="dlg" method="dialog"><h2>Play vs AI</h2>
     <div class="field"><span>Opponents</span>${optionSeg("bots", [[1, "1"], [2, "2"], [3, "3"], [5, "5"], [7, "7"], [11, "11"], [15, "15"]], o.bots)}</div>
+    ${sizeField(o, o.bots + 1)}
     <div class="field"><span>Start</span>${optionSeg("mode", [["legacy", "One home sun each"], ["dealt", "Suns dealt out"]], o.mode)}
       <p class="hint">${o.mode === "legacy" ? "Everyone founds a single home sun and expands outward." : "Every sun is shared out at random from the start."}</p></div>
     <div class="field"><span>Win at</span>${optionSeg("targetPct", [[50, "50%"], [65, "65%"], [80, "80%"], [100, "Total conquest"]], o.targetPct)}</div>
     <div class="field"><span>AI speed</span>${optionSeg("pace", [["slow", "Slow"], ["normal", "Normal"], ["fast", "Fast"], ["instant", "Instant"]], o.pace)}</div>
     <div class="row end"><button class="btn ghost" value="cancel">Cancel</button><button class="btn go big" id="sGo" value="ok">Launch</button></div></form>`, el => {
       wireSegs(el, o, draw);
-      el.querySelector("#sGo").onclick = () => { store.set("stellarchy_solo", o); startRoom(new LocalRoom(MAP, o, me)); };
+      el.querySelector("#sGo").onclick = () => { store.set("stellarchy_solo", o); useMap(o.size); startRoom(new LocalRoom(MAP, o, me)); };
     });
   draw();
 }
 function createDialog() {
-  const o = store.get("stellarchy_create", { maxSeats: 6, mode: "legacy", targetPct: 100, timer: 0, public: true, pace: "normal" });
+  const o = { size: 300, ...store.get("stellarchy_create", { maxSeats: 6, mode: "legacy", targetPct: 100, timer: 0, public: true, pace: "normal" }) };
   const draw = () => openDialog(`<form class="dlg" method="dialog"><h2>Create a room</h2>
     <div class="field"><span>Seats</span>${optionSeg("maxSeats", [[2, "2"], [3, "3"], [4, "4"], [6, "6"], [8, "8"], [12, "12"], [16, "16"]], o.maxSeats)}<p class="hint">Empty seats can be filled with AI players before you start.</p></div>
     <div class="field"><span>Who can find it</span>${optionSeg("public", [["true", "Listed in open rooms"], ["false", "Link only"]], String(o.public))}</div>
     <div class="field"><span>Turn timer</span>${optionSeg("timer", [[0, "None"], [90, "90 s"], [180, "3 min"], [43200, "12 h"], [86400, "24 h"]], o.timer)}<p class="hint">When time runs out, the AI plays that turn in the player's style. They take over again as soon as they act.</p></div>
+    ${sizeField(o, o.maxSeats)}
     <div class="field"><span>Start</span>${optionSeg("mode", [["legacy", "One home sun each"], ["dealt", "Suns dealt out"]], o.mode)}</div>
     <div class="field"><span>Win at</span>${optionSeg("targetPct", [[50, "50%"], [65, "65%"], [80, "80%"], [100, "Total conquest"]], o.targetPct)}</div>
     <div class="row end"><button class="btn ghost" value="cancel">Cancel</button><button class="btn go big" id="cGo" value="ok">Create</button></div></form>`, el => {
@@ -181,6 +208,7 @@ function send(intent) { room && room.send({ t: "intent", intent }); }
 // ---------- state from the room ----------
 function onState(m) {
   const prev = st; st = m;
+  if (m.opts && m.opts.size && mapOf(m.opts.size) !== MAP) { useMap(m.opts.size); ui.lastRev = -1; }
   if (m.code && !prev) { $("hCode").hidden = false; $("hCode").textContent = m.code; }
   const g = m.game, k = seatIx();
   if (g) {
@@ -215,7 +243,7 @@ addEventListener("focus", () => document.title = "Stellarchy");
 
 // ---------- picking suns ----------
 function selectSun(i) { ui.sel = i; scene.select(i); renderSunCard(); }
-scene.onPick(i => {
+function onPick(i) {
   if (!st || !st.game) { if (i >= 0) { selectSun(i); scene.focus(i); } return; }
   const g = st.game, k = seatIx();
   if (i < 0) { if (g.phase !== "reinforce") selectSun(-1); render(); return; }
@@ -237,7 +265,7 @@ scene.onPick(i => {
     if (g.owner[i] === k && g.armies[i] >= 2) { ui.fort = { from: i, to: -1 }; selectSun(i); render(); return; }
     selectSun(i); render();
   }
-});
+}
 const placed = () => Object.values(ui.pending).reduce((a, b) => a + b, 0);
 
 // ---------- render ----------

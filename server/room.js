@@ -2,12 +2,15 @@
 // WebSocket, the room checks them with the shared rules, rolls the dice and broadcasts the result.
 // Computer players, away players and turn timers all run here on alarms, so a game keeps going
 // when every tab is closed.
-import RAW_MAP from "../data/star_map.json";
+import STARS from "../data/stars.json";
+import { buildMap, clampSize } from "../shared/mapgen.js";
 import { prepareMap, mulberry32 } from "../shared/map.js";
 import { newGame, act, MAX_SEATS, SUNS_PER_SEAT } from "../shared/rules.js";
 import { botIntent, STYLE_KEYS } from "../shared/bot.js";
 
-const MAP = prepareMap(RAW_MAP);
+// maps are built per size and kept for reuse (the same size always gives the same map)
+const MAPS = new Map();
+export const mapFor = size => { size = clampSize(size); if (!MAPS.has(size)) MAPS.set(size, prepareMap(buildMap(STARS, size))); return MAPS.get(size); };
 export const HULLS = ["triangle", "brick", "tube", "orb", "saucer"];
 const PALETTE = ["#ff4d5a", "#3e9bff", "#f5d90a", "#3fcf6a", "#b06bff", "#ff8a2a", "#22d3c5", "#ff6fb5", "#9dff3a", "#ffffff", "#5b6bff", "#ff3df2", "#00e5ff", "#ffb3a7", "#c9a227", "#7cffc4"];
 const PSUB = ["#ffe066", "#ffffff", "#ff4d5a", "#0b0f18", "#3fcf6a", "#3e9bff", "#ff6fb5", "#22d3c5", "#b06bff", "#ff4d5a", "#f5d90a", "#ffffff", "#ff8a2a", "#3e9bff", "#0b0f18", "#b06bff"];
@@ -29,6 +32,7 @@ export class Room {
   }
 
   async save() { await this.ctx.storage.put("room", this.s); }
+  get map() { return mapFor(this.s.opts.size || 300); }
 
   // ---- HTTP: create (from the Worker) and the WebSocket upgrade ----
   async fetch(req) {
@@ -40,10 +44,11 @@ export class Room {
         code: o.code, created: Date.now(), updated: Date.now(), status: "lobby", public: !!o.public,
         opts: { maxSeats: clampInt(o.maxSeats, 2, MAX_SEATS, 6), mode: o.mode === "dealt" ? "dealt" : "legacy",
                 targetPct: clampInt(o.targetPct, 30, 100, 100), timer: TIMERS.includes(o.timer) ? o.timer : 0,
-                pace: PACES[o.pace] ? o.pace : "normal" },
+                pace: PACES[o.pace] ? o.pace : "normal", size: 300 },
         seats: [], tokens: {}, creator: null, game: null, rev: 0, log: [], seed: (Math.random() * 2 ** 31) | 0, rngState: 0,
         turnStarted: 0, deadline: 0,
       };
+      this.s.opts.size = Math.max(clampSize(o.size ?? 300), this.s.opts.maxSeats * SUNS_PER_SEAT);
       if (o.allAI) { for (let k = 0; k < this.s.opts.maxSeats; k++) this.addBot(); }
       await this.save(); await this.report();
       if (o.allAI) { this.start(); await this.commit(); }
@@ -60,7 +65,7 @@ export class Room {
   summary() {
     const s = this.s;
     return { code: s.code, status: s.status, public: s.public, seats: s.seats.length, humans: s.seats.filter(x => !x.ai).length,
-             maxSeats: s.opts.maxSeats, mode: s.opts.mode, targetPct: s.opts.targetPct, timer: s.opts.timer, updated: s.updated,
+             maxSeats: s.opts.maxSeats, mode: s.opts.mode, targetPct: s.opts.targetPct, timer: s.opts.timer, size: s.opts.size || 300, updated: s.updated,
              names: s.seats.map(x => x.name).slice(0, 6), turnNo: s.game ? s.game.turnNo : 0 };
   }
   async report() {   // tell the lobby about this room (public rooms only show there)
@@ -107,6 +112,8 @@ export class Room {
         if (m.targetPct !== undefined) o.targetPct = clampInt(m.targetPct, 30, 100, o.targetPct);
         if (TIMERS.includes(m.timer)) o.timer = m.timer;
         if (m.public !== undefined) s.public = !!m.public;
+        if (m.size !== undefined) o.size = clampSize(m.size);
+        o.size = Math.max(o.size || 300, o.maxSeats * SUNS_PER_SEAT);
         break;
       }
       case "pace": if (PACES[m.pace]) s.opts.pace = m.pace; break;
@@ -121,7 +128,7 @@ export class Room {
         const g = s.game; if (!g || s.status !== "playing") return reply({ t: "error", error: "no game running" });
         const k = s.seats.indexOf(seat);
         if (seat.away) { seat.away = false; seat.autoAway = false; this.syncGameSeats(); }   // acting takes the seat back from the AI
-        const r = act(MAP, g, k, m.intent, this.rng());
+        const r = act(this.map, g, k, m.intent, this.rng());
         if (!r.ok) return reply({ t: "error", error: r.error });
         this.afterEvents(r.events); break;
       }
@@ -164,8 +171,8 @@ export class Room {
 
   start() {
     const s = this.s;
-    if (MAP.n < s.seats.length * SUNS_PER_SEAT) return;
-    s.game = newGame(MAP, { mode: s.opts.mode, targetPct: s.opts.targetPct, seats: s.seats }, this.rng());
+    if (this.map.n < s.seats.length * SUNS_PER_SEAT) return;
+    s.game = newGame(this.map, { mode: s.opts.mode, targetPct: s.opts.targetPct, seats: s.seats }, this.rng());
     s.status = "playing"; this.log("The war begins"); this.turnBegan();
   }
 
@@ -192,11 +199,11 @@ export class Room {
     if (st && !st.ai && !st.away && s.deadline && now >= s.deadline) { st.away = true; st.autoAway = true; this.log(`${st.name} ran out of time: the AI is playing for them`); }
     this.syncGameSeats();
     if (this.controlledByAI(k)) {
-      const it = botIntent(MAP, g, k, s.seats[k].style, this.rng());
-      let r = it ? act(MAP, g, k, it, this.rng()) : { ok: false };
+      const it = botIntent(this.map, g, k, s.seats[k].style, this.rng());
+      let r = it ? act(this.map, g, k, it, this.rng()) : { ok: false };
       if (!r.ok) {   // never stall
         const fb = g.advance ? { t: "advance", n: 0 } : g.phase === "attack" ? { t: "endAttack" } : { t: "endTurn" };
-        r = act(MAP, g, k, fb, this.rng());
+        r = act(this.map, g, k, fb, this.rng());
       }
       if (r.ok) this.afterEvents(r.events);
     }

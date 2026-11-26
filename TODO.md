@@ -39,24 +39,24 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
    - [x] Join by code or link. The creator can add or remove bots and start the game. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
    - [ ] A spectator mode for full or running rooms.
 4b. **Map size slider (Paul, 2026-11-25): 10 to 3,000 suns**
-   - [ ] **Data:** rebuild the star file with the 3,000 nearest systems, sorted by distance from Sol. The C# builder in `../star_diplomacy/tools` has a 16 pc cap; lift it to about 35 pc. The file is about 400 KB raw and about 100 KB gzipped.
+   - [x] **Data:** rebuild the star file with the 3,000 nearest systems, sorted by distance from Sol. The C# builder in `../star_diplomacy/tools` has a 16 pc cap; lift it to about 35 pc. The file is about 400 KB raw and about 100 KB gzipped.
      - Beyond about 20 pc, HYG misses many faint red dwarfs, so big maps lean toward brighter stars. Say so on the credits or info page.
-   - [ ] **Map built per room:** port the lane and continent code to `shared/` in JS. A room of size N takes the first N systems and builds:
+   - [x] **Map built per room:** port the lane and continent code to `shared/` in JS. A room of size N takes the first N systems and builds:
      - lanes within 7 ly, plus a minimum of 2 links per star, plus spanning connectivity
      - about N÷20 continents, clamped 1–40, with bonuses
      - the same map every time for the same N
-   - [ ] **The slider:** a log scale snapping to 10, 25, 50, 100, 200, 300, 500, 1000, 2000 and 3000. It shows the estimated game length, about 1–2 minutes per sun per player.
-   - [ ] **Rules that bend with size:**
+   - [x] **The slider:** a log scale snapping to 10, 25, 50, 100, 200, 300, 500, 1000, 2000 and 3000. It shows the estimated game length, about 1–2 minutes per sun per player.
+   - [x] **Rules that bend with size:**
      - minimum suns = 4 per seat, so the slider's floor rises with player count
      - HQ spacing shrinks on small maps (4 jumps at 100 or more suns, 2 at 10)
      - small maps have no continents
-   - [ ] **Big maps (1,000+):**
+   - [ ] **Big maps (1,000+):** *(Round 4: glows and pick rings are each one draw call, taking 3,000 suns from 34 to 79 fps in the preview. Labels, fleet caps, server diffs and lower default win % are not done yet.)*
      - stars drawn as one InstancedMesh
      - names and army counts only near the camera, or on hover or select
      - fleets capped per star
      - the server sends changes, not the whole board
      - win-% presets lower by default
-   - [ ] **Tests:**
+   - [ ] **Tests:** *(Round 4: every size builds connected and the same each time, and games at 10, 25 and 200 suns finish (`tests/mapgen.test.js`). Games at 1,000+ do not finish yet; see Bugs.)*
      - every size from 10 to 3,000 builds a connected map
      - all-bot games finish at 10, 300 and 3,000
      - 60 fps on a mid phone at 3,000
@@ -148,10 +148,16 @@ Sources:
 - https://steamcommunity.com/app/1128810/discussions/0/1743393963178028328
 
 ## Bugs and balance
+- [ ] **Big maps never end (top bug, round 4):** a 6-player game on 1,000 suns had not finished after 12,000 turns, at about 11 ms a turn. Fixes to try:
+  - the stall boldness should rise faster on big maps (scale it with suns per player)
+  - a bigger starting fleet and more reinforcements on big maps
+  - a lower default win % for 1,000 suns or more
+  - faster bots (cache frontier, threat and region progress per turn instead of rescanning every sun at every step)
 - [ ] **Styles are uneven** (soak). Win rate per seat, against a fair share of about 10%:
   - Round 1: aggressive 25.9%, territorial 14.7%, balanced 5.2%, card hunter 5.2%, defensive 0.9%.
   - Round 2, after tuning, 80 games: defensive 16.5%, aggressive 12.7%, territorial 9.6%, balanced 7.0%, card hunter 5.1%.
   - Hand-tuning is noisy, swinging several points between 50 and 80 games. Next: an automatic tuner (`TUNE=` env in `tests/soak.js`), running many seeds and nudging each style toward the fair share.
+- [ ] **Automatic tuner** (`tests/tune.js`, round 4): hill-climbs one style weight at a time across 240 games on 28 threads, keeping changes that bring win rates closer together. The first run is going in the background; apply `tests/tune_result.json` next round.
 - [ ] **Games are long:** a median of 1,712 turns from one home sun to total conquest. At "fast" (0.15 s a move) a computer-only game takes hours. Consider a faster pace for computer-only games, or a bigger home start.
 - [ ] **Card trades snowball:** late games reach stacks of 40,000 ships. Look at capping trade values or the number of cards.
 
@@ -182,3 +188,15 @@ Sources:
   - Ported the neon renderer to three.js r187 modules. Three.js and the fonts are served from our own folder, with no CDN (`tools/sync.mjs`).
   - Checked in the preview at desktop and phone size, plus an online room against `wrangler dev`.
   - 10 of 10 unit tests pass.
+- **Round 4 (2026-11-25):**
+  - Added the map-size picker, from 10 to 3,000 suns:
+    - `data/stars.json` holds the 3,000 nearest systems out to 86 ly, from our own copy of the builder (`tools/starbuild`).
+    - `shared/mapgen.js` builds lanes and regions for any size, the same map every time, in 1–100 ms.
+    - The server, the solo game and the page all use the room's size.
+    - The picker shows the sizes, rough game lengths, and a warning about fainter stars on big maps.
+  - Glows and pick rings now draw as single point layers: 3,000 suns went from 34 to 79 fps.
+  - Fixed: glows were too small at screen scales above 100%.
+  - Fixed: a closed room made the page retry forever.
+  - Added the automatic style tuner, running in the background.
+  - Found: 1,000-sun games don't finish (logged as the top bug).
+  - Unit tests: 10 rules and 16 map tests pass. The room checks pass (12).

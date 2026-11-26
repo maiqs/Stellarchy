@@ -5,7 +5,8 @@ import { prepareMap, mulberry32 } from "../shared/map.js";
 import { botIntent } from "../shared/bot.js";
 
 const BASE = process.env.BASE || "http://127.0.0.1:8787";
-const MAP = prepareMap(JSON.parse(readFileSync(new URL("../data/star_map.json", import.meta.url))));
+import { buildMap } from "../shared/mapgen.js";
+const MAP = prepareMap(buildMap(JSON.parse(readFileSync(new URL("../data/stars.json", import.meta.url))), +(process.env.SIZE || 300)));
 const rng = mulberry32(42);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 let failures = 0;

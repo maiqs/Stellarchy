@@ -5,7 +5,8 @@ import { prepareMap, mulberry32, hops } from "../shared/map.js";
 import { newGame, act, invariants, hqChoices, reinforcementsFor, isSet, target } from "../shared/rules.js";
 import { botIntent, playTurn, STYLE_KEYS } from "../shared/bot.js";
 
-const MAP = prepareMap(JSON.parse(readFileSync(new URL("../data/star_map.json", import.meta.url))));
+import { buildMap } from "../shared/mapgen.js";
+const MAP = prepareMap(buildMap(JSON.parse(readFileSync(new URL("../data/stars.json", import.meta.url))), +(process.env.SIZE || 300)));
 const seats = (k, ai = true, style = i => STYLE_KEYS[i % STYLE_KEYS.length]) =>
   Array.from({ length: k }, (_, i) => ({ id: "s" + i, name: "P" + i, main: "#ff0000", sub: "#ffffff", hull: "orb", style: style(i), ai }));
 
@@ -24,7 +25,7 @@ function runGame(map, g, rng, maxTurns = 6000) {
 test("map: every system is reachable", () => {
   const d = hops(MAP, [0]);
   assert.equal(d.filter(x => x === Infinity).length, 0);
-  assert.equal(MAP.n, 301);
+  assert.equal(MAP.n, 300);
 });
 
 test("setup: home suns are spaced and then reinforcement begins", () => {

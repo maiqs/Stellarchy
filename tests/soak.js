@@ -5,7 +5,8 @@ import { newGame, act, invariants } from "../shared/rules.js";
 import { playTurn, STYLE_KEYS, STYLES } from "../shared/bot.js";
 // TUNE='{"defensive":{"odds":1.6}}' overrides style weights for a run (balance work)
 if (process.env.TUNE) for (const [k, v] of Object.entries(JSON.parse(process.env.TUNE))) Object.assign(STYLES[k], v);
-const MAP = prepareMap(JSON.parse(readFileSync(new URL("../data/star_map.json", import.meta.url))));
+import { buildMap } from "../shared/mapgen.js";
+const MAP = prepareMap(buildMap(JSON.parse(readFileSync(new URL("../data/stars.json", import.meta.url))), +(process.env.SIZE || 300)));
 const games = +(process.argv[2] || 60), wins = {}, seatsOf = {}, turns = [];
 for (let gi = 0; gi < games; gi++) {
   const rng = mulberry32(5000 + gi), k = 4 + (gi % 13);
