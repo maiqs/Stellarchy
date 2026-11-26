@@ -183,3 +183,31 @@ test("replay: rebuilding the board from the history matches the real board", asy
   const held = g.seats.map((_, k) => mid.filter(o => o === k).length);
   assert.deepEqual(held, h.samples[h.samples.length >> 1].held, "a middle frame matches that sample's counts");
 });
+
+test("AI levels: recruits leave people alone early, admirals get +3 ships, every level finishes", async () => {
+  const { reinforcementsFor, ADMIRAL_BONUS } = await import("../shared/rules.js");
+  for (const aiLevel of ["recruit", "captain", "admiral"]) {
+    const rng = mulberry32(81), g = newGame(MAP, { mode: "legacy", aiLevel, seats: seats(5) }, rng);
+    runGame(MAP, g, rng); assert.equal(g.status, "over", aiLevel);
+  }
+  // admiral bonus only for AI seats
+  const g = newGame(MAP, { mode: "dealt", aiLevel: "admiral", targetPct: 80, seats: [...seats(2, false), ...seats(2)].map((s, i) => ({ ...s, id: "x" + i })) }, mulberry32(82));
+  const plain = { ...g, aiLevel: "captain" };
+  assert.equal(reinforcementsFor(MAP, g, 2) - reinforcementsFor(MAP, plain, 2), ADMIRAL_BONUS);
+  assert.equal(reinforcementsFor(MAP, g, 0), reinforcementsFor(MAP, plain, 0), "people get no bonus");
+  // recruit AI do not attack people in the first rounds
+  const rng = mulberry32(83), r = newGame(MAP, { mode: "dealt", aiLevel: "recruit", targetPct: 90, seats: [{ id: "me", name: "Me", style: "balanced", ai: false }, ...seats(3)] }, rng);
+  let hits = 0;
+  while (r.turnNo <= r.seats.length * 4) {
+    const ev = playTurn(MAP, r, r.turn, r.seats[r.turn].style, rng);
+    hits += ev.filter(e => e.t === "bt" && e.d === 0 && r.seats[e.a].ai).length;
+  }
+  assert.equal(hits, 0, "no AI attacks on the person in the first 4 rounds");
+});
+
+test("dice record: over a whole game the dice average close to 3.5", () => {
+  const rng = mulberry32(91), g = newGame(MAP, { mode: "dealt", targetPct: 100, seats: seats(4) }, rng);
+  runGame(MAP, g, rng);
+  const n = g.dice.reduce((a, d) => a + d.n, 0), sum = g.dice.reduce((a, d) => a + d.sum, 0);
+  assert.ok(n > 500, `${n} dice`); assert.ok(Math.abs(sum / n - 3.5) < .1, `average ${(sum / n).toFixed(3)}`);
+});

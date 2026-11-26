@@ -46,7 +46,9 @@ function bestSet(map, g, seat) {
 }
 
 export function botIntent(map, g, seat, styleKey, rng, aggression = stallAggression(g)) {
-  const S = styleOf(styleKey);
+  const recruit = g.aiLevel === "recruit" && g.seats[seat] && g.seats[seat].ai;
+  // Recruit AI (for beginners): its own style, but cautious, no hunting, and it leaves people alone for the first 4 rounds
+  const S = recruit ? { ...styleOf(styleKey), odds: styleOf(styleKey).odds + .6, margin: styleOf(styleKey).margin + 2, elim: 0, cards: .5, cardEveryTurn: false, gentle: g.turnNo <= g.seats.length * 4 } : styleOf(styleKey);
   if (g.status !== "playing" || g.turn !== seat) return null;
   if (g.advance) return { t: "advance", n: advanceCount(map, g, seat, S) };
   if (g.phase === "setup") {
@@ -62,6 +64,7 @@ export function botIntent(map, g, seat, styleKey, rng, aggression = stallAggress
     return { t: "place", placement: placement(map, g, seat, S) };
   }
   if (g.phase === "attack") {
+    if (recruit && rng() < .2) return { t: "endAttack" };   // recruits sometimes stop early
     const pick = chooseAttack(map, g, seat, S, aggression);
     return pick ? { t: "attack", from: pick[0], to: pick[1], blitz: true } : { t: "endAttack" };
   }
@@ -102,6 +105,7 @@ function chooseAttack(map, g, seat, S, aggression) {
     for (const j of map.adj[i]) {
       const dOwn = g.owner[j]; if (dOwn === seat) continue;
       if (dOwn >= 0 && aggression < 4 && truceBetween(g, seat, dOwn)) continue;   // keeps its word, until a stalled war makes it reckless
+      if (S.gentle && dOwn >= 0 && g.seats[dOwn] && !g.seats[dOwn].ai) continue;   // recruit: no attacks on people early on
       const att = g.armies[i] - 1 - keep, def = g.armies[j];
       const ok = dOwn < 0 ? g.armies[i] - 1 >= 1 : (att >= def + margin && att >= def * odds) || (needCard && att >= def + 1);
       if (!ok) continue;

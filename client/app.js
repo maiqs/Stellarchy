@@ -8,7 +8,7 @@ import { createScene, HULLS, fleetOf, CLASSES } from "./scene.js";
 import { LocalRoom } from "./local.js";
 import { EMOTES } from "./shared/emotes.js";
 import { sound } from "./sound.js";
-import { historyChart, highlights } from "./results.js";
+import { historyChart, highlights, diceLine } from "./results.js";
 import { PALETTE, HEX } from "./shared/looks.js";
 // the 3D hull for a key, falling back to the first
 const hullInfo = key => HULLS.find(h => h.key === key) || HULLS[0];
@@ -173,7 +173,9 @@ function sizeField(o, seats) {
 // room rules players can change (Warzone-style configurability): how card sets pay, and the starting fleet
 function rulesFields(o) {
   o.cards = o.cards || "escalating"; o.hqArmies = o.hqArmies || 10;
-  return `<div class="field"><span>Cards</span>${optionSeg("cards", [["escalating", "Rising sets"], ["fixed", "Fixed sets"], ["none", "No cards"]], o.cards)}
+  o.aiLevel = ["recruit", "captain", "admiral"].includes(o.aiLevel) ? o.aiLevel : "captain";
+  return `<div class="field"><span>AI players</span>${optionSeg("aiLevel", [["recruit", "Recruit"], ["captain", "Captain"], ["admiral", "Admiral"]], o.aiLevel)}<p class="hint">${o.aiLevel === "recruit" ? "Gentle: careful attacks, no hunting, and they leave people alone for the first 4 rounds. Good for learning." : o.aiLevel === "admiral" ? "Sharp, and each AI player gets +3 ships a turn. A real fight." : "The standard AI: plays its style to win, with no bonuses."}</p></div>
+  <div class="field"><span>Cards</span>${optionSeg("cards", [["escalating", "Rising sets"], ["fixed", "Fixed sets"], ["none", "No cards"]], o.cards)}
     <p class="hint">${o.cards === "escalating" ? "Each set traded at the table pays more: 4, 6, 8, 10, 12, 15, then +5, capped at 40." : o.cards === "fixed" ? "Every set pays 8 ships, however many have been traded." : "No cards at all: ships come only from suns, regions and your home sun."}</p></div>
     <div class="field"><span>Flagships</span>${optionSeg("flagships", [["false", "Off"], ["true", "On"]], String(!!o.flagships))}<p class="hint">${o.flagships ? "Everyone has a flagship ⚑ (at their home sun, or their biggest sun when dealt). Its guns add 1 to the best defending die. Lose it and you are out at once, and your suns go dark." : "No flagships: you are out only when you lose your last sun."}</p></div>
     ${o.mode === "dealt" ? "" : `<div class="field"><span>Starting fleet</span>${optionSeg("hqArmies", [[10, "10 ships"], [20, "20"], [40, "40"]], o.hqArmies)}<p class="hint">Ships at each home sun when the war begins. Bigger fleets spread faster.</p></div>`}`;
@@ -542,6 +544,7 @@ function winDialog() {
     <p class="hint">${g.winner === k ? "You are the Stellarch of the known stars." : "The war is over."} ${ownedBy(g, g.winner)} of ${MAP.n} suns after ${g.turnNo} turns.</p>
     ${historyChart(g, resultsView())}
     ${highlights(g, resultsView())}
+    ${diceLine(g, k)}
     <div class="standings">${order.map((o, r) => `<span class="${o.j === k ? "me" : ""}" style="--pc:${esc(lookOf(o.j).main)}"><b>${r + 1}</b><span class="swatch s" style="--sw-main:${esc(lookOf(o.j).main)};--sw-sub:${esc(lookOf(o.j).sub)}"></span>${esc(nameOf(o.j))}</span>`).join("")}</div>
     ${rec && k >= 0 ? `<p class="hint">Your record: <b>${rec.wins}</b> win${rec.wins === 1 ? "" : "s"} in ${rec.games} game${rec.games === 1 ? "" : "s"}${rec.fastest ? ` · fastest win ${rec.fastest} turns` : ""}</p>` : ""}
     <div class="row"><button class="btn" id="wClose" type="button">Look at the map</button>${g.hist && g.hist.base ? `<button class="btn" id="wReplay" type="button">▶ Watch the replay</button>` : ""}<button class="btn go" id="wMenu" type="button">Menu</button></div></div>`, el => {
@@ -803,7 +806,7 @@ if ("serviceWorker" in navigator && (location.protocol === "https:" || new URLSe
 }
 
 // ---------- shareable setups: a link that opens Play vs AI or Create a room with the same settings ----------
-const SETUP_KEYS = { size: "n", centre: "s", mode: "s", targetPct: "n", fog: "b", cards: "s", hqArmies: "n", flagships: "b", bots: "n", maxSeats: "n", timer: "n", public: "b", pace: "s" };
+const SETUP_KEYS = { aiLevel: "s", size: "n", centre: "s", mode: "s", targetPct: "n", fog: "b", cards: "s", hqArmies: "n", flagships: "b", bots: "n", maxSeats: "n", timer: "n", public: "b", pace: "s" };
 function copySetup(kind, o) {
   const p = new URLSearchParams({ play: kind });
   for (const k in SETUP_KEYS) if (o[k] !== undefined) p.set(k, String(o[k]));
@@ -845,6 +848,9 @@ function howDialog() {
       <li><b>Cards:</b> rising sets (capped at 40), fixed 8-ship sets, or no cards.</li>
       <li><b>Truces 🤝:</b> offer one from the players panel. They last 3 rounds and aren't binding, but breaking one is announced to everyone.</li>
       <li><b>Turn timer:</b> if you run out, the AI plays in your style until you act again.</li>
+      <li><b>AI players:</b> Recruit (gentle, for learning), Captain (standard) or Admiral (+3 ships a turn, said openly).</li>
     </ul>
+    <h3>Fair dice</h3>
+    <p class="hint">Online, every die is rolled by the server, so nobody can tamper with their own rolls. The AI never gets better dice, and only Admiral AI get extra ships, as the setup says. Your own roll average is on the results screen.</p>
     <div class="row end"><button class="btn go" id="howOk" type="button">Got it</button></div></div>`, el => el.querySelector("#howOk").onclick = () => dlg.close());
 }

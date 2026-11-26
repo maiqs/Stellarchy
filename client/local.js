@@ -23,7 +23,7 @@ export class LocalRoom {
       seats.push({ id: "ai_" + b, name: BOT_NAMES[b], main: f.main, sub: f.sub, hull: HULL_KEYS[(b + 1) % 5], style: STYLE_KEYS[b % STYLE_KEYS.length], ai: true, away: false, online: true });
     }
     this.seats = seats;
-    this.g = newGame(map, { mode: opts.mode, targetPct: opts.targetPct, cards: opts.cards, hqArmies: opts.hqArmies, flagships: opts.flagships, seats }, this.rng);
+    this.g = newGame(map, { mode: opts.mode, targetPct: opts.targetPct, cards: opts.cards, hqArmies: opts.hqArmies, flagships: opts.flagships, aiLevel: opts.aiLevel, seats }, this.rng);
     this.say("The war begins");
     setTimeout(() => { this.emit({ t: "welcome", seat: opts.watch ? null : "me", token: null, creator: true }); this.commit([]); }, 0);
   }

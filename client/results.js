@@ -26,3 +26,10 @@ export function highlights(g, v) {
   }
   return out.length ? `<ul class="moments">${out.join("")}</ul>` : "";
 }
+
+// fairness: your own dice against a fair die's average (3.5), so "the dice cheat" can be checked
+export function diceLine(g, me) {
+  const d = g.dice && me >= 0 && g.dice[me]; if (!d || d.n < 10) return "";
+  const avg = d.sum / d.n;
+  return `<p class="hint">🎲 Your dice: ${d.n} rolled, averaging <b>${avg.toFixed(2)}</b> (a fair die averages 3.50). ${Math.abs(avg - 3.5) < .15 ? "Right on the odds." : avg > 3.5 ? "Luck was with you." : "Luck was against you this time."}</p>`;
+}

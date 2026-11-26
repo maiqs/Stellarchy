@@ -3,7 +3,9 @@
 // returned events drive the animations. Never call it "Risk" anywhere (Hasbro trademark).
 import { hops } from "./map.js";
 
-export const HQ_ARMIES = 10, HQ_BONUS = 2;
+export const HQ_ARMIES = 10, HQ_BONUS = 2, ADMIRAL_BONUS = 3;
+// AI difficulty (round 25): recruit (gentle), captain (the normal AI), admiral (+3 ships a turn, stated openly)
+export const AI_LEVELS = ["recruit", "captain", "admiral"];
 export const TRADE_VALUES = [4, 6, 8, 10, 12, 15];
 export const MAX_SEATS = 32;   // up to 32 players (round 21; a Warzone players' wish)
 // sets rise 4, 6, 8, 10, 12, 15, then +5 each, capped so card income can never swamp what territory earns
@@ -37,7 +39,8 @@ export function newGame(map, opts, rng) {
     targetPct: allAI ? 100 : clampPct(opts.targetPct ?? 100),   // computer-only games run to total conquest (Paul)
     cardMode: ["escalating", "fixed", "none"].includes(opts.cards) ? opts.cards : "escalating",   // room option: how card sets pay
     hqArmies: [10, 20, 40].includes(opts.hqArmies) ? opts.hqArmies : HQ_ARMIES,           // room option: the starting fleet at a home sun
-    best: seats.map(() => null), kos: seats.map(() => 0),   // highlights for the results: biggest battle, players knocked out
+    aiLevel: AI_LEVELS.includes(opts.aiLevel) ? opts.aiLevel : "captain",
+    best: seats.map(() => null), kos: seats.map(() => 0), dice: seats.map(() => ({ n: 0, sum: 0 })),   // every die rolled, for the fairness line   // highlights for the results: biggest battle, players knocked out
     flagships: !!opts.flagships, flag: seats.map(() => -1),   // room option: lose your flagship and you are out
     seats, owner: new Array(n).fill(-1), armies: new Array(n).fill(0), hq: seats.map(() => -1),
     turn: first, setupFirst: first, phase: "setup", reinforcements: 0, fortified: false, turnNo: 1,
@@ -69,6 +72,7 @@ export function reinforcementsFor(map, g, seat) {
   let r = Math.max(3, Math.floor(ownedBy(g, seat) / 3));
   for (const c of map.continents) if (c.members.length && c.members.every(i => g.owner[i] === seat)) r += c.bonus;
   if (g.hq[seat] >= 0 && g.owner[g.hq[seat]] === seat) r += HQ_BONUS;
+  if (g.aiLevel === "admiral" && g.seats[seat] && g.seats[seat].ai) r += ADMIRAL_BONUS;   // said openly in the setup: Admiral AI get extra ships
   return r;
 }
 export function hqChoices(map, g) {
@@ -170,6 +174,7 @@ const ACTIONS = {
     let lostA = 0, lostD = 0, rounds = 0, a, d;
     do {
       a = roll(Math.min(3, g.armies[from] - 1)); d = roll(Math.min(2, g.armies[to]));
+      if (g.dice) { for (const x of a) { g.dice[seat].n++; g.dice[seat].sum += x; } for (const x of d) { g.dice[def].n++; g.dice[def].sum += x; } }
       if (g.flagships && g.flag[def] === to) d[0] = Math.min(6, d[0] + 1);   // the flagship's guns: +1 on the best defending die
       for (let k = 0; k < Math.min(a.length, d.length); k++) { if (a[k] > d[k]) { g.armies[to]--; lostD++; } else { g.armies[from]--; lostA++; } }
       rounds++;

@@ -51,6 +51,7 @@ export class Room {
       this.s.opts.cards = ["escalating", "fixed", "none"].includes(o.cards) ? o.cards : "escalating";
       this.s.opts.hqArmies = [10, 20, 40].includes(o.hqArmies) ? o.hqArmies : 10;
       this.s.opts.flagships = !!o.flagships;
+      this.s.opts.aiLevel = ["recruit", "captain", "admiral"].includes(o.aiLevel) ? o.aiLevel : "captain";   // AI difficulty
       this.s.opts.centre = CENTRES.includes(o.centre) ? o.centre : "Sol";   // scenario: the map is the suns nearest this star
       if (this.s.opts.centre !== "Sol") o.size = Math.min(clampSize(o.size ?? 100), 1000);   // room option: lose your flagship and you are out
       if (o.quick) { this.s.opts.quick = true; this.s.public = true; this.s.opts.timer = 90; }   // quick play: listed, and a 90 s clock so a vanished player is covered
@@ -211,7 +212,7 @@ export class Room {
   start() {
     const s = this.s;
     if (this.map.n < s.seats.length * SUNS_PER_SEAT) return;
-    s.game = newGame(this.map, { mode: s.opts.mode, targetPct: s.opts.targetPct, cards: s.opts.cards, hqArmies: s.opts.hqArmies, flagships: s.opts.flagships, seats: s.seats }, this.rng());
+    s.game = newGame(this.map, { mode: s.opts.mode, targetPct: s.opts.targetPct, cards: s.opts.cards, hqArmies: s.opts.hqArmies, flagships: s.opts.flagships, aiLevel: s.opts.aiLevel, seats: s.seats }, this.rng());
     s.status = "playing"; this.log("The war begins"); this.turnBegan();
   }
 
@@ -291,7 +292,7 @@ export class Room {
     const s = this.s, g = s.game, base = this.view(), sockets = this.ctx.getWebSockets();
     this.sentTo = this.sentTo || new WeakMap();
     const pub = g ? { ...g, owner: undefined, armies: undefined, deck: undefined, discard: undefined, deckCount: g.deck.length, cards: undefined,
-                      hist: s.status === "over" && g.hist ? { ...g.hist, last: undefined } : undefined,   // "last" is the recorder's working copy of the board best: s.status === "over" ? g.best : undefined, kos: s.status === "over" ? g.kos : undefined,
+                      hist: s.status === "over" && g.hist ? { ...g.hist, last: undefined } : undefined,   // "last" is the recorder's working copy of the board best: s.status === "over" ? g.best : undefined, kos: s.status === "over" ? g.kos : undefined, dice: s.status === "over" ? g.dice : undefined,
                       totals: totals(g), fog: !!s.opts.fog } : null;   // highlights only at the end: they would show where battles were
     for (const ws of sockets) {
       const a = ws.deserializeAttachment() || {};

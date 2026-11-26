@@ -185,6 +185,24 @@ Sources:
   - https://www.gamedeveloper.com/game-platforms/analysis-asynchronicity-in-game-design
   - https://forums.sorcererking.com/377297/reply/2555466
 
+- [ ] **Round 25 research:**
+  - [x] **AI difficulty, with friendly names:** beginners get pushed out by early AI aggression, and "Very Easy" labels feel embarrassing. Harder AI usually means hidden bonuses, which should be stated openly. *(Round 25: Recruit, Captain and Admiral.)*
+  - [x] **Show the dice are fair:** digital conquest games draw constant "the dice cheat" complaints, and the official game had to post an FAQ. Colonist.io explaining its dice did not settle it. Ideas: *(Round 25: the rules count every die; the results show your average against 3.50; How to play explains server-rolled dice and the only AI bonus.)*
+    - your own roll statistics against the expected average, on the results screen
+    - a line in How to play: online dice are rolled by the server with a fair generator
+  - [ ] **Rematch:** "play again with the same players". After an online game, one button sets up the same room again and invites everyone.
+
+  Sources:
+  - https://forums.ageofempires.com/t/aoe-de-is-too-hard-for-beginners/113044
+  - https://wildfiregames.com/forum/topic/21401-default-ai-is-now-too-strong-for-newcomers
+  - https://forums.stardock.com/435535/reply/3264838
+  - https://www.gamedeveloper.com/design/asymmetrical-overbalance-in-game-design
+  - https://www.destructoid.com/review-risk/
+  - https://gamespot.com/reviews/risk-factions-review/1900-6267069/
+  - https://steamcommunity.com/app/1128810/discussions/0/4353373425701669409
+  - https://ie.trustpilot.com/review/colonist.io?page=2
+  - https://community.playchessup.com/t/chess-com-rematch-button/2078
+
 ## Bugs and balance
 - [x] **The end-of-game bar never showed (round 19):** a lost `return` (from round 9's Watch another war edit) let the waiting bar overwrite "X rules the stars". Restored and checked in a watched war.
 - [x] **Hidden information leaked (round 8):** every update carried the whole deck in draw order and every player's hand, readable in the browser's developer tools. Now each viewer gets only their own hand (others as counts) and a deck count. Room checks cover it.
@@ -387,3 +405,13 @@ Sources:
   - How to play: a guide covering turn steps, battle dice, cards, regions and every room option (fog, flagships, card rules, truces, timers). It's on the title screen and in the in-game menu.
   - Shareable setups: Copy setup link in Play vs AI and Create room. Opening a `?play=solo|room&…` link opens that dialog pre-filled. It reads only whitelisted keys with type checks (an injected `<script>` parameter was ignored) and tidies the address bar.
   - 40 of 40 tests pass.
+- **Round 25 (2026-11-26):**
+  - Online research: AI difficulty with friendly names, showing the dice are fair, and a rematch button. Sources are in Player wishes.
+  - Built AI levels:
+    - Recruit: cautious, no hunting, sometimes stops early, and leaves people alone for the first 4 rounds
+    - Captain: the standard AI
+    - Admiral: +3 ships a turn for AI players only, stated in the setup
+  - It's in both dialogs and setup links, and works online and in solo play.
+  - Built dice fairness: every die is counted. The results show your average against a fair 3.50, and How to play has a Fair dice section.
+  - Tests cover AI levels (Recruit leaves the person alone for 4 rounds; Admiral gets exactly +3, for AI only), dice averaging about 3.5 over a game, and the dice line.
+  - 43 of 43 pass.
