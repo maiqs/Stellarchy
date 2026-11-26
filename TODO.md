@@ -129,7 +129,7 @@ Paul: look online for features people want and give them to people. I looked at 
   - pin suns
   - jump to "my borders" and "my home sun"
   - a region list showing bonuses and who holds what
-- [ ] **Bigger games:** Warzone players ask for 60–100 players. Consider up to 32 seats on maps of 500 suns or more.
+- [x] **Bigger games:** Warzone players ask for 60–100 players. Consider up to 32 seats on maps of 500 suns or more. *(Round 21: up to 32 seats (Create room 24 or 32; Play vs AI up to 31 opponents), 32 distinct colours and AI names. The map size floor is 4 suns per seat.)*
 - [x] **Fog of war as a room option.** It's a Warzone staple: you see only your suns and their neighbours. *(Round 12: an option in Play vs AI and Create room. It's applied per viewer on the server and in solo play (`shared/fog.js`). Fogged suns are dim slate; battles out of sight are hidden; totals still show. Off during home-sun choice, after the game ends, and for players who are out.)*
 - [x] **End-of-game screen:** *(Round 9: the graph of suns held over time and the standings are done; Round 18: best moments are done (biggest battle, most knock-outs, closest rival's peak). Round 19: the replay is done. ▶ Watch the replay plays the war (owners over time) in about 9 s, with play, pause, a scrub slider and the leader per frame.)*
   - a graph of systems held over time
@@ -148,7 +148,7 @@ Sources:
 - https://steamcommunity.com/app/1128810/discussions/0/1743393963178028328
 
 - [ ] **Round 5 research:**
-  - [ ] **Fog-of-war replays:** after a fogged game, show a time-lapse of the whole map, plus each player's own view turn by turn. Dominating12 players asked for exactly this. It fits the end-of-game replay item above.
+  - [x] **Fog-of-war replays:** after a fogged game, show a time-lapse of the whole map, plus each player's own view turn by turn. Dominating12 players asked for exactly this. It fits the end-of-game replay item above. *(Round 19's replay is the whole-map time-lapse and works after fogged games too. Each player's own fogged view, turn by turn, is not done.)*
   - [x] **Configurable rooms:** Warzone calls its configurability one of its best features (fog level, cards, ranked or practice). Next options for us: *(Round 13: card rules (rising, fixed 8, or none) and the starting fleet (10, 20, 40), plus fog from round 12.)*
     - card rules: escalating with the cap, fixed values, or no cards
     - fog of war
@@ -357,3 +357,11 @@ Sources:
   - The end-of-game history no longer ships the recorder's working copy of the board.
   - Made the move with a script instead of line-by-line edits, after round 9's lost `return`.
   - 38 of 38 unit tests pass, and the browser loads with 0 script errors.
+- **Round 21 (2026-11-26):**
+  - Up to 32 players:
+    - the palette and AI names doubled to 32 (deeper and paler neon takes)
+    - Create room offers 24 and 32 seats; Play vs AI offers 23 and 31 opponents
+    - the map size floor keeps 4 suns per seat
+  - Tests: a 32-player, 500-sun game runs to the end, and a 32-seat room starts with 32 distinct colours. Checked a 32-seat solo game in the browser.
+  - Ticked fog-of-war replays: round 19's replay is the whole-map time-lapse.
+  - 39 of 39 unit tests pass.

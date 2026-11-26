@@ -17,7 +17,7 @@ export class LocalRoom {
     this.pace = PACES[opts.pace] ? opts.pace : "normal"; this.fog = !!opts.fog;
     const seats = [];
     if (!opts.watch) seats.push({ id: "me", name: me.name || "Stellarch", main: me.main, sub: me.sub, hull: me.hull, style: me.style || "balanced", ai: false, away: false, online: true });
-    const bots = Math.max(1, Math.min(15, opts.bots | 0));
+    const bots = Math.max(1, Math.min(31, opts.bots | 0));   // up to 32 seats in all
     for (let b = 0; b < bots + (opts.watch ? 1 : 0); b++) {
       const f = freeLook(seats);
       seats.push({ id: "ai_" + b, name: BOT_NAMES[b], main: f.main, sub: f.sub, hull: HULL_KEYS[(b + 1) % 5], style: STYLE_KEYS[b % STYLE_KEYS.length], ai: true, away: false, online: true });

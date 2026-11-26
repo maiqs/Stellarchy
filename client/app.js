@@ -178,7 +178,7 @@ function rulesFields(o) {
 function soloDialog() {
   const o = { size: 100, ...store.get("stellarchy_solo", { bots: 5, mode: "legacy", targetPct: 100, pace: "normal" }) };
   const draw = () => openDialog(`<form class="dlg" method="dialog"><h2>Play vs AI</h2>
-    <div class="field"><span>Opponents</span>${optionSeg("bots", [[1, "1"], [2, "2"], [3, "3"], [5, "5"], [7, "7"], [11, "11"], [15, "15"]], o.bots)}</div>
+    <div class="field"><span>Opponents</span>${optionSeg("bots", [[1, "1"], [2, "2"], [3, "3"], [5, "5"], [7, "7"], [11, "11"], [15, "15"], [23, "23"], [31, "31"]], o.bots)}</div>
     ${sizeField(o, o.bots + 1)}
     <div class="field"><span>Start</span>${optionSeg("mode", [["legacy", "One home sun each"], ["dealt", "Suns dealt out"]], o.mode)}
       <p class="hint">${o.mode === "legacy" ? "Everyone founds a single home sun and expands outward." : "Every sun is shared out at random from the start."}</p></div>
@@ -195,7 +195,7 @@ function soloDialog() {
 function createDialog() {
   const o = { size: 100, ...store.get("stellarchy_create", { maxSeats: 6, mode: "legacy", targetPct: 100, timer: 0, public: true, pace: "normal" }) };
   const draw = () => openDialog(`<form class="dlg" method="dialog"><h2>Create a room</h2>
-    <div class="field"><span>Seats</span>${optionSeg("maxSeats", [[2, "2"], [3, "3"], [4, "4"], [6, "6"], [8, "8"], [12, "12"], [16, "16"]], o.maxSeats)}<p class="hint">Empty seats can be filled with AI players before you start.</p></div>
+    <div class="field"><span>Seats</span>${optionSeg("maxSeats", [[2, "2"], [3, "3"], [4, "4"], [6, "6"], [8, "8"], [12, "12"], [16, "16"], [24, "24"], [32, "32"]], o.maxSeats)}<p class="hint">Empty seats can be filled with AI players before you start.${o.maxSeats > 16 ? " Big tables suit big maps (500+ suns) and long turn timers." : ""}</p></div>
     <div class="field"><span>Who can find it</span>${optionSeg("public", [["true", "Listed in open rooms"], ["false", "Link only"]], String(o.public))}</div>
     <div class="field"><span>Turn timer</span>${optionSeg("timer", [[0, "None"], [90, "90 s"], [180, "3 min"], [43200, "12 h"], [86400, "24 h"]], o.timer)}<p class="hint">When time runs out, the AI plays that turn in the player's style. They take over again as soon as they act.</p></div>
     ${sizeField(o, o.maxSeats)}

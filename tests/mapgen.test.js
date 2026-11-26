@@ -47,3 +47,15 @@ test("a 3,000-sun game stays consistent for 300 turns", () => {
   while (g.status === "playing" && g.turnNo < 300) playTurn(m, g, g.turn, g.seats[g.turn].style, rng);
   assert.deepEqual(invariants(m, g), []);
 });
+
+test("32 players on 500 suns: distinct colours and a game that ends", async () => {
+  const { freeLook, botName } = await import("../shared/looks.js");
+  const m = prepareMap(buildMap(STARS, 500)), rng = mulberry32(320), ss = [];
+  for (let i = 0; i < 32; i++) { const f = freeLook(ss); ss.push({ id: "b" + i, name: botName(ss), main: f.main, sub: f.sub, style: STYLE_KEYS[i % 5], ai: true }); }
+  assert.equal(new Set(ss.map(s => s.main)).size, 32, "32 different colours");
+  assert.equal(new Set(ss.map(s => s.name)).size, 32, "32 different names");
+  const g = newGame(m, { mode: "legacy", targetPct: 60, seats: ss.map(s => ({ ...s, ai: false })) }, rng);
+  while (g.status === "playing" && g.turnNo < 20000) playTurn(m, g, g.turn, g.seats[g.turn].style, rng);
+  assert.deepEqual(invariants(m, g), []);
+  assert.equal(g.status, "over", `stopped at turn ${g.turnNo}`);
+});

@@ -1,8 +1,12 @@
 // Player looks shared by the room server, solo play and the page: the neon palette, AI names,
 // hull keys (the 3D shapes live in client/scene.js) and the AI speed presets.
-export const PALETTE = ["#ff4d5a", "#3e9bff", "#f5d90a", "#3fcf6a", "#b06bff", "#ff8a2a", "#22d3c5", "#ff6fb5", "#9dff3a", "#ffffff", "#5b6bff", "#ff3df2", "#00e5ff", "#ffb3a7", "#c9a227", "#7cffc4"];
-export const PSUB = ["#ffe066", "#ffffff", "#ff4d5a", "#0b0f18", "#3fcf6a", "#3e9bff", "#ff6fb5", "#22d3c5", "#b06bff", "#ff4d5a", "#f5d90a", "#ffffff", "#ff8a2a", "#3e9bff", "#0b0f18", "#b06bff"];
-export const BOT_NAMES = ["Unit Ceres", "Overmind Vega", "Captain Null", "Admiral Byte", "Warden Kepler", "The Archivist", "Marshal Orbit", "Sentinel Nine", "Lady Parsec", "Echo Prime", "Count Quasar", "Vector Seven", "Doctor Nebula", "Baron Redshift", "Queen Corona", "Pilot Zero"];
+export const PALETTE = ["#ff4d5a", "#3e9bff", "#f5d90a", "#3fcf6a", "#b06bff", "#ff8a2a", "#22d3c5", "#ff6fb5", "#9dff3a", "#ffffff", "#5b6bff", "#ff3df2", "#00e5ff", "#ffb3a7", "#c9a227", "#7cffc4",
+  // 16 more for 24- and 32-seat games (round 21): deeper and paler takes on the first 16
+  "#c4122f", "#1f4fd6", "#ffb000", "#1f9d55", "#7a2fd1", "#d1561a", "#0f9e8e", "#d63b7a", "#8fae1b", "#b8c4d6", "#9aa8ff", "#e07bff", "#7fd3ff", "#ffcf9e", "#e8c547", "#45c78f"];
+export const PSUB = ["#ffe066", "#ffffff", "#ff4d5a", "#0b0f18", "#3fcf6a", "#3e9bff", "#ff6fb5", "#22d3c5", "#b06bff", "#ff4d5a", "#f5d90a", "#ffffff", "#ff8a2a", "#3e9bff", "#0b0f18", "#b06bff",
+  "#ffffff", "#ffe066", "#0b0f18", "#ffffff", "#ffe066", "#0b0f18", "#ffffff", "#ffe066", "#0b0f18", "#0b0f18", "#ffffff", "#0b0f18", "#0b0f18", "#0b0f18", "#0b0f18", "#0b0f18"];
+export const BOT_NAMES = ["Unit Ceres", "Overmind Vega", "Captain Null", "Admiral Byte", "Warden Kepler", "The Archivist", "Marshal Orbit", "Sentinel Nine", "Lady Parsec", "Echo Prime", "Count Quasar", "Vector Seven", "Doctor Nebula", "Baron Redshift", "Queen Corona", "Pilot Zero",
+  "Sister Halo", "Duke Meridian", "Oracle Lumen", "General Ion", "Prophet Aphelion", "Signal Twelve", "Madame Zenith", "Brother Flux", "Chancellor Rho", "Nomad Kestrel", "Envoy Solace", "Herald Nadir", "Keeper Vesta", "Ghost Perihelion", "Regent Umbra", "Scout Tachyon"];
 export const HULL_KEYS = ["triangle", "brick", "tube", "orb", "saucer"];
 export const PACES = { slow: 900, normal: 450, fast: 150, instant: 25 };   // ms between computer moves
 export const HEX = /^#[0-9a-fA-F]{6}$/;

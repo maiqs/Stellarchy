@@ -5,7 +5,7 @@ import { hops } from "./map.js";
 
 export const HQ_ARMIES = 10, HQ_BONUS = 2;
 export const TRADE_VALUES = [4, 6, 8, 10, 12, 15];
-export const MAX_SEATS = 16;
+export const MAX_SEATS = 32;   // up to 32 players (round 21; a Warzone players' wish)
 // sets rise 4, 6, 8, 10, 12, 15, then +5 each, capped so card income can never swamp what territory earns
 // (uncapped, 1,000-sun games reached 9,000 ships a set and never ended)
 export const TRADE_CAP = 40;

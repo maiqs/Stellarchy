@@ -148,6 +148,16 @@ for (const c of [a, bb, sneaky]) c.ws.close();
   check(people.every(p => p.ws.readyState !== 1 || p.state.rev === host.state.rev), "every connected player ended on the same state");
   people.forEach(p => p.ws.close());
 }
+// a 32-seat room fills, starts, and gives everyone a distinct colour
+{
+  const r = await (await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 32, size: 500, mode: "dealt", targetPct: 50 }) })).json();
+  const h = client(r.code, { name: "Host32" }); await h.ready; await until(() => h.state);
+  for (let k = 0; k < 31; k++) { h.send({ t: "addBot" }); await sleep(70); }
+  await until(() => h.state.seats.length === 32, 8000);
+  h.send({ t: "start" }); await until(() => h.state.status === "playing");
+  check(h.state.status === "playing" && h.state.seats.length === 32 && new Set(h.state.seats.map(s => s.main)).size === 32, "a 32-seat room starts with 32 distinct colours");
+  h.ws.close();
+}
 // an idle room closes itself (needs DEV=1 in .dev.vars for the short idle time)
 {
   const r = await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 2, public: true, idleMs: 1500 }) });
