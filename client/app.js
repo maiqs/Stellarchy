@@ -1,7 +1,7 @@
 // Stellarchy game screen: title, look editor, rooms (online or solo), and the in-game HUD.
 // The server (or LocalRoom for solo play) owns the game; this page only shows it and sends intents.
 import { prepareMap, specClass } from "./shared/map.js";
-import { buildMap, clampSize, SIZE_STEPS } from "./shared/mapgen.js";
+import { buildMap, clampSize, SIZE_STEPS, CENTRES, OFF_SOL_MAX } from "./shared/mapgen.js";
 import { hqChoices, mustTrade, isSet, connected, cardKind, ownedBy, target, effPct, setValue, reinforcementsFor, replayOwners } from "./shared/rules.js";
 import { STYLES, STYLE_KEYS } from "./shared/bot.js";
 import { createScene, HULLS, fleetOf, CLASSES } from "./scene.js";
@@ -24,11 +24,11 @@ const store = { get(k, d) { try { const v = JSON.parse(localStorage.getItem(k));
 // ---------- boot ----------
 const STARS = await (await fetch("data/stars.json")).json();
 const mapCache = new Map();
-const mapOf = size => { size = clampSize(size); if (!mapCache.has(size)) mapCache.set(size, prepareMap(buildMap(STARS, size))); return mapCache.get(size); };
+const mapOf = (size, centre = "Sol") => { size = clampSize(size); const key = size + "@" + centre; if (!mapCache.has(key)) mapCache.set(key, prepareMap(buildMap(STARS, size, centre))); return mapCache.get(key); };
 let MAP = mapOf(300), S = MAP.systems, scene = null;
 // the 3D scene is built for one map; a room with another size rebuilds it
-function useMap(size) {
-  const m = mapOf(size); if (scene && m === MAP) return;
+function useMap(size, centre = "Sol") {
+  const m = mapOf(size, centre); if (scene && m === MAP) return;
   if (scene) scene.dispose();
   MAP = m; S = MAP.systems; scene = createScene({ container: $("stage"), labels: $("labels"), map: MAP }); scene.onPick(onPick); scene.setSymbols(!!store.get("stellarchy_symbols", false)); applyComfort();
 }
@@ -162,10 +162,12 @@ function wireSegs(el, state, redraw) { el.querySelectorAll("[data-seg]").forEach
 // measured with 4–6 AI players (round 6): 50 suns ≈ 7 turns each, 100 ≈ 20, 300 ≈ 60
 const sizeWords = n => n <= 25 ? "a few minutes" : n <= 50 ? "about 10 minutes" : n <= 100 ? "about 20–40 minutes" : n <= 200 ? "about an hour" : n <= 300 ? "1–2 hours" : n <= 1000 ? "a long campaign" : "epic: best over days, with long turns";
 function sizeField(o, seats) {
-  const min = seats * 4, steps = SIZE_STEPS.filter(s => s >= min);
-  if (o.size < min) o.size = steps.find(s => s >= min) || 3000;
-  return `<div class="field"><span>Map size: ${o.size.toLocaleString()} suns</span>${optionSeg("size", steps.map(s => [s, s >= 1000 ? (s / 1000) + "k" : String(s)]), o.size)}
-    <p class="hint">The ${o.size.toLocaleString()} nearest real star systems to Earth${o.size >= 1000 ? ", out to " + Math.round(mapOf(o.size).systems.at(-1).distLy) + " light years" : ""}. A game takes ${sizeWords(o.size)}.${o.size >= 1000 ? " Fainter stars are missing from the catalogue this far out, so big maps lean towards brighter stars." : ""}</p></div>`;
+  o.centre = CENTRES.includes(o.centre) ? o.centre : "Sol";
+  const min = seats * 4, steps = SIZE_STEPS.filter(s => s >= min && (o.centre === "Sol" || s <= OFF_SOL_MAX));
+  if (o.size < min || !steps.includes(o.size)) o.size = steps.find(s => s >= Math.max(min, Math.min(o.size, steps.at(-1)))) || steps.at(-1);
+  const centreField = `<div class="field"><span>Centre the map on</span>${optionSeg("centre", CENTRES.map(c => [c, c === "Sol" ? "Sol (Earth)" : c]), o.centre)}<p class="hint">${o.centre === "Sol" ? "The war for our own neighbourhood." : `The same real stars, but the war is for the suns nearest ${esc(o.centre)}. Earth may be a far frontier, or not on the map at all. Up to 1,000 suns.`}</p></div>`;
+  return centreField + `<div class="field"><span>Map size: ${o.size.toLocaleString()} suns</span>${optionSeg("size", steps.map(s => [s, s >= 1000 ? (s / 1000) + "k" : String(s)]), o.size)}
+    <p class="hint">The ${o.size.toLocaleString()} nearest real star systems to ${o.centre === "Sol" ? "Earth" : esc(o.centre)}${o.centre === "Sol" && o.size >= 1000 ? ", out to " + Math.round(mapOf(o.size).systems.at(-1).distLy) + " light years" : ""}. A game takes ${sizeWords(o.size)}.${o.size >= 1000 ? " Fainter stars are missing from the catalogue this far out, so big maps lean towards brighter stars." : ""}</p></div>`;
 }
 // room rules players can change (Warzone-style configurability): how card sets pay, and the starting fleet
 function rulesFields(o) {
@@ -188,7 +190,7 @@ function soloDialog() {
     <div class="field"><span>AI speed</span>${optionSeg("pace", [["slow", "Slow"], ["normal", "Normal"], ["fast", "Fast"], ["instant", "Instant"]], o.pace)}</div>
     <div class="row end"><button class="btn ghost" value="cancel">Cancel</button><button class="btn go big" id="sGo" value="ok">Launch</button></div></form>`, el => {
       wireSegs(el, o, draw);
-      el.querySelector("#sGo").onclick = () => { store.set("stellarchy_solo", o); useMap(o.size); startRoom(new LocalRoom(MAP, o, me)); };
+      el.querySelector("#sGo").onclick = () => { store.set("stellarchy_solo", o); useMap(o.size, o.centre || "Sol"); startRoom(new LocalRoom(MAP, o, me)); };
     });
   draw();
 }
@@ -255,7 +257,7 @@ function onState(m) {
     m.game.owner = ui.board.owner.slice(); m.game.armies = ui.board.armies.slice();
   }
   const prev = st; st = m;
-  if (m.opts && m.opts.size && mapOf(m.opts.size) !== MAP) { useMap(m.opts.size); ui.lastRev = -1; }
+  if (m.opts && m.opts.size && mapOf(m.opts.size, m.opts.centre || "Sol") !== MAP) { useMap(m.opts.size, m.opts.centre || "Sol"); ui.lastRev = -1; }
   if (m.code && !prev) { $("hCode").hidden = false; $("hCode").textContent = m.code; }
   const g = m.game, k = seatIx();
   if (g) {

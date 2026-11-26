@@ -56,6 +56,7 @@ export function createScene({ container, labels, map }) {
   const controls = new OrbitControls(camera, renderer.domElement);
   Object.assign(controls, { enableDamping: true, dampingFactor: .08, minDistance: 4, maxDistance: 210, autoRotateSpeed: .35, zoomSpeed: 1.1 });
   controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
+  controls.target.copy(P[0]); camera.position.add(P[0]);   // look at the map's centre star
 
   // backdrop: faint distance rings and a deep starfield
   { const ringMat = new THREE.LineBasicMaterial({ color: 0x1a2440, transparent: true, opacity: .7 });
@@ -103,6 +104,8 @@ export function createScene({ container, labels, map }) {
   const glowL = pointLayer(glowTex, i => starR[i] * 6.5, .55);
   // marks: pulsing rings for "you can pick this" (home sun choices, attack targets, your selection)
   const markL = pointLayer(ringTex, i => starR[i] * 4.2 + .6, 0);
+  // flagships: a wide, steady gold ring, so they stand out on a busy map
+  const flagL = pointLayer(ringTex, i => starR[i] * 6 + 1.1, 0);
 
   // lanes: drawn faint, with the lanes between regions a little brighter
   const laneVerts = [], gateVerts = [];
@@ -225,10 +228,11 @@ export function createScene({ container, labels, map }) {
     const col = new THREE.Color();
     for (let i = 0; i < n; i++) {
       const m = mainOf(owner[i]); stars.setColorAt(i, col.set(m)); glowL.col.set([col.r, col.g, col.b], i * 3);
+      if (flagAt.has(i)) { col.set("#f4e3b5"); flagL.col.set([col.r, col.g, col.b], i * 3); flagL.alpha[i] = .9; } else flagL.alpha[i] = 0;
       rims.setColorAt(i, col.set(subOf(owner[i])));
       const t = (flagAt.has(i) ? "⚑ " : hqOf[i] >= 0 ? "★ " : "") + disp(S[i]); if (lbls[i].textContent !== t) lbls[i].textContent = t;
     }
-    stars.instanceColor.needsUpdate = rims.instanceColor.needsUpdate = true; glowL.g.attributes.color.needsUpdate = true;
+    stars.instanceColor.needsUpdate = rims.instanceColor.needsUpdate = true; glowL.g.attributes.color.needsUpdate = true; flagL.g.attributes.color.needsUpdate = flagL.g.attributes.alpha.needsUpdate = true;
   }
   function paintHighlight() {
     const arr = hiGeo.attributes.position.array; let k = 0;
@@ -345,7 +349,7 @@ export function createScene({ container, labels, map }) {
     pGeo.attributes.position.needsUpdate = pGeo.attributes.color.needsUpdate = true;
     // marks pulse; glows breathe a little
     const ps = H * renderer.getPixelRatio() / (2 * Math.tan(camera.fov * Math.PI / 360));   // world size to device pixels
-    glowL.mat.uniforms.scale.value = markL.mat.uniforms.scale.value = ps; markL.mat.uniforms.time.value = t;
+    glowL.mat.uniforms.scale.value = markL.mat.uniforms.scale.value = flagL.mat.uniforms.scale.value = ps; markL.mat.uniforms.time.value = t;
     renderer.render(scene, camera);
     // labels
     const fovK = (H / 2) / Math.tan(camera.fov * Math.PI / 360);
@@ -386,7 +390,7 @@ export function createScene({ container, labels, map }) {
     },
     select(i) { selected = i; paintHighlight(); },
     focus(i, dist) { glide(P[i].clone(), dist); },
-    home() { glide(new THREE.Vector3(0, 0, 0), 80); },
+    home() { glide(P[0].clone(), 80); },   // the map's centre star (Sol unless a scenario picked another)
     onPick(fn) { pickCb = fn; }, onHover(fn) { hoverCb = fn; },
     // drag to attack: {sources: Set of suns, targetsOf(from) -> Set, onDrop(from, to), color}, or null to turn it off
     setDrag(cfg) { dragCfg = cfg; },

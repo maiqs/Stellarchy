@@ -12,9 +12,17 @@ const KINDS = ["Reach", "Expanse", "March", "Verge", "Deep", "Cluster", "Drift",
 export const clampSize = n => Math.max(MIN_SIZE, Math.min(MAX_SIZE, Math.round(+n) || 300));
 export const regionCount = n => n < 30 ? 0 : Math.max(2, Math.min(80, Math.round(n / 21)));
 
-export function buildMap(stars, size) {
-  const N = Math.min(clampSize(size), stars.systems.length);
-  const systems = stars.systems.slice(0, N).map((s, id) => ({ id, ...s }));
+// Scenario centres (round 22): the map can be the N nearest suns to a famous star instead of Sol.
+// The star list only reaches 86 ly from Sol, so off-Sol maps are capped at 1,000 suns to stay inside it.
+export const CENTRES = ["Sol", "Alpha Centauri", "Barnard's Star", "Sirius", "Epsilon Eridani", "Tau Ceti", "Procyon", "61 Cygni", "Altair", "Fomalhaut", "Vega", "Pollux"];
+export const OFF_SOL_MAX = 1000;
+export const centreOf = (stars, name) => { const i = stars.systems.findIndex(s => s.name === name); return i < 0 ? 0 : i; };
+
+export function buildMap(stars, size, centre = "Sol") {
+  const c = centreOf(stars, centre), origin = stars.systems[c];
+  const N = Math.min(clampSize(size), stars.systems.length, c === 0 ? Infinity : OFF_SOL_MAX);
+  const ordered = c === 0 ? stars.systems : stars.systems.map((s, i) => [s, (s.x - origin.x) ** 2 + (s.y - origin.y) ** 2 + (s.z - origin.z) ** 2, i]).sort((a, b) => a[1] - b[1] || a[2] - b[2]).map(p => p[0]);
+  const systems = ordered.slice(0, N).map((s, id) => ({ id, ...s }));
   const d2 = (a, b) => { const dx = a.x - b.x, dy = a.y - b.y, dz = a.z - b.z; return dx * dx + dy * dy + dz * dz; };
 
   // ---- lanes ----
@@ -94,7 +102,7 @@ export function buildMap(stars, size) {
     ids.forEach((_, k) => {
       const mem = systems.filter(s => s.continent === k);
       let name;
-      if (mem.some(s => s.name === "Sol")) name = "Solar Core";
+      if (mem.some(s => s.name === centre)) name = centre === "Sol" ? "Solar Core" : `${centre} Core`;
       else {
         const counts = new Map(); for (const s of mem) if (s.con) counts.set(s.con, (counts.get(s.con) || 0) + 1);
         const order = [...counts.entries()].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)).map(([c]) => NOM[c] || c);
@@ -108,5 +116,5 @@ export function buildMap(stars, size) {
       continents.push({ id: k, name, territories: mem.length, borders: border.length, bonus, neighbours });
     });
   }
-  return { source: stars.source, laneLengthLy: LANE_LY, size: N, systems, lanes: laneList, continents };
+  return { source: stars.source, laneLengthLy: LANE_LY, size: N, centre: stars.systems[c].name, systems, lanes: laneList, continents };
 }

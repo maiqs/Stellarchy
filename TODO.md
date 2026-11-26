@@ -137,7 +137,7 @@ Paul: look online for features people want and give them to people. I looked at 
   - a replay you can scrub through
 - [ ] **Speed controls:** skip animations, and watch bots at speed.
 - [x] **Undo before confirm:** take back placements until you press Confirm.
-- [ ] **Later:** a map editor and custom scenarios, which are big in Warzone.
+- [ ] **Later:** a map editor and custom scenarios, which are big in Warzone. *(Round 22: first scenario step done: centre the map on one of 12 famous stars (Sirius, Vega, Tau Ceti and more), up to 1,000 suns off Sol. A full map editor is still open.)*
 
 Sources:
 - https://warlight.uservoice.com/forums/77051-warzone-features/filters/hot
@@ -366,3 +366,11 @@ Sources:
   - The quick-play test now accepts both right outcomes: take over a live AI, or a new game when none is left. 27 of 27 room checks pass.
   - Ticked fog-of-war replays: round 19's replay is the whole-map time-lapse.
   - 39 of 39 unit tests pass.
+- **Round 22 (2026-11-26):**
+  - Scenario centres: the map can be the suns nearest one of 12 famous stars instead of Sol (Alpha Centauri, Barnard's Star, Sirius, Epsilon Eridani, Tau Ceti, Procyon, 61 Cygni, Altair, Fomalhaut, Vega, Pollux).
+    - It gets a "<Star> Core" region, and the camera opens on it.
+    - Off-Sol maps stop at 1,000 suns, to stay inside the star list.
+    - It works in solo play and online, and is the same map every time.
+  - Flagships now carry a wide gold ring, so they stand out on a busy map.
+  - Checked a Vega-centred solo game and a Sirius-centred online room in the browser.
+  - 40 of 40 tests pass.

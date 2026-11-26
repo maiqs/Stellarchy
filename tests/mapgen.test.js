@@ -59,3 +59,15 @@ test("32 players on 500 suns: distinct colours and a game that ends", async () =
   assert.deepEqual(invariants(m, g), []);
   assert.equal(g.status, "over", `stopped at turn ${g.turnNo}`);
 });
+
+test("scenario centres: every famous star makes a connected map around itself", async () => {
+  const { CENTRES, OFF_SOL_MAX } = await import("../shared/mapgen.js");
+  for (const c of CENTRES) {
+    const raw = buildMap(STARS, 300, c), m = prepareMap(raw);
+    assert.equal(raw.systems[0].name, c, `${c} is the centre`);
+    assert.equal(hops(m, [0]).filter(d => d === Infinity).length, 0, `${c}: connected`);
+    assert.ok(raw.continents.some(r => r.name === (c === "Sol" ? "Solar Core" : `${c} Core`)), `${c}: a core region`);
+  }
+  assert.equal(buildMap(STARS, 3000, "Vega").systems.length, OFF_SOL_MAX, "off-Sol maps stop at 1,000 suns");
+  assert.equal(JSON.stringify(buildMap(STARS, 200, "Sirius")), JSON.stringify(buildMap(STARS, 200, "Sirius")), "the same every time");
+});

@@ -3,7 +3,7 @@
 // Computer players, away players and turn timers all run here on alarms, so a game keeps going
 // when every tab is closed.
 import STARS from "../data/stars.json";
-import { buildMap, clampSize } from "../shared/mapgen.js";
+import { buildMap, clampSize, CENTRES } from "../shared/mapgen.js";
 import { prepareMap, mulberry32 } from "../shared/map.js";
 import { newGame, act, MAX_SEATS, SUNS_PER_SEAT, offerTruce, acceptTruce, declineTruce } from "../shared/rules.js";
 import { botStep, botAcceptsTruce, STYLE_KEYS } from "../shared/bot.js";
@@ -14,7 +14,7 @@ import { fogActive, maskBoard, maskEvents, totals } from "../shared/fog.js";
 
 // maps are built per size and kept for reuse (the same size always gives the same map)
 const MAPS = new Map();
-export const mapFor = size => { size = clampSize(size); if (!MAPS.has(size)) MAPS.set(size, prepareMap(buildMap(STARS, size))); return MAPS.get(size); };
+export const mapFor = (size, centre = "Sol") => { size = clampSize(size); const key = size + "@" + centre; if (!MAPS.has(key)) MAPS.set(key, prepareMap(buildMap(STARS, size, centre))); return MAPS.get(key); };
 export const TIMERS = [0, 90, 180, 43200, 86400];   // seconds per turn: none, 90 s, 3 min, 12 h, 24 h
 const GRACE_MS = 20000;        // a dropped connection gets this long before the AI covers the seat
 const SKIP_WARN_MS = 10000;    // "AI takes over in 10 s" is shown this long before a timer runs out
@@ -31,7 +31,7 @@ export class Room {
   }
 
   async save() { await this.ctx.storage.put("room", this.s); }
-  get map() { return mapFor(this.s.opts.size || 300); }
+  get map() { return mapFor(this.s.opts.size || 300, this.s.opts.centre || "Sol"); }
 
   // ---- HTTP: create (from the Worker) and the WebSocket upgrade ----
   async fetch(req) {
@@ -50,7 +50,9 @@ export class Room {
       this.s.opts.fog = !!o.fog;   // fog of war: see only your suns and their neighbours
       this.s.opts.cards = ["escalating", "fixed", "none"].includes(o.cards) ? o.cards : "escalating";
       this.s.opts.hqArmies = [10, 20, 40].includes(o.hqArmies) ? o.hqArmies : 10;
-      this.s.opts.flagships = !!o.flagships;   // room option: lose your flagship and you are out
+      this.s.opts.flagships = !!o.flagships;
+      this.s.opts.centre = CENTRES.includes(o.centre) ? o.centre : "Sol";   // scenario: the map is the suns nearest this star
+      if (this.s.opts.centre !== "Sol") o.size = Math.min(clampSize(o.size ?? 100), 1000);   // room option: lose your flagship and you are out
       if (o.quick) { this.s.opts.quick = true; this.s.public = true; this.s.opts.timer = 90; }   // quick play: listed, and a 90 s clock so a vanished player is covered
       this.s.opts.size = Math.max(clampSize(o.size ?? 100), this.s.opts.maxSeats * SUNS_PER_SEAT);
       if (this.env.DEV && o.idleMs) this.s.opts.idleMs = clampInt(o.idleMs, 500, 3600000, 0);   // local tests only
@@ -72,7 +74,7 @@ export class Room {
     return { code: s.code, status: s.status, public: s.public, seats: s.seats.length, humans: s.seats.filter(x => !x.ai).length,
              maxSeats: s.opts.maxSeats, mode: s.opts.mode, targetPct: s.opts.targetPct, timer: s.opts.timer, size: s.opts.size || 300, updated: s.updated,
              names: s.seats.map(x => x.name).slice(0, 6), turnNo: s.game ? s.game.turnNo : 0,
-             quick: !!s.opts.quick, fog: !!s.opts.fog, aiSeats: s.game ? s.seats.filter((x, j) => x.ai && s.game.alive[j]).length : 0 };
+             quick: !!s.opts.quick, fog: !!s.opts.fog, centre: s.opts.centre || "Sol", aiSeats: s.game ? s.seats.filter((x, j) => x.ai && s.game.alive[j]).length : 0 };
   }
   async report() {   // tell the lobby about this room (public rooms only show there)
     try { await this.env.LOBBY.get(this.env.LOBBY.idFromName("lobby")).fetch("https://lobby/report", { method: "POST", body: JSON.stringify(this.summary()) }); } catch (e) {}
