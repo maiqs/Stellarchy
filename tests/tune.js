@@ -42,15 +42,25 @@ if (!isMainThread) {
     return { err, rate, fair };
   }
   const fmt = r => STYLE_KEYS.map(k => `${k} ${(100 * r.rate[k]).toFixed(1)}%`).join("  ") + `  (fair ${(100 * r.fair).toFixed(1)}%)`;
+// each style must keep its character: aggressive attacks at the lowest odds, defensive holds the most,
+// the card hunter values cards most, and territorial values claiming suns most
+function keepsIdentity(s) {
+  const others = k => Object.keys(s).filter(x => x !== k);
+  return others("aggressive").every(k => s.aggressive.odds < s[k].odds)
+    && others("defensive").every(k => s.defensive.hold >= s[k].hold && s.defensive.reserve >= s[k].reserve)
+    && others("cards").every(k => s.cards.cards > s[k].cards)
+    && others("territorial").every(k => s.territorial.claim >= s[k].claim);
+}
   let best = pick(STYLES), bestR = await score(best);
   console.log(`start: ${fmt(bestR)}  err ${bestR.err.toFixed(5)}`);
   let seed = 1; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   for (let it = 1; it <= iters; it++) {
     // nudge the style furthest from fair: weaken the strongest or strengthen the weakest, one weight at a time
-    const worst = STYLE_KEYS.slice().sort((a, b) => Math.abs(bestR.rate[b] - bestR.fair) - Math.abs(bestR.rate[a] - bestR.fair))[0];
+    const ranked = STYLE_KEYS.slice().sort((a, b) => Math.abs(bestR.rate[b] - bestR.fair) - Math.abs(bestR.rate[a] - bestR.fair)), worst = ranked[rnd() < .6 ? 0 : 1];   // mostly the furthest, sometimes the next
     const cand = JSON.parse(JSON.stringify(best)), p = Object.keys(PARAMS)[Math.floor(rnd() * Object.keys(PARAMS).length)], [lo, hi, step] = PARAMS[p];
     const dir = rnd() < .5 ? -1 : 1;
     cand[worst][p] = Math.round(Math.max(lo, Math.min(hi, cand[worst][p] + dir * step * (1 + Math.floor(rnd() * 2)))) * 100) / 100;
+    if (!keepsIdentity(cand)) { console.log(`${String(it).padStart(2)} ${worst}.${p} -> ${cand[worst][p]}: skipped (would change the style's character)`); continue; }
     const r = await score(cand);
     const ok = r.err < bestR.err;
     console.log(`${String(it).padStart(2)} ${worst}.${p} ${best[worst][p]} -> ${cand[worst][p]}: ${fmt(r)}  err ${r.err.toFixed(5)}${ok ? "  KEPT" : ""}`);

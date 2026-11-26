@@ -35,7 +35,7 @@ test("the same size always gives the same map", () => {
   assert.equal(JSON.stringify(buildMap(STARS, 500)), JSON.stringify(buildMap(STARS, 500)));
 });
 
-for (const [n, k] of [[10, 2], [25, 4], [200, 6]]) test(`a ${k}-way game on ${n} suns runs to total conquest`, () => {
+for (const [n, k] of [[10, 2], [25, 4], [200, 6], [1000, 6], [3000, 8]]) test(`a ${k}-way game on ${n} suns runs to total conquest`, () => {
   const m = prepareMap(buildMap(STARS, n)), rng = mulberry32(n + k), g = newGame(m, { mode: "legacy", seats: seats(k) }, rng);
   while (g.status === "playing" && g.turnNo < 12000) { playTurn(m, g, act, g.turn, g.seats[g.turn].style, rng); }
   assert.deepEqual(invariants(m, g), []);

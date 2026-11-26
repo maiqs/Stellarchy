@@ -6,15 +6,15 @@ import { hqChoices, isSet, cardKind, connected, mustTrade, aggression as stallAg
 
 export const STYLES = {
   balanced:    { name: "Balanced",    blurb: "A bit of everything.",
-                 odds: 1.4, margin: 2, reserve: 0.25, cards: 1, continent: 4, elim: 2, claim: 5, hold: 0.5 },
+                 odds: 1.4, margin: 2, reserve: 0.25, cards: 1, continent: 4, elim: 3.2, claim: 5, hold: 0.5 },
   aggressive:  { name: "Aggressive",  blurb: "Attacks at worse odds, hunts players down, leaves little at home.",
-                 odds: 1.35, margin: 2, reserve: 0.2, cards: 0.5, continent: 1.5, elim: 3, claim: 3, hold: 0.1 },
+                 odds: 1.35, margin: 2, reserve: 0.2, cards: 0.5, continent: 2.1, elim: 3, claim: 3, hold: 0.1 },
   defensive:   { name: "Defensive",   blurb: "Stacks the borders and attacks only with strong odds.",
                  odds: 1.4, margin: 1, reserve: 0.35, cards: 1, continent: 5, elim: 1, claim: 6, hold: 0.8, spread: true },
   cards:       { name: "Card hunter", blurb: "Takes a sun every turn for a card, saves for big trades.",
                  odds: 1.5, margin: 2, reserve: 0.3, cards: 2.5, continent: 1.5, elim: 4, claim: 4, hold: 0.5, saveSets: true, cardEveryTurn: true },
   territorial: { name: "Territorial", blurb: "Grabs as many suns as it can and chases region bonuses.",
-                 odds: 1.3, margin: 1, reserve: 0.15, cards: 0.5, continent: 5, elim: 1, claim: 5.5, hold: 0.3 },
+                 odds: 1.42, margin: 1, reserve: 0.15, cards: 0.5, continent: 5, elim: 1, claim: 5.5, hold: 0.3 },
 };
 export const STYLE_KEYS = Object.keys(STYLES);
 export const styleOf = key => STYLES[key] || STYLES.balanced;

@@ -147,8 +147,29 @@ Sources:
 - https://boardgamegeek.com/wiki/page/PLAY_ONLINE
 - https://steamcommunity.com/app/1128810/discussions/0/1743393963178028328
 
+- [ ] **Round 5 research:**
+  - [ ] **Fog-of-war replays:** after a fogged game, show a time-lapse of the whole map, plus each player's own view turn by turn. Dominating12 players asked for exactly this. It fits the end-of-game replay item above.
+  - [ ] **Configurable rooms:** Warzone calls its configurability one of its best features (fog level, cards, ranked or practice). Next options for us:
+    - card rules: escalating with the cap, fixed values, or no cards
+    - fog of war
+    - starting fleet size
+  - [ ] **Non-binding truces:** online Diplomacy's appeal is negotiation. Keep it light, with no free-text chat: a "Propose a truce for 3 turns" button the other player accepts or ignores. The game shows truces on the map, but anyone can break one, and breaking it is announced.
+  - [ ] **Colour-blind support:** NetEase found colour-correction use matches the share of colour-blind players. Add a colour-blind-safe palette preset and a per-player pattern or glyph on stars and in the players list, so colour is never the only cue.
+  - [ ] **Portrait and landscape:** 47% of players in that case study switched orientation. Keep both layouts first-class; the landscape phone layout is still untested.
+  - [ ] **Ranked play:** this needs accounts, so skip it for now. A local "your record" (wins, best game) in the browser is a free stand-in.
+
+  Sources:
+  - https://dominating12.com/forums/6/suggestions-feedback/2369/fog-of-war-reveal
+  - https://forum.slitherine.com/viewtopic.php?p=764565
+  - https://warzone.com/wiki/Settings
+  - https://webdiplomacy.net
+  - https://www.lovethework.com/work-awards/campaigns/accessible-design-of-infinite-boreders-1590685
+  - https://steamdb.info/patchnotes/13285693
+
 ## Bugs and balance
-- [ ] **Big maps never end (top bug, round 4):** a 6-player game on 1,000 suns had not finished after 12,000 turns, at about 11 ms a turn. Fixes to try:
+- [x] **Big maps never end (top bug, round 4):** a 6-player game on 1,000 suns had not finished after 12,000 turns, at about 11 ms a turn. Fixes to try:
+  - **Fixed in round 5:** card income was the cause. Sets had reached about 9,000 ships each and swamped what territory earns. Sets are now capped at 40 ships (`TRADE_CAP` in `shared/rules.js`). Every big test game ends: 1,000 suns in 580–690 turns, 3,000 suns in 631.
+  - `tests/mapgen.test.js` now runs full games on 1,000 and 3,000 suns.
   - the stall boldness should rise faster on big maps (scale it with suns per player)
   - a bigger starting fleet and more reinforcements on big maps
   - a lower default win % for 1,000 suns or more
@@ -156,10 +177,12 @@ Sources:
 - [ ] **Styles are uneven** (soak). Win rate per seat, against a fair share of about 10%:
   - Round 1: aggressive 25.9%, territorial 14.7%, balanced 5.2%, card hunter 5.2%, defensive 0.9%.
   - Round 2, after tuning, 80 games: defensive 16.5%, aggressive 12.7%, territorial 9.6%, balanced 7.0%, card hunter 5.1%.
+  - Round 5, after the tuner and the card cap, 120 games: territorial 17.3%, aggressive 10.5%, defensive 8.9%, card hunter 7.6%, balanced 6.3%.
+  - The tuner now has identity rules: aggressive keeps the lowest odds, defensive the most hold and reserve, the card hunter the most card focus, territorial the most claiming. A second run is going.
   - Hand-tuning is noisy, swinging several points between 50 and 80 games. Next: an automatic tuner (`TUNE=` env in `tests/soak.js`), running many seeds and nudging each style toward the fair share.
 - [ ] **Automatic tuner** (`tests/tune.js`, round 4): hill-climbs one style weight at a time across 240 games on 28 threads, keeping changes that bring win rates closer together. The first run is going in the background; apply `tests/tune_result.json` next round.
-- [ ] **Games are long:** a median of 1,712 turns from one home sun to total conquest. At "fast" (0.15 s a move) a computer-only game takes hours. Consider a faster pace for computer-only games, or a bigger home start.
-- [ ] **Card trades snowball:** late games reach stacks of 40,000 ships. Look at capping trade values or the number of cards.
+- [ ] **Games are long:** (round 5: with the card cap the median is down to 781 turns, from 1,712; max 2,116) a median of 1,712 turns from one home sun to total conquest. At "fast" (0.15 s a move) a computer-only game takes hours. Consider a faster pace for computer-only games, or a bigger home start.
+- [x] **Card trades snowball:** late games reached stacks of 40,000 ships. Fixed in round 5 by capping a set at 40 ships.
 
 ## Round log
 - **Round 1 (2026-11-25):**
@@ -200,3 +223,10 @@ Sources:
   - Added the automatic style tuner, running in the background.
   - Found: 1,000-sun games don't finish (logged as the top bug).
   - Unit tests: 10 rules and 16 map tests pass. The room checks pass (12).
+- **Round 5 (2026-11-25):**
+  - Fixed the top bug: big maps never ended because card sets reached about 9,000 ships each. Sets are now capped at 40, and 1,000- and 3,000-sun games end in about 600 turns.
+  - The median game length fell to 781 turns, from 1,712.
+  - Applied the tuner's style changes that keep each style's character: balanced elimination 3.2, aggressive region focus 2.1, territorial odds 1.42.
+  - Gave the tuner identity rules and started a second run.
+  - Online research (round ending in 5) added to Player wishes: fog-of-war replays, configurable rooms, non-binding truces, colour-blind support, orientation, and a local record as a stand-in for ranked play.
+  - 28 of 28 tests pass, including full games on 1,000 and 3,000 suns.

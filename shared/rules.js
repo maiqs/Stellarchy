@@ -6,7 +6,10 @@ import { hops } from "./map.js";
 export const HQ_ARMIES = 10, HQ_BONUS = 2;
 export const TRADE_VALUES = [4, 6, 8, 10, 12, 15];
 export const MAX_SEATS = 16;
-export const tradeValue = k => k < TRADE_VALUES.length ? TRADE_VALUES[k] : 15 + 5 * (k - TRADE_VALUES.length + 1);
+// sets rise 4, 6, 8, 10, 12, 15, then +5 each, capped so card income can never swamp what territory earns
+// (uncapped, 1,000-sun games reached 9,000 ships a set and never ended)
+export const TRADE_CAP = 40;
+export const tradeValue = k => Math.min(TRADE_CAP, k < TRADE_VALUES.length ? TRADE_VALUES[k] : 15 + 5 * (k - TRADE_VALUES.length + 1));
 // home suns sit further apart on bigger maps
 export const hqSpacing = n => n >= 100 ? 4 : n >= 30 ? 3 : 2;
 // at least this many suns per seat
