@@ -132,7 +132,7 @@ dialog::backdrop { background: rgba(2, 4, 8, .6); backdrop-filter: blur(3px); }
 .roomrow .mini { font-size: .8rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ---------- HUD ---------- */
-.topbar { position: fixed; top: var(--top); left: var(--gut); right: var(--gutr); display: flex; gap: 8px; align-items: center; z-index: 4; pointer-events: none; }
+.topbar { position: fixed; top: var(--top); left: var(--gut); right: var(--gutr); display: flex; gap: 8px; align-items: center; z-index: 5;   /* above the sun card (round 39) */ pointer-events: none; }
 .topbar > * { pointer-events: auto; }
 .spacer { flex: 1; }
 .chip { font: 700 .8rem var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); background: var(--glass); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; min-height: 40px; display: inline-flex; gap: 8px; align-items: center; cursor: pointer; backdrop-filter: blur(10px); }
@@ -157,7 +157,9 @@ dialog::backdrop { background: rgba(2, 4, 8, .6); backdrop-filter: blur(3px); }
 .bar-track i { display: block; height: 100%; background: var(--pc); box-shadow: 0 0 8px var(--pc); }
 .logline { font: 500 .78rem/1.4 var(--mono); color: var(--muted); }
 
-.suncard { position: fixed; z-index: 4; right: var(--gutr); bottom: calc(var(--bot) + var(--barh, 150px) + 10px); width: min(300px, calc(100vw - 24px)); padding: 14px; display: grid; gap: 8px; }
+.suncard { position: fixed; z-index: 4; right: var(--gutr); bottom: calc(var(--bot) + var(--barh, 150px) + 10px); width: min(300px, calc(100vw - 24px)); padding: 14px; display: grid; gap: 8px;
+  /* round 39: a tall card (photo, facts) over a tall bar reached the top bar and swallowed taps on Cards; it now stops below the top bar and scrolls */
+  max-height: calc(100dvh - var(--top) - 64px - var(--bot) - var(--barh, 150px) - 10px); overflow-y: auto; overscroll-behavior: contain; }
 .suncard h3 { margin: 0; font: 700 1.15rem var(--display); letter-spacing: .03em; display: flex; gap: 8px; align-items: center; }
 .suncard dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 0; font-size: .85rem; }
 .suncard dt { color: var(--muted); }
@@ -219,7 +221,7 @@ dialog::backdrop { background: rgba(2, 4, 8, .6); backdrop-filter: blur(3px); }
 }
 @media (max-height: 520px) and (orientation: landscape) {
   .actionbar { left: auto; right: var(--gutr); transform: none; width: min(360px, 46vw); }
-  .suncard { left: var(--gut); right: auto; width: min(280px, 40vw); bottom: var(--bot); }
+  .suncard { left: var(--gut); right: auto; width: min(280px, 40vw); bottom: var(--bot); max-height: calc(100dvh - var(--top) - 60px - var(--bot)); }
   .side, .side.right { bottom: var(--bot); top: calc(var(--top) + 52px); left: var(--gut); right: auto; width: min(280px, 40vw); max-height: none; }
   .title-inner { gap: 10px; }
   /* round 36: landscape phones were tested for the first time. The bar took 84% of the height and the title hid the menu */

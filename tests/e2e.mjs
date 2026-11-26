@@ -85,7 +85,10 @@ try {
     await page.click("#bRecap"); await page.waitForSelector("#dlg[open] .recaprow");
     const rows = await page.locator("#dlg .recaprow").count();
     await page.screenshot({ path: fileURLToPath(new URL("../docs/shots/recap.png", import.meta.url)) }).catch(() => {});
-    await page.click("#dlg .recaprow.bad"); await sleep(300); const closed = !(await page.isVisible("#dlg[open]")); await page.keyboard.press("Escape"); await sleep(1200);
+    await page.click("#dlg .recaprow.bad"); await sleep(300); const closed = !(await page.isVisible("#dlg[open]")); await sleep(600);
+    // round 39 bug: a tall sun card reached the top bar and swallowed taps on Cards
+    const topOk = await page.evaluate(() => { const b = document.getElementById("hCards").getBoundingClientRect(), el = document.elementFromPoint(b.x + b.width / 2, b.y + b.height / 2); return !!el && !!el.closest("#hCards"); });
+    check(topOk, "with a sun card open, the top bar buttons stay on top and tappable");
     check(/lost 1 sun · held 1/.test(line) && rows === 2 && closed, `a "While you waited" recap opens with each sun, and a tap flies there (${line.trim()})`);
   }
   await page.click("#hMenu"); await page.click('#mFx [data-v="off"]');

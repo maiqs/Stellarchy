@@ -223,7 +223,7 @@ Sources:
   - https://forum.ironhelmet.com/t/a-bunch-of-collected-feedback-from-a-newbie/5320
 
 ## Bugs and balance
-- [ ] **Check:** after tapping a recap row (flying to a sun), the browser test could not click the Cards button until Escape cleared the selection. Probably the closing dialog or the sun card; check on a real screen whether the top bar is blocked.
+- [x] **The sun card swallowed taps on the top bar (round 39):** a tall sun card (photo and facts) sitting above a tall bar reached the top bar, and the two shared a layer, so taps on Cards (and the buttons beside it) hit the card instead. Not caused by the recap; any selected sun could do it. The card now stops below the top bar and scrolls inside, and the top bar is drawn above it. A browser check covers it, with a sun card open.
 - [x] **Invite links never loaded (round 32, there since round 3):** a fresh page at `/r/CODE` resolved `app.js`, `style.css` and the other files under `/r/` and got 404s. Creating a room only changed the address after load, so earlier tests missed it. Fixed with `<base href="/">`. The browser tests now open an invite link fresh.
 - [x] **Dark specks after battles (round 28):** debris and lasers used additive blending that also added opacity to the see-through canvas, so fading debris left black specks over the nebula backdrop. Light effects now add colour only (`lightOnly` in `client/scene.js`); checked clean after a 56-turn war.
 - [x] **Best moments wrapped badly (round 28):** each bold name became its own flex column. The text is wrapped in one span.
@@ -548,3 +548,7 @@ Sources:
   - "While you waited": a recap at the start of your turn of every sun you lost or held, ships lost and destroyed, and news. Tap a sun to fly there. This answers the wish to slow the game for one player without slowing the room.
   - Unit test for the recap, and a browser check with a screenshot (`docs/shots/recap.png`).
   - 52 of 52 unit tests and 19 of 19 browser checks pass.
+- **Round 39 (2026-11-26):**
+  - Fixed a real bug that round 38 had spotted: a tall sun card covered the top bar, so Cards could not be tapped while a sun was selected. The card now stops below the top bar and scrolls, and the top bar sits above it.
+  - Browser check added (no Escape workaround now).
+  - 52 of 52 unit tests and 20 of 20 browser checks pass.
