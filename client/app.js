@@ -8,6 +8,7 @@ import { createScene, HULLS, fleetOf, CLASSES } from "./scene.js";
 import { LocalRoom } from "./local.js";
 import { EMOTES } from "./shared/emotes.js";
 import { sound } from "./sound.js";
+import { historyChart, highlights } from "./results.js";
 import { PALETTE, HEX } from "./shared/looks.js";
 // the 3D hull for a key, falling back to the first
 const hullInfo = key => HULLS.find(h => h.key === key) || HULLS[0];
@@ -534,23 +535,14 @@ function winDialog() {
   const order = st.seats.map((s, j) => ({ j, held: ownedBy(g, j), out: (g.hist ? g.hist.samples.findIndex(x => x.held[j] === 0 && x.turn > g.seats.length) : -1) })).sort((a, b) => b.held - a.held || b.out - a.out);
   openDialog(`<div class="dlg win" style="--wc:${esc(w)}"><div class="crown">♛</div><h2>${esc(nameOf(g.winner))} rules the stars</h2>
     <p class="hint">${g.winner === k ? "You are the Stellarch of the known stars." : "The war is over."} ${ownedBy(g, g.winner)} of ${MAP.n} suns after ${g.turnNo} turns.</p>
-    ${historyChart(g)}
-    ${highlights(g)}
+    ${historyChart(g, resultsView())}
+    ${highlights(g, resultsView())}
     <div class="standings">${order.map((o, r) => `<span class="${o.j === k ? "me" : ""}" style="--pc:${esc(lookOf(o.j).main)}"><b>${r + 1}</b><span class="swatch s" style="--sw-main:${esc(lookOf(o.j).main)};--sw-sub:${esc(lookOf(o.j).sub)}"></span>${esc(nameOf(o.j))}</span>`).join("")}</div>
     ${rec && k >= 0 ? `<p class="hint">Your record: <b>${rec.wins}</b> win${rec.wins === 1 ? "" : "s"} in ${rec.games} game${rec.games === 1 ? "" : "s"}${rec.fastest ? ` · fastest win ${rec.fastest} turns` : ""}</p>` : ""}
     <div class="row"><button class="btn" id="wClose" type="button">Look at the map</button>${g.hist && g.hist.base ? `<button class="btn" id="wReplay" type="button">▶ Watch the replay</button>` : ""}<button class="btn go" id="wMenu" type="button">Menu</button></div></div>`, el => {
       if (el.querySelector("#wReplay")) el.querySelector("#wReplay").onclick = () => { dlg.close(); startReplay(); };
       el.querySelector("#wClose").onclick = () => dlg.close(); el.querySelector("#wMenu").onclick = () => leaveRoom();
     });
-}
-// suns held over time, one neon line per player
-function historyChart(g) {
-  const s = g.hist && g.hist.samples; if (!s || s.length < 2) return "";
-  const W = 560, H = 200, P = 6, x = i => P + (W - 2 * P) * i / (s.length - 1), y = v => H - P - (H - 2 * P) * v / MAP.n;
-  const lines = st.seats.map((_, j) => `<polyline points="${s.map((p, i) => `${x(i).toFixed(1)},${y(p.held[j]).toFixed(1)}`).join(" ")}" style="--lc:${esc(lookOf(j).main)}" class="${j === g.winner ? "lead" : ""}"/>`).join("");
-  return `<figure class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Suns held by each player over the game">
-    <line x1="${P}" y1="${y(MAP.n / 2)}" x2="${W - P}" y2="${y(MAP.n / 2)}" class="grid"/>${lines}</svg>
-    <figcaption><span>Turn 1</span><span>Suns held</span><span>Turn ${g.turnNo}</span></figcaption></figure>`;
 }
 // your record, kept in this browser (no account): counted once per finished game you played in
 function recordResult(g) {
@@ -762,22 +754,6 @@ function planLine(g, k) {
            : `<div class="hint">While you wait, tap your suns to plan where your ${est} new ships go.</div>`;
 }
 
-// ---------- results: the war's best moments ----------
-function highlights(g) {
-  const out = [], name = k => `<b style="color:${esc(lookOf(k).main)}">${esc(nameOf(k))}</b>`;
-  if (g.best) {   // the biggest single battle
-    let k = -1; g.best.forEach((b, j) => { if (b && (k < 0 || b.ld > g.best[k].ld)) k = j; });
-    if (k >= 0) { const b = g.best[k]; out.push(`<li><span>💥</span>Biggest battle: ${name(k)} destroyed <b>${b.ld}</b> ships at ${esc(disp(S[b.to]))}${b.cap ? " and took it" : ""} (turn ${b.turn}).</li>`); }
-  }
-  if (g.kos) { const top = Math.max(...g.kos); if (top > 0) { const k = g.kos.indexOf(top); out.push(`<li><span>☠</span>Most knock-outs: ${name(k)}, ${top} player${top === 1 ? "" : "s"}.</li>`); } }
-  const s = g.hist && g.hist.samples;   // the strongest runner-up, at their peak
-  if (s && s.length > 2) {
-    let k = -1, peak = 0, turn = 0;
-    st.seats.forEach((_, j) => { if (j === g.winner) return; s.forEach(p => { if (p.held[j] > peak) { peak = p.held[j]; k = j; turn = p.turn; } }); });
-    if (k >= 0) out.push(`<li><span>📈</span>Closest rival: ${name(k)} held <b>${peak}</b> suns at turn ${turn}.</li>`);
-  }
-  return out.length ? `<ul class="moments">${out.join("")}</ul>` : "";
-}
 
 // ---------- replay: the whole war again, who held what, with a timeline you can scrub ----------
 function startReplay() {
@@ -804,3 +780,6 @@ function renderReplayBar() {
   $("rPlay").onclick = () => { if (!r.playing && r.t >= r.n - 1) r.t = 0; r.playing = !r.playing; renderBar(); if (r.playing) { showFrame(); tickReplay(); } };
   $("rExit").onclick = endReplay;
 }
+
+// what the results screen needs from the page
+function resultsView() { return { seats: st.seats, n: MAP.n, lookOf, nameOf, sunName: i => disp(S[i]) }; }

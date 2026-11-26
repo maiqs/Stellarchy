@@ -349,3 +349,11 @@ Sources:
   - Fixed: the end-of-game bar never appeared, because a `return` was lost in round 9.
   - Checked best moments in a finished war, for example "Warden Kepler destroyed 69 ships at Epsilon Eridani and took it".
   - 35 of 35 tests pass.
+- **Round 20 (2026-11-26, code health only):**
+  - Audited every branch of the action bar for another lost `return`: all end correctly.
+  - Checked for unused functions or constants: none.
+  - Moved the results chart and best moments into `client/results.js`. They're now pure functions of the game and a small view object, with their own tests (`tests/results.test.js`).
+  - Writing those tests caught a name clash introduced by the move (the chart's `v` hid the view), which would have put NaN in the chart.
+  - The end-of-game history no longer ships the recorder's working copy of the board.
+  - Made the move with a script instead of line-by-line edits, after round 9's lost `return`.
+  - 38 of 38 unit tests pass, and the browser loads with 0 script errors.
