@@ -552,3 +552,8 @@ Sources:
   - Fixed a real bug that round 38 had spotted: a tall sun card covered the top bar, so Cards could not be tapped while a sun was selected. The card now stops below the top bar and scrolls, and the top bar sits above it.
   - Browser check added (no Escape workaround now).
   - 52 of 52 unit tests and 20 of 20 browser checks pass.
+- **Round 40 (2026-11-26, code health only):**
+  - No unused imports anywhere (checked every client, server and shared file).
+  - One helper starts a private dev server (`tests/devserver.mjs`); the browser tests and the screenshot tool use it instead of their own copies.
+  - How to play moved out of `app.js` into `client/howto.js` (app.js is down to 952 lines). The offline cache picks up new client files on its own.
+  - 52 of 52 unit tests, 20 of 20 browser checks and 35 of 35 room checks pass. The room checks ran on their own server, so the preview was undisturbed.

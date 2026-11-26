@@ -1,10 +1,8 @@
 // Landscape phone screenshots (round 36): node tools/shot_land.mjs <outdir>. Own server on 8791, own storage.
 import { chromium } from "playwright-core";
-import { spawn, execSync } from "node:child_process";
-const PORT = 8791, BASE = `http://127.0.0.1:${PORT}`, out = process.argv[2] || ".", sleep = ms => new Promise(r => setTimeout(r, ms));
-const server = spawn("npx", ["wrangler", "dev", "--port", String(PORT), "--ip", "127.0.0.1", "--persist-to", ".wrangler/shots"], { cwd: new URL("..", import.meta.url), shell: true, stdio: ["ignore", "pipe", "pipe"] });
-let ready = false; server.stdout.on("data", d => { if (String(d).includes("Ready on")) ready = true; });
-for (let k = 0; k < 120 && !ready; k++) await sleep(500);
+import { startDevServer } from "../tests/devserver.mjs";
+const out = process.argv[2] || ".", sleep = ms => new Promise(r => setTimeout(r, ms));
+const server = await startDevServer(8791, "shots"), BASE = server.base;
 const browser = await chromium.launch({ channel: "msedge", headless: true });
 try {
   for (const [w, h, tag] of [[740, 360, "land"], [844, 390, "land2"], [360, 740, "port"]]) {
@@ -30,4 +28,4 @@ try {
     console.log(tag, "bar", JSON.stringify(bar));
     await ctx.close();
   }
-} finally { await browser.close(); try { execSync(`taskkill /pid ${server.pid} /T /F`, { stdio: "ignore" }); } catch (e) {} }
+} finally { await browser.close(); server.stop(); }

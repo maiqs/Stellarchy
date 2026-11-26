@@ -2,18 +2,15 @@
 // Runs its own dev server on port 8788 with its own storage, so it never touches the preview on 8787.
 // Usage: node tests/e2e.mjs   (or .\run.ps1 e2e)
 import { chromium } from "playwright-core";
-import { spawn, execSync } from "node:child_process";
+import { startDevServer } from "./devserver.mjs";
 import { fileURLToPath } from "node:url";
 
-const PORT = 8788, BASE = `http://127.0.0.1:${PORT}`, sleep = ms => new Promise(r => setTimeout(r, ms));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 let failures = 0; const check = (ok, what) => { console.log((ok ? "  ok   " : "  FAIL ") + what); if (!ok) failures++; };
 
-// ---- the server ----
-const server = spawn("npx", ["wrangler", "dev", "--port", String(PORT), "--ip", "127.0.0.1", "--persist-to", ".wrangler/e2e"], { cwd: new URL("..", import.meta.url), shell: true, stdio: ["ignore", "pipe", "pipe"] });
-let ready = false; server.stdout.on("data", d => { if (String(d).includes("Ready on")) ready = true; });
-const stopServer = () => { try { execSync(`taskkill /pid ${server.pid} /T /F`, { stdio: "ignore" }); } catch (e) {} };
-for (let k = 0; k < 120 && !ready; k++) await sleep(500);
-if (!ready) { console.log("dev server did not start"); stopServer(); process.exit(1); }
+// ---- the server: port 8788, its own storage ----
+let server; try { server = await startDevServer(8788, "e2e"); } catch (e) { console.log(e.message); process.exit(1); }
+const BASE = server.base, stopServer = server.stop;
 
 const browser = await chromium.launch({ channel: "msedge", headless: true });
 try {
