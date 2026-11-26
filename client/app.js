@@ -13,7 +13,7 @@ import { readSetup, setupLink } from "./setup.js";
 import { PALETTE, HEX } from "./shared/looks.js";
 // the 3D hull for a key, falling back to the first
 const hullInfo = key => HULLS.find(h => h.key === key) || HULLS[0];
-import { CARD_NAMES, CARD_COLOR, STAR_FACTS, SUN_WORDS, surfaceTemp, disp, lightText } from "./cards.js";
+import { CARD_NAMES, CARD_COLOR, STAR_FACTS, SUN_WORDS, surfaceTemp, disp, lightText, skyWindow } from "./cards.js";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -506,6 +506,7 @@ function renderSunCard() {
     <dl><dt>Held by</dt><dd>${o >= 0 ? hullInfo(lookOf(o).hull).glyph + " " : ""}${esc(nameOf(o))}${g && g.flagships && g.flag && g.flag[o] === i ? " ⚑ flagship" : g && g.hq.indexOf(i) >= 0 ? " ★ home" : ""}</dd><dt>Ships</dt><dd>${o === -2 ? "hidden by fog" : `${a} ${a ? `(${fleet})` : ""}`}</dd>
     <dt>Sun</dt><dd><span class="sundot" style="color:${CARD_COLOR[kind]};background:${CARD_COLOR[kind]}"></span>${esc((s.spect || "").trim() || "type unknown")}${c ? ` · ${SUN_WORDS[c] || ""}` : ""}</dd>
     <dt>Surface</dt><dd>${surfaceTemp(s)}</dd><dt>Light</dt><dd>${lightText(s)}</dd><dt>From Earth</dt><dd>${s.name === "Sol" ? "home" : s.distLy.toFixed(1) + " ly"}</dd></dl>
+    ${skyWindow(MAP, i)}
     ${STAR_FACTS[s.name] ? `<p class="fact">${esc(STAR_FACTS[s.name])}</p>` : ""}
     <button type="button" class="btn small ghost" id="scPin">${pinsGet().includes(s.name) ? "📌 Unpin" : "📌 Pin this sun"}</button>`;
   $("scPin").onclick = ev => { ev.stopPropagation(); togglePin(s.name); renderSunCard(); };
@@ -517,7 +518,7 @@ function cardFace(id, pressed) {
   if (id >= MAP.n) return `<button type="button" class="cardface k3" data-card="${id}" aria-pressed="${pressed}"><span class="top"><span class="sundot" style="color:${CARD_COLOR[3]};background:${CARD_COLOR[3]}"></span>Wild</span><span class="ty">Counts as any sun colour.</span></button>`;
   const s = S[id], c = specClass(s), held = st.game.owner[id] === seatIx();
   return `<button type="button" class="cardface k${k}" data-card="${id}" aria-pressed="${pressed}"><span class="top"><span class="sundot" style="color:${CARD_COLOR[k]};background:${CARD_COLOR[k]}"></span>${esc(disp(s))}</span>
-    <span class="ty">${CARD_NAMES[k]}${c ? ` · ${SUN_WORDS[c]}` : ""}</span><span class="ty">${surfaceTemp(s)} · ${lightText(s)} · ${s.name === "Sol" ? "home" : s.distLy.toFixed(1) + " ly"}${s.stars > 1 ? ` · ${s.stars} stars` : ""}</span>${STAR_FACTS[s.name] ? `<span class="sci">${esc(STAR_FACTS[s.name])}</span>` : ""}${held ? `<span class="fact">You hold it: +2 ships there when traded.</span>` : ""}</button>`;
+    ${skyWindow(MAP, id)}<span class="ty">${CARD_NAMES[k]}${c ? ` · ${SUN_WORDS[c]}` : ""}</span><span class="ty">${surfaceTemp(s)} · ${lightText(s)} · ${s.name === "Sol" ? "home" : s.distLy.toFixed(1) + " ly"}${s.stars > 1 ? ` · ${s.stars} stars` : ""}</span>${STAR_FACTS[s.name] ? `<span class="sci">${esc(STAR_FACTS[s.name])}</span>` : ""}${held ? `<span class="fact">You hold it: +2 ships there when traded.</span>` : ""}</button>`;
 }
 function openCards() {
   const g = st && st.game, k = seatIx(); if (!g || k < 0) return;

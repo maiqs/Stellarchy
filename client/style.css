@@ -221,7 +221,7 @@ dialog.tip { top: auto; bottom: calc(var(--bot) + var(--barh, 150px) + 16px); ma
 .dmg { position: absolute; left: 0; top: 0; font: 700 1.05rem var(--mono); color: var(--c); text-shadow: 0 0 10px var(--c), 0 0 2px #000; animation: dmg 1.4s ease-out forwards; pointer-events: none; }
 @keyframes dmg { 0% { opacity: 0; transform: var(--at) translate(-50%, 6px) scale(.8); } 15% { opacity: 1; transform: var(--at) translate(-50%, 0) scale(1.15); } 100% { opacity: 0; transform: var(--at) translate(-50%, -34px) scale(1); } }
 @media (max-width: 700px) {
-  .suncard:not(.open) dl dt:nth-of-type(n+3), .suncard:not(.open) dl dd:nth-of-type(n+3), .suncard:not(.open) .fact, .suncard:not(.open) .eyebrow { display: none; }
+  .suncard:not(.open) dl dt:nth-of-type(n+3), .suncard:not(.open) dl dd:nth-of-type(n+3), .suncard:not(.open) .fact, .suncard:not(.open) .eyebrow, .suncard:not(.open) .sky { display: none; }
   .suncard { cursor: pointer; }
   .suncard:not(.open)::after { content: "Tap for the science"; font: 500 .66rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 }
@@ -262,3 +262,6 @@ body.calm *, body.calm *::before, body.calm *::after { animation: none !importan
 .regionrow { width: 100%; text-align: left; color: var(--ink); font: inherit; cursor: pointer; }
 .regionrow:hover { border-color: var(--line2); background: rgba(255, 255, 255, .06); }
 .cardface .sci { font-size: .72rem; color: #c9d3e6; line-height: 1.35; border-top: 1px solid var(--line); padding-top: 4px; margin-top: 2px; }
+.sky { margin: 2px 0 0; display: grid; gap: 2px; }
+.sky svg { width: 100%; height: auto; border-radius: 6px; background: radial-gradient(ellipse at 50% 40%, #0d1630, #04060b 75%); border: 1px solid var(--line); }
+.sky figcaption { font: 500 .62rem var(--mono); color: var(--muted); letter-spacing: .04em; }

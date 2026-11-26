@@ -463,3 +463,9 @@ Sources:
   - Ships were too big everywhere. `FRIGATE_LEN` is now 0.62 (was 1.02, about 60%), with orbits tightened to match.
   - Paul prefers science on the cards to gameplay traits for suns. Card faces now show light (× Sun), star count, and the famous-star fact (34 stars have one); before, facts were only on the sun card.
 - [ ] **Open for Paul:** facts for every sun, not just the 34 famous ones? Generated from the data, for example "The light you see left it in 2014", which stars it holds, and how it compares to the Sun.
+- **Paul, 2026-11-26:** the ship sizes look better now.
+- **Sky window on every card (Paul's ask):**
+  - A small night-sky picture shows the sun as seen from Earth, with its neighbouring suns in true star colours and real brightness.
+  - The caption gives its magnitude and whether you can see it by eye. The Sol card shows the Sun itself.
+  - It's also on the sun card (behind "tap for the science" on phones).
+  - Tested against published magnitudes (Sirius, Tau Ceti, Vega, Altair, Procyon within 0.4). 48 of 48 tests pass.
