@@ -19,6 +19,9 @@ export const mapFor = (size, centre = "Sol") => { size = clampSize(size); const 
 export const TIMERS = [0, 90, 180, 43200, 86400];   // seconds per turn: none, 90 s, 3 min, 12 h, 24 h
 const GRACE_MS = 20000;        // a dropped connection gets this long before the AI covers the seat
 const SKIP_WARN_MS = 10000;    // "AI takes over in 10 s" is shown this long before a timer runs out
+// Fair clocks (player wish): the turn's clock starts once the player's screen shows the turn ("seen"),
+// with up to DELIVERY_MS forgiven for a slow connection; then each player has a one-off time bank per game.
+export const DELIVERY_MS = 10000, BANK_MS = 30000;
 const MAX_LOG = 60;
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
@@ -58,6 +61,7 @@ export class Room {
       if (o.quick) { this.s.opts.quick = true; this.s.public = true; this.s.opts.timer = 90; }   // quick play: listed, and a 90 s clock so a vanished player is covered
       this.s.opts.size = Math.max(clampSize(o.size ?? 100), this.s.opts.maxSeats * SUNS_PER_SEAT);
       if (this.env.DEV && o.idleMs) this.s.opts.idleMs = clampInt(o.idleMs, 500, 3600000, 0);   // local tests only
+      if (this.env.DEV && o.clockMs) this.s.opts.clockMs = clampInt(o.clockMs, 300, 600000, 0);   // local tests only: a short turn clock and bank
       if (o.allAI) { for (let k = 0; k < this.s.opts.maxSeats; k++) this.addBot(); }
       if (o.fillBots) { const k = clampInt(o.fillBots, 0, this.s.opts.maxSeats - 1, 0); for (let j = 0; j < k; j++) this.addBot(); }   // a rematch brings the same number of AI players
       await this.save(); await this.report();
@@ -144,6 +148,7 @@ export class Room {
       case "pace": if (PACES[m.pace]) s.opts.pace = m.pace; break;
       case "start": if (isCreator && s.status === "lobby" && s.seats.length >= 2) this.start(); else return reply({ t: "error", error: "only the room's creator can start, with 2 or more seats" });
         break;
+      case "seen": { const k = s.game ? s.seats.indexOf(seat) : -1; if (s.status === "playing" && this.turnShown(k)) break; return; }   // my screen shows my turn
       case "away": {   // "Let AI play for me" and taking the seat back
         seat.away = !!m.on; seat.autoAway = false; this.log(m.on ? `${seat.name} handed their seat to the AI` : `${seat.name} took their seat back`);
         this.syncGameSeats(); break;
@@ -202,7 +207,7 @@ export class Room {
   async makeRematch() {
     const s = this.s, ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
     const o = { ...s.opts, public: s.public, fillBots: s.seats.filter(x => x.ai).length };
-    delete o.quick; delete o.idleMs;
+    delete o.quick; delete o.idleMs; delete o.clockMs;
     for (let tries = 0; tries < 6; tries++) {
       const code = Array.from(crypto.getRandomValues(new Uint8Array(4)), b => ALPHABET[b % ALPHABET.length]).join("");
       const r = await this.env.ROOMS.get(this.env.ROOMS.idFromName(code)).fetch("https://room/init", { method: "POST", body: JSON.stringify({ ...o, code }) });
@@ -238,7 +243,26 @@ export class Room {
 
   // ---- the clock: computer turns, away players, timers and dropped connections ----
   controlledByAI(k) { const st = this.s.seats[k]; return !!st && (st.ai || st.away); }
-  turnBegan() { const s = this.s; s.turnStarted = Date.now(); s.deadline = s.opts.timer ? Date.now() + s.opts.timer * 1000 + this.extraTime() : 0; }
+  turnBegan() {
+    const s = this.s, now = Date.now(); s.turnStarted = now; s.turnSeen = false; s.onBank = false;
+    s.turnLen = s.opts.timer ? (s.opts.clockMs || s.opts.timer * 1000 + this.extraTime()) : 0;
+    s.deadline = s.turnLen ? now + s.turnLen + DELIVERY_MS : 0;   // until the player's screen confirms it has the turn
+  }
+  // the player's screen shows their turn: the clock restarts from now (never later than the delivery allowance)
+  turnShown(k) {
+    const s = this.s; if (!s.turnLen || s.turnSeen || s.onBank || !s.game || s.game.turn !== k) return false;
+    s.turnSeen = true; s.deadline = Math.min(s.deadline, Date.now() + s.turnLen); return true;
+  }
+  // the clock ran out: spend the seat's time bank if it has one (short timers only), else the AI covers the turn
+  outOfTime(st) {
+    const s = this.s;
+    const full = s.opts.clockMs || BANK_MS;
+    if (!s.onBank && s.opts.timer <= 180 && (st.bank ?? full) > 0) {
+      const b = st.bank ?? full; st.bank = 0; s.onBank = true; s.deadline = Date.now() + b;
+      this.log(`${st.name} is using their time bank (${Math.round(b / 1000)} s)`); return;
+    }
+    st.away = true; st.autoAway = true; this.log(`${st.name} ran out of time: the AI is playing for them`);
+  }
   extraTime() { const g = this.s.game; return g && g.phase === "reinforce" ? Math.min(60000, g.reinforcements * 1000) : 0; }   // more ships to place, more time
 
   afterEvents(ev) {
@@ -263,7 +287,7 @@ export class Room {
     const g = s.game, k = g.turn, st = s.seats[k], now = Date.now();
     // a dropped human gets a short grace, then the AI covers them until they return
     for (const x of s.seats) if (!x.ai && !x.online && !x.away && x.lostAt && now - x.lostAt > GRACE_MS) { x.away = true; x.autoAway = true; this.log(`${x.name} lost connection: the AI is playing for them`); }
-    if (st && !st.ai && !st.away && s.deadline && now >= s.deadline) { st.away = true; st.autoAway = true; this.log(`${st.name} ran out of time: the AI is playing for them`); }
+    if (st && !st.ai && !st.away && s.deadline && now >= s.deadline) this.outOfTime(st);
     this.syncGameSeats();
     if (this.controlledByAI(k)) {
       const r = botStep(this.map, g, k, s.seats[k].style, this.rng());   // falls back to moving the turn on, so it never stalls
@@ -301,9 +325,9 @@ export class Room {
   view() {
     const s = this.s, now = Date.now(), g = s.game;
     return { t: "state", rev: s.rev, code: s.code, status: s.status, public: s.public, opts: s.opts, creator: s.creator,
-             seats: s.seats.map(x => ({ id: x.id, name: x.name, main: x.main, sub: x.sub, hull: x.hull, style: x.style, ai: x.ai, away: !!x.away, online: x.online !== false })),
+             seats: s.seats.map(x => ({ id: x.id, name: x.name, main: x.main, sub: x.sub, hull: x.hull, style: x.style, ai: x.ai, away: !!x.away, online: x.online !== false, bank: x.ai ? 0 : (x.bank ?? BANK_MS) })),
              game: null, events: s.lastEventsRev === s.rev ? s.lastEvents : [], log: s.log.slice(-20),
-             deadline: s.deadline, warnAt: s.deadline ? s.deadline - SKIP_WARN_MS : 0, now };
+             deadline: s.deadline, onBank: !!s.onBank, turnSeen: !!s.turnSeen, warnAt: s.deadline ? s.deadline - SKIP_WARN_MS : 0, now };
   }
   // Each viewer gets their own message: only their own hand (others are counts), never the deck order,
   // the board as they can see it (fog of war), and only the suns that changed since their last message.

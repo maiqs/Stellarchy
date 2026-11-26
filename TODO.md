@@ -112,7 +112,7 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
 Paul: look online for features people want and give them to people. I looked at Warzone's feature-request forum, Board Game Arena bug reports, and Steam threads for the big official conquest game. These are forum anecdotes, not surveys. Re-check every round ending in 5.
 - [x] **Never freeze on a quitter.** The top complaint everywhere is games stuck on a departed player's turn. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
   - AI takeover (step 4c) covers it. Also show a plain "Skipping in 10 s" so nobody waits blind.
-- [ ] **Fair, server-side timers with a grace period.** Board Game Arena players got booted by a timer that ran out before their turn even showed. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
+- [x] **Fair, server-side timers with a grace period.** Board Game Arena players got booted by a timer that ran out before their turn even showed. *(Round 2: the server side is done in `server/room.js`. Round 34: done. The clock restarts when the player's screen confirms the turn (up to 10 s forgiven for delivery), with 1 s more per ship to place (up to 60 s), and a one-off 30 s time bank per game before the AI covers. The bar shows the bank, and How to play explains it.)*
   - Run the clock on the room and start it only once the turn has reached the client.
   - Add extra time when there are many ships to place.
   - Show "time banks" rather than an instant kick.
@@ -507,3 +507,7 @@ Sources:
   - Fixed: Van Maanen's Star ("DG") counted as a yellow dwarf. A capital D now always means a white dwarf; a small d (dM4) is still a red dwarf.
   - New `.\run.ps1 phone`: starts a server the phone can reach on home Wi-Fi (port 8790, its own storage) and prints the address and a QR code.
   - 51 of 51 unit tests and 14 of 14 browser checks pass.
+- **Round 34 (2026-11-26):**
+  - Fair turn clocks: the clock starts when your turn reaches your screen (up to 10 s of delay forgiven), and each player has a 30 s time bank per game before the AI takes over. The bar and How to play explain it.
+  - The room checks run against their own server on port 8789; the new clock option `clockMs` works on the local server only.
+  - 51 of 51 unit tests, 35 of 35 room checks and 14 of 14 browser checks pass.

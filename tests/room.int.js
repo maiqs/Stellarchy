@@ -181,6 +181,25 @@ for (const c of [a, bb, sneaky]) c.ws.close();
   const statuses = []; for (let k = 0; k < 11; k++) statuses.push(await make());
   check(statuses.slice(0, 10).every(s => s === 200) && statuses[10] === 429, `the 11th room in 10 minutes from one visitor is refused (${statuses.join(",")})`);
 }
+// fair clocks: the turn's clock starts when the player's screen shows it, then a time bank, then the AI
+{
+  const { code: tc } = await (await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 2, timer: 90, clockMs: 1500 }) })).json();
+  const h = client(tc, { name: "Clocky" }); await h.ready; await until(() => h.state && h.seat);
+  h.send({ t: "addBot" }); await until(() => h.state.seats.length === 2);
+  h.send({ t: "start" }); await until(() => h.state.status === "playing" && h.state.game);
+  // make it the human's turn: they go first or the bot finishes its turn
+  await until(() => h.state.game.turn === h.state.seats.findIndex(x => x.id === h.seat) && h.state.deadline, 20000);
+  const unseen = h.state.deadline - h.state.now;
+  check(unseen > 9000 && !h.state.turnSeen, `before my screen confirms the turn, the clock allows for delivery (${unseen} ms)`);
+  h.send({ t: "seen" }); await until(() => h.state.turnSeen);
+  const seen = h.state.deadline - h.state.now;
+  check(seen <= 1600, `once seen, the clock runs from now (${seen} ms)`);
+  await until(() => h.state.onBank, 5000);
+  check(h.state.onBank && h.state.seats.find(x => x.id === h.seat).bank === 0, "when time runs out, the time bank is spent first");
+  await until(() => h.state.seats.find(x => x.id === h.seat).away, 5000);
+  check(h.state.seats.find(x => x.id === h.seat).away, "after the bank, the AI covers the turn");
+  h.ws.close();
+}
 // an idle room closes itself (needs DEV=1 in .dev.vars for the short idle time)
 {
   const r = await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 2, public: true, idleMs: 1500 }) });

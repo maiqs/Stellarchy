@@ -382,6 +382,8 @@ function renderBar() {
   if (ui.replay) return renderReplayBar();
   const bar = $("bar"), g = st.game, k = seatIx();
   bar.classList.toggle("mine", !!myTurn());
+  // fair clocks: tell the room this screen shows my turn, so my clock starts now and not while the turn was on its way
+  if (g && myTurn() && st.deadline && !st.turnSeen && ui.seenKey !== g.turnNo + ":" + k) { ui.seenKey = g.turnNo + ":" + k; room.send({ t: "seen" }); }
   if (!g) {   // the room's lobby
     const seats = st.seats.length, max = st.opts.maxSeats;
     bar.innerHTML = `<p class="eyebrow">Room</p><div class="big" style="letter-spacing:.35em;color:var(--gold)">${esc(st.code)}</div>
@@ -470,9 +472,11 @@ function wireAway() { const b = $("bAway"); if (b) b.onclick = () => room.send({
 function timerText(g, mineOnly) {
   if (!st.deadline) return "";
   const left = Math.max(0, Math.round((st.deadline - (Date.now() - (st._skew || 0))) / 1000));
-  const warn = st.warnAt && Date.now() >= st.warnAt;
+  const me = st.seats[seatIx()], bank = me && !st.onBank ? me.bank || 0 : 0;
+  const warn = st.onBank || (!bank && st.warnAt && Date.now() >= st.warnAt);
   const txt = left > 3600 ? `${Math.floor(left / 3600)} h ${Math.floor(left % 3600 / 60)} min left` : left > 60 ? `${Math.floor(left / 60)} min ${left % 60} s left` : `${left} s left`;
-  return mineOnly ? `<div class="timer ${warn ? "warn" : ""}">${warn ? "The AI takes over in " + left + " s" : txt}</div>` : ` <span class="timer">${txt}</span>`;
+  const say = st.onBank ? `⏳ Time bank: the AI takes over in ${left} s` : warn ? `The AI takes over in ${left} s` : txt + (bank && left <= 60 ? ` · then your ${Math.round(bank / 1000)} s time bank` : "");
+  return mineOnly ? `<div class="timer ${warn ? "warn" : ""}">${say}</div>` : ` <span class="timer">${st.onBank ? "⏳ " : ""}${txt}</span>`;
 }
 setInterval(() => { if (st && st.deadline && st.game && st.status === "playing") { const t = document.querySelector(".timer"); if (t) renderBar(); } }, 1000);
 function paceRow() {
@@ -880,6 +884,8 @@ function howDialog() {
     <p class="hint"><b>Enter</b> the glowing button · <b>E</b> done attacking or end turn · <b>S</b> spread on borders · <b>U</b> undo · <b>Esc</b> clear the selection · <b>← →</b> ships to move · <b>C</b> cards · <b>P</b> players · <b>L</b> log · <b>F</b> find · <b>H</b> home view · <b>?</b> this guide</p>
     <h3>Fair dice</h3>
     <p class="hint">Online, every die is rolled by the server, so nobody can tamper with their own rolls. The AI never gets better dice, and only Admiral AI get extra ships, as the setup says. Your own roll average is on the results screen.</p>
+    <h3>Fair clocks</h3>
+    <p class="hint">In rooms with a turn timer, your clock starts when your turn reaches your screen, not before. More ships to place means more time. If time runs out, a one-off 30 s time bank kicks in before the AI plays your turn, and you can take your seat back any time.</p>
     <div class="row end"><button class="btn go" id="howOk" type="button">Got it</button></div></div>`, el => el.querySelector("#howOk").onclick = () => dlg.close());
 }
 
