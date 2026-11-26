@@ -871,6 +871,8 @@ function howDialog() {
       <li><b>Turn timer:</b> if you run out, the AI plays in your style until you act again.</li>
       <li><b>AI players:</b> Recruit (gentle, for learning), Captain (standard) or Admiral (+3 ships a turn, said openly).</li>
     </ul>
+    <h3>Keyboard</h3>
+    <p class="hint"><b>Enter</b> the glowing button · <b>E</b> done attacking or end turn · <b>S</b> spread on borders · <b>U</b> undo · <b>Esc</b> clear the selection · <b>← →</b> ships to move · <b>C</b> cards · <b>P</b> players · <b>L</b> log · <b>F</b> find · <b>H</b> home view · <b>?</b> this guide</p>
     <h3>Fair dice</h3>
     <p class="hint">Online, every die is rolled by the server, so nobody can tamper with their own rolls. The AI never gets better dice, and only Admiral AI get extra ships, as the setup says. Your own roll average is on the results screen.</p>
     <div class="row end"><button class="btn go" id="howOk" type="button">Got it</button></div></div>`, el => el.querySelector("#howOk").onclick = () => dlg.close());
@@ -899,3 +901,28 @@ function pinList() {
   const rows = names.map(nm => S.findIndex(s => s.name === nm)).filter(i => i >= 0).map(i => `<div class="roomrow"><div class="grow">📌 ${esc(disp(S[i]))}</div><button class="btn small" data-go="${i}" type="button">Go</button></div>`).join("");
   return `<p class="eyebrow">Pinned</p><div class="rooms" id="fPins">${rows}</div>`;
 }
+
+// ---------- keyboard shortcuts (desktop): the same actions as the buttons, never while typing ----------
+addEventListener("keydown", e => {
+  const tgt = e.target instanceof Element ? e.target : null;   // keys sent to window or document have no element target
+  if (e.ctrlKey || e.metaKey || e.altKey || (tgt && tgt.closest("input, textarea, select, [contenteditable]"))) return;
+  const k = e.key, inGame = !$("hud").hidden, click = id => { const b = $(id); if (b && !b.disabled && b.offsetParent) { b.click(); return true; } return false; };
+  if (k === "?" ) { e.preventDefault(); howDialog(); return; }
+  if (dlg.open) return;   // dialogs handle their own keys (Esc closes them)
+  if (!inGame) return;
+  if (k === "Escape") { if (ui.fort) ui.fort = null; selectSun(-1); render(); return; }
+  if (k === "Enter") { if (tgt && tgt.closest("button")) return; const go = $("bar").querySelector(".btn.go:not(:disabled)"); if (go) { e.preventDefault(); go.click(); } return; }   // a focused button handles Enter itself
+  const key = k.toLowerCase();
+  if (key === "e") { click("bEndAtk") || click("bEnd"); return; }
+  if (key === "s") { click("bSpread"); return; }
+  if (key === "u") { click("bUndo"); return; }
+  if (key === "c") { click("hCards"); return; }
+  if (key === "p") { click("hPlayers"); return; }
+  if (key === "l") { click("hLog"); return; }
+  if (key === "f") { e.preventDefault(); click("hFind"); return; }
+  if (key === "h") { scene.home(); return; }
+  if (k === "ArrowLeft" || k === "ArrowRight") {   // nudge whichever ship slider is showing
+    const r = $("aRange") || $("fRange") || $("rRange"); if (!r) return;
+    e.preventDefault(); r.value = Math.max(+r.min, Math.min(+r.max, +r.value + (k === "ArrowRight" ? 1 : -1))); r.dispatchEvent(new Event("input"));
+  }
+});

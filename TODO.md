@@ -438,3 +438,20 @@ Sources:
   - Fixed: best-moment lines broke into columns.
   - Avoided a hoisting trap: `pinKey` is a function declaration, because the first map is built before that code runs.
   - 43 of 43 tests pass.
+- **Round 29 (2026-11-26):**
+  - Keyboard shortcuts for desktop:
+    - Enter: the glowing button
+    - E: done attacking, or end turn
+    - S: spread on borders
+    - U: undo
+    - Esc: clear the selection
+    - ← →: ship sliders
+    - C, P, L, F: cards, players, log, find
+    - H: home view
+    - ?: the guide
+  - Shortcuts are ignored while typing. A focused button handles Enter itself (no double action).
+  - Listed in How to play.
+  - A full turn was played by real key presses in the preview (S, Enter, E, E).
+  - Fixed before shipping: the handler threw on keys aimed at window or document, which have no element target.
+  - Not testable here: the preview's simulated Shift+/ sends an empty key. Checked "?" with real events instead.
+  - 43 of 43 tests pass.
