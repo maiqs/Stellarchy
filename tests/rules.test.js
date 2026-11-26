@@ -85,3 +85,12 @@ test("a human can take a seat back from the AI between any two steps", () => {
   assert.ok(act(MAP, g, seat, { t: "endTurn" }, rng).ok);
   assert.notEqual(g.turn, seat);
 });
+
+test("history: sampled through the game, capped, and ends on the final board", () => {
+  const rng = mulberry32(77), g = newGame(MAP, { mode: "legacy", seats: seats(6) }, rng);
+  runGame(MAP, g, rng);
+  const s = g.hist.samples;
+  assert.ok(s.length >= 5 && s.length <= 121, `${s.length} samples`);
+  assert.equal(s.at(-1).held[g.winner], MAP.n, "the last sample shows the winner holding everything");
+  for (let i = 1; i < s.length; i++) assert.ok(s[i].turn >= s[i - 1].turn);
+});

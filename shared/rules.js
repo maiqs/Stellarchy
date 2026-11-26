@@ -208,7 +208,7 @@ const ACTIONS = {
 function winCheck(map, g, seat, ev) {
   const mine = ownedBy(g, seat);
   if (mine >= target(map, g)) {
-    g.status = "over"; g.winner = seat; g.advance = null;
+    g.status = "over"; g.winner = seat; g.advance = null; recordHistory(g, true);
     ev.push({ t: "win", seat, systems: mine, turnNo: g.turnNo });
   }
 }
@@ -218,7 +218,7 @@ function nextTurn(map, g, ev) {
   for (let d = 0; d < k; d++) { nx = (nx + 1) % k; if (g.alive[nx]) break; }
   g.turn = nx; g.phase = "reinforce"; g.reinforcements = reinforcementsFor(map, g, nx);
   g.fortified = false; g.conq = false; g.advance = null; g.lastRoll = null; g.turnNo++;
-  trackStall(g);
+  trackStall(g); recordHistory(g);
   ev.push({ t: "turn", seat: nx, turnNo: g.turnNo });
 }
 
@@ -248,3 +248,13 @@ function trackStall(g) {
 }
 // 0 (normal) to 8 (reckless), rising one step per two quiet rounds
 export const aggression = g => Math.min(8, Math.floor((g.stall ? g.stall.quiet : 0) / (2 * g.alive.filter(Boolean).length)));
+
+// history for the end-of-game graph: suns held by each seat, sampled once per round of turns.
+// Kept to at most 120 samples by dropping every other one when full (the step doubles each time).
+export const HISTORY_MAX = 120;
+export function recordHistory(g, force = false) {
+  const h = g.hist || (g.hist = { step: 1, samples: [] });
+  if (!force && g.turnNo % (g.seats.length * h.step) !== 0) return;
+  h.samples.push({ turn: g.turnNo, held: g.seats.map((_, k) => ownedBy(g, k)) });
+  if (h.samples.length > HISTORY_MAX) { h.samples = h.samples.filter((_, i) => i % 2 === 0); h.step *= 2; }
+}

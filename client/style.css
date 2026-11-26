@@ -225,3 +225,16 @@ dialog.tip { top: auto; bottom: calc(var(--bot) + var(--barh, 150px) + 16px); ma
   .suncard { cursor: pointer; }
   .suncard:not(.open)::after { content: "Tap for the science"; font: 500 .66rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 }
+
+/* ---------- results ---------- */
+.chart { margin: 0; width: 100%; display: grid; gap: 4px; }
+.chart svg { width: 100%; height: auto; background: rgba(0, 0, 0, .25); border: 1px solid var(--line); border-radius: 10px; }
+.chart polyline { fill: none; stroke: var(--lc); stroke-width: 2; stroke-linejoin: round; opacity: .75; filter: drop-shadow(0 0 3px var(--lc)); }
+.chart polyline.lead { stroke-width: 3.2; opacity: 1; }
+.chart .grid { stroke: rgba(255, 255, 255, .1); stroke-dasharray: 4 6; }
+.chart figcaption { display: flex; justify-content: space-between; font: 500 .68rem var(--mono); color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+.standings { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: center; font-size: .85rem; }
+.standings > span { display: inline-flex; align-items: center; gap: 6px; }
+.standings b { font: 700 .8rem var(--mono); color: var(--muted); }
+.standings .me { color: var(--pc); font-weight: 600; }
+.win { width: 100%; }

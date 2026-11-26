@@ -50,7 +50,7 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
      - minimum suns = 4 per seat, so the slider's floor rises with player count
      - HQ spacing shrinks on small maps (4 jumps at 100 or more suns, 2 at 10)
      - small maps have no continents
-   - [ ] **Big maps (1,000+):** *(Round 4: glows and pick rings are each one draw call, taking 3,000 suns from 34 to 79 fps in the preview. Round 8: the server sends only changed suns, about 300 small diffs and 2 full boards per test game. Still open: labels, fleet caps, and a lower default win %.)*
+   - [ ] **Big maps (1,000+):** *(Round 4: glows and pick rings are each one draw call, taking 3,000 suns from 34 to 79 fps in the preview. Round 8: the server sends only changed suns, about 300 small diffs and 2 full boards per test game. Round 9: choosing 1,000+ suns sets the win target to 65% unless you picked one. Still open: labels and fleet caps.)*
      - stars drawn as one InstancedMesh
      - names and army counts only near the camera, or on hover or select
      - fleets capped per star
@@ -131,7 +131,7 @@ Paul: look online for features people want and give them to people. I looked at 
   - a region list showing bonuses and who holds what
 - [ ] **Bigger games:** Warzone players ask for 60–100 players. Consider up to 32 seats on maps of 500 suns or more.
 - [ ] **Fog of war as a room option.** It's a Warzone staple: you see only your suns and their neighbours.
-- [ ] **End-of-game screen:**
+- [ ] **End-of-game screen:** *(Round 9: the graph of suns held over time and the standings are done; best moments and a scrubbable replay are not.)*
   - a graph of systems held over time
   - each player's best moment
   - a replay you can scrub through
@@ -156,7 +156,7 @@ Sources:
   - [ ] **Non-binding truces:** online Diplomacy's appeal is negotiation. Keep it light, with no free-text chat: a "Propose a truce for 3 turns" button the other player accepts or ignores. The game shows truces on the map, but anyone can break one, and breaking it is announced.
   - [x] **Colour-blind support:** NetEase found colour-correction use matches the share of colour-blind players. Add a colour-blind-safe palette preset and a per-player pattern or glyph on stars and in the players list, so colour is never the only cue. *(Round 6: Okabe-Ito colour-blind-safe colours in the look editor, ship symbols beside names, and a menu option for symbols on every sun.)*
   - [ ] **Portrait and landscape:** 47% of players in that case study switched orientation. Keep both layouts first-class; the landscape phone layout is still untested.
-  - [ ] **Ranked play:** this needs accounts, so skip it for now. A local "your record" (wins, best game) in the browser is a free stand-in.
+  - [x] **Ranked play:** this needs accounts, so skip it for now. A local "your record" (wins, best game) in the browser is a free stand-in. *(Round 9: your record (wins, games, fastest win) on the title card and the results screen.)*
 
   Sources:
   - https://dominating12.com/forums/6/suggestions-feedback/2369/fog-of-war-reveal
@@ -254,3 +254,9 @@ Sources:
   - Online updates send only the suns that changed: a full board on joining or on request, otherwise diffs. A test game ran on 2 full boards and about 300 diffs with no resyncs. The page and the test client both resync if a diff doesn't line up.
   - The test players now pace their moves under the real rate limit.
   - 28 of 28 unit tests and 17 of 17 room checks pass.
+- **Round 9 (2026-11-26):**
+  - Results screen: a neon graph of suns held per player over the game (the rules record up to 120 samples, sent online only at game end), plus the standings.
+  - Your record (wins, games, fastest win) on the title card and the results screen, kept in the browser.
+  - Big maps default to a 65% win target. Watching an AI war now uses 100 suns, with "Watch another war" at the end.
+  - Fixed: after the tips had been seen once, every later dialog (the results included) was pushed to the bottom of the screen.
+  - 29 of 29 tests pass.

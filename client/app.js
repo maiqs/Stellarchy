@@ -38,8 +38,8 @@ if (!me || !HEX.test(me.main)) { const k = Math.floor(Math.random() * PALETTE.le
 const saveMe = () => { store.set("stellarchy_profile", me); renderYou(); document.documentElement.style.setProperty("--me", me.main); };
 saveMe();
 function renderYou() {
-  const h = HULLS.find(x => x.key === me.hull) || HULLS[0], st = STYLES[me.style] || STYLES.balanced;
-  $("youCard").innerHTML = `<span class="swatch" style="--sw-main:${me.main};--sw-sub:${me.sub}"></span><span class="who"><b>${esc(me.name || "Name your Stellarch")}</b><span>${h.glyph} ${h.name} ships · ${esc(st.name)} style</span></span><span class="edit">Edit</span>`;
+  const h = HULLS.find(x => x.key === me.hull) || HULLS[0], st = STYLES[me.style] || STYLES.balanced, rec = store.get("stellarchy_record", null);
+  $("youCard").innerHTML = `<span class="swatch" style="--sw-main:${me.main};--sw-sub:${me.sub}"></span><span class="who"><b>${esc(me.name || "Name your Stellarch")}</b><span>${h.glyph} ${h.name} ships · ${esc(st.name)} style${rec && rec.games ? ` · ${rec.wins} win${rec.wins === 1 ? "" : "s"} of ${rec.games}` : ""}</span></span><span class="edit">Edit</span>`;
 }
 $("youCard").addEventListener("click", () => lookDialog());
 $("youCard").setAttribute("role", "button"); $("youCard").tabIndex = 0;
@@ -128,14 +128,19 @@ async function joinCode(code) {
 // ---------- title menu ----------
 const needName = then => { if (me.name) return then(); lookDialog(then); };
 $("mSolo").onclick = () => needName(soloDialog);
-$("mWatch").onclick = () => { useMap(300); startRoom(new LocalRoom(MAP, { bots: 7, watch: true, mode: "legacy", pace: "fast" }, me)); };
+$("mWatch").onclick = () => { useMap(100); startRoom(new LocalRoom(MAP, { bots: 5, watch: true, mode: "legacy", pace: "fast" }, me)); };
 $("mCreate").onclick = () => needName(createDialog);
 $("mJoin").onsubmit = e => { e.preventDefault(); needName(() => joinCode($("joinCode").value)); };
 $("mRooms").onclick = roomsDialog;
 $("mCredits").onclick = e => { e.preventDefault(); creditsDialog(); };
 
 function optionSeg(name, opts, cur) { return `<div class="seg" data-seg="${name}">${opts.map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${String(v) === String(cur)}">${esc(l)}</button>`).join("")}</div>`; }
-function wireSegs(el, state, redraw) { el.querySelectorAll("[data-seg]").forEach(seg => seg.querySelectorAll("button").forEach(b => b.onclick = () => { const v = b.dataset.v; state[seg.dataset.seg] = isNaN(+v) ? v : +v; redraw(); })); }
+function wireSegs(el, state, redraw) { el.querySelectorAll("[data-seg]").forEach(seg => seg.querySelectorAll("button").forEach(b => b.onclick = () => {
+  const v = b.dataset.v, name = seg.dataset.seg; state[name] = isNaN(+v) ? v : +v;
+  // big maps default to a 65% win (total conquest of 1,000+ suns is a very long game), unless the player chose a target
+  if (name === "targetPct") state.pctTouched = true;
+  if (name === "size" && !state.pctTouched && "targetPct" in state) state.targetPct = state.size >= 1000 ? 65 : 100;
+  redraw(); })); }
 
 // map size picker: suns from 10 to 3,000, never fewer than 4 per seat
 // measured with 4–6 AI players (round 6): 50 suns ≈ 7 turns each, 100 ≈ 20, 300 ≈ 60
@@ -247,7 +252,7 @@ function eventToast(e, k) {
   if (e.t === "hq" && e.seat === k) { scene.focus(e.s, 34); toast(`${disp(S[e.s])} is your home sun.`); }
   if (e.t === "card" && e.seat === k) toast("You earned a card.");
   if (e.t === "trade" && e.seat === k) toast(`Traded a set for ${e.val} ships.`);
-  if (e.t === "win") setTimeout(winDialog, 1400);
+  if (e.t === "win") { recordResult(st.game); setTimeout(winDialog, 1400); }
 }
 let notifyAsked = false;
 function notifyTurn() {
@@ -321,8 +326,8 @@ function renderBar() {
   }
   const turnSeat = st.seats[g.turn], phaseRow = `<div class="phases">${PHASES.map(([p, l]) => `<i class="${g.phase === p ? "on" : ""}">${l}</i>`).join("")}</div>`;
   if (st.status === "over" || g.status === "over") {
-    bar.innerHTML = `<div class="big" style="color:${esc(lookOf(g.winner).main)}">${esc(nameOf(g.winner))} rules the stars</div><div class="row"><button class="btn go" id="bAgain" type="button">${st.local ? "Play again" : "Back to menu"}</button><button class="btn" id="bWin" type="button">Results</button></div>`;
-    $("bAgain").onclick = () => { const local = st.local; leaveRoom(); if (local) $("mSolo").click(); }; $("bWin").onclick = winDialog; return;
+    bar.innerHTML = `<div class="big" style="color:${esc(lookOf(g.winner).main)}">${esc(nameOf(g.winner))} rules the stars</div><div class="row"><button class="btn go" id="bAgain" type="button">${st.local ? (mySeat ? "Play again" : "Watch another war") : "Back to menu"}</button><button class="btn" id="bWin" type="button">Results</button></div>`;
+    $("bAgain").onclick = () => { const local = st.local, watching = !mySeat; leaveRoom(); if (local) $(watching ? "mWatch" : "mSolo").click(); }; $("bWin").onclick = winDialog;
   }
   if (!myTurn()) {
     const k2 = g.turn, away = turnSeat.away, me2 = k >= 0 ? st.seats[k] : null;
@@ -479,12 +484,34 @@ function bestSet(h) {
 // ---------- win ----------
 function winDialog() {
   const g = st && st.game; if (!g || g.winner < 0) return;
-  const w = lookOf(g.winner).main, k = seatIx();
+  const w = lookOf(g.winner).main, k = seatIx(), rec = store.get("stellarchy_record", null);
+  // standings: final suns, then when each player was knocked out
+  const order = st.seats.map((s, j) => ({ j, held: ownedBy(g, j), out: (g.hist ? g.hist.samples.findIndex(x => x.held[j] === 0 && x.turn > g.seats.length) : -1) })).sort((a, b) => b.held - a.held || b.out - a.out);
   openDialog(`<div class="dlg win" style="--wc:${esc(w)}"><div class="crown">♛</div><h2>${esc(nameOf(g.winner))} rules the stars</h2>
     <p class="hint">${g.winner === k ? "You are the Stellarch of the known stars." : "The war is over."} ${ownedBy(g, g.winner)} of ${MAP.n} suns after ${g.turnNo} turns.</p>
+    ${historyChart(g)}
+    <div class="standings">${order.map((o, r) => `<span class="${o.j === k ? "me" : ""}" style="--pc:${esc(lookOf(o.j).main)}"><b>${r + 1}</b><span class="swatch s" style="--sw-main:${esc(lookOf(o.j).main)};--sw-sub:${esc(lookOf(o.j).sub)}"></span>${esc(nameOf(o.j))}</span>`).join("")}</div>
+    ${rec && k >= 0 ? `<p class="hint">Your record: <b>${rec.wins}</b> win${rec.wins === 1 ? "" : "s"} in ${rec.games} game${rec.games === 1 ? "" : "s"}${rec.fastest ? ` · fastest win ${rec.fastest} turns` : ""}</p>` : ""}
     <div class="row"><button class="btn" id="wClose" type="button">Look at the map</button><button class="btn go" id="wMenu" type="button">Menu</button></div></div>`, el => {
       el.querySelector("#wClose").onclick = () => dlg.close(); el.querySelector("#wMenu").onclick = () => leaveRoom();
     });
+}
+// suns held over time, one neon line per player
+function historyChart(g) {
+  const s = g.hist && g.hist.samples; if (!s || s.length < 2) return "";
+  const W = 560, H = 200, P = 6, x = i => P + (W - 2 * P) * i / (s.length - 1), y = v => H - P - (H - 2 * P) * v / MAP.n;
+  const lines = st.seats.map((_, j) => `<polyline points="${s.map((p, i) => `${x(i).toFixed(1)},${y(p.held[j]).toFixed(1)}`).join(" ")}" style="--lc:${esc(lookOf(j).main)}" class="${j === g.winner ? "lead" : ""}"/>`).join("");
+  return `<figure class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Suns held by each player over the game">
+    <line x1="${P}" y1="${y(MAP.n / 2)}" x2="${W - P}" y2="${y(MAP.n / 2)}" class="grid"/>${lines}</svg>
+    <figcaption><span>Turn 1</span><span>Suns held</span><span>Turn ${g.turnNo}</span></figcaption></figure>`;
+}
+// your record, kept in this browser (no account): counted once per finished game you played in
+function recordResult(g) {
+  const k = seatIx(), key = (st.code || "solo") + ":" + g.turnNo + ":" + g.winner;
+  if (k < 0 || ui.recorded === key) return; ui.recorded = key;
+  const r = store.get("stellarchy_record", { games: 0, wins: 0, fastest: 0 });
+  r.games++; if (g.winner === k) { r.wins++; if (!r.fastest || g.turnNo < r.fastest) r.fastest = g.turnNo; }
+  store.set("stellarchy_record", r); renderYou();
 }
 
 // ---------- top bar ----------
@@ -557,8 +584,8 @@ const HINTS = [
   ["Look around", "Drag to turn the map, scroll or pinch to zoom, tap any sun to see who holds it. ⌕ finds a sun by name."],
 ];
 function showHints(step = 0) {
-  dlg.classList.add("tip"); dlg.addEventListener("close", () => dlg.classList.remove("tip"), { once: true });
   if (store.get("stellarchy_hints_done", false)) return;
+  if (!dlg.classList.contains("tip")) { dlg.classList.add("tip"); dlg.addEventListener("close", () => dlg.classList.remove("tip"), { once: true }); }
   if (step >= HINTS.length) { store.set("stellarchy_hints_done", true); return; }
   const [h, p] = HINTS[step];
   openDialog(`<div class="dlg"><p class="eyebrow">Tip ${step + 1} of ${HINTS.length}</p><h2>${h}</h2><p class="hint" style="font-size:.95rem">${p}</p>

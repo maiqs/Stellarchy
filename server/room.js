@@ -265,7 +265,8 @@ export class Room {
       diff = [];
       for (let i = 0; i < g.owner.length; i++) if (g.owner[i] !== this.sentBoard.owner[i] || g.armies[i] !== this.sentBoard.armies[i]) diff.push([i, g.owner[i], g.armies[i]]);
     }
-    const pub = g ? { ...g, owner: undefined, armies: undefined, deck: undefined, discard: undefined, deckCount: g.deck.length, cards: undefined } : null;
+    // the history graph is only needed on the results screen, so it rides along once the game is over
+    const pub = g ? { ...g, owner: undefined, armies: undefined, deck: undefined, discard: undefined, deckCount: g.deck.length, cards: undefined, hist: s.status === "over" ? g.hist : undefined } : null;
     for (const ws of sockets) {
       const a = ws.deserializeAttachment() || {};
       let msg = base;
