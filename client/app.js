@@ -28,10 +28,10 @@ let MAP = mapOf(300), S = MAP.systems, scene = null;
 function useMap(size) {
   const m = mapOf(size); if (scene && m === MAP) return;
   if (scene) scene.dispose();
-  MAP = m; S = MAP.systems; scene = createScene({ container: $("stage"), labels: $("labels"), map: MAP }); scene.onPick(onPick); scene.setSymbols(!!store.get("stellarchy_symbols", false));
+  MAP = m; S = MAP.systems; scene = createScene({ container: $("stage"), labels: $("labels"), map: MAP }); scene.onPick(onPick); scene.setSymbols(!!store.get("stellarchy_symbols", false)); applyComfort();
 }
 
-useMap(300); scene.setAutoRotate(true);
+useMap(300); scene.setAutoRotate(!document.body.classList.contains("calm"));
 
 // ---------- your look (kept in this browser; no account) ----------
 let me = store.get("stellarchy_profile", null);
@@ -94,7 +94,7 @@ function startRoom(r) {
 function leaveRoom() {
   if (room) room.close(); room = null; st = null; mySeat = null;
   history.replaceState(null, "", "/"); $("hud").hidden = true; $("title").hidden = false; dlg.open && dlg.close();
-  scene.clearBoard(); scene.setMarks(new Map()); scene.select(-1); scene.setAutoRotate(true); scene.home();
+  scene.clearBoard(); scene.setMarks(new Map()); scene.select(-1); scene.setAutoRotate(!document.body.classList.contains("calm")); scene.home();
 }
 
 // online room over a WebSocket, reconnecting with the seat token
@@ -129,6 +129,13 @@ async function joinCode(code) {
 // ---------- title menu ----------
 const needName = then => { if (me.name) return then(); lookDialog(then); };
 $("mSolo").onclick = () => needName(soloDialog);
+// quick play: straight into a game with AI opponents; people arriving later take over AI seats
+$("mQuick").onclick = () => needName(async () => {
+  const r = await fetch("/api/quick", { method: "POST" }).catch(() => null);
+  if (!r || !r.ok) { toast("Online play is not reachable right now, so here is a game against the AI.", "err"); return soloDialog(); }
+  const { code, joined } = await r.json(); await joinCode(code);
+  if (joined) toast("You took over an AI player in a running game. Good luck!");
+});
 $("mWatch").onclick = () => { useMap(100); startRoom(new LocalRoom(MAP, { bots: 5, watch: true, mode: "legacy", pace: "fast" }, me)); };
 $("mCreate").onclick = () => needName(createDialog);
 $("mJoin").onsubmit = e => { e.preventDefault(); needName(() => joinCode($("joinCode").value)); };
@@ -519,11 +526,15 @@ function recordResult(g) {
 $("hMenu").onclick = () => openDialog(`<div class="dlg"><h2>Menu</h2>
   <div class="field"><span>Show</span><div class="seg"><button type="button" id="mNames" aria-pressed="${!!ui.allNames}">All sun names</button><button type="button" id="mSpin" aria-pressed="${!!ui.spin}">Slow rotation</button><button type="button" id="mSym" aria-pressed="${!!store.get("stellarchy_symbols", false)}">Ship symbols on suns</button></div>
   <p class="hint">Ship symbols put each holder's ship shape (▲ ■ ▬ ● ◓) beside the count, so colour is never the only clue.</p></div>
+  <div class="field"><span>Camera speed</span><div class="seg" id="mCam">${[[.5, "Slow"], [1, "Normal"], [1.7, "Fast"]].map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${store.get("stellarchy_camspeed", 1) === v}">${l}</button>`).join("")}</div></div>
+  <div class="field"><span>Motion</span><div class="seg"><button type="button" id="mCalm" aria-pressed="${document.body.classList.contains("calm")}">Calm motion</button></div><p class="hint">No camera glides, spinning or bouncing interface. Battles still show.</p></div>
   ${"Notification" in window && Notification.permission === "default" ? `<button class="btn" id="mNotify" type="button">Alert me when it's my turn</button>` : ""}
   <div class="row end"><button class="btn" id="mLeave" type="button">Leave game</button><button class="btn go" id="mBack" type="button">Back to the war</button></div></div>`, el => {
     el.querySelector("#mNames").onclick = () => { ui.allNames = !ui.allNames; scene.setAllNames(ui.allNames); dlg.close(); };
     el.querySelector("#mSpin").onclick = () => { ui.spin = !ui.spin; scene.setAutoRotate(ui.spin); dlg.close(); };
-    el.querySelector("#mSym").onclick = () => { const on = !store.get("stellarchy_symbols", false); store.set("stellarchy_symbols", on); scene.setSymbols(on); dlg.close(); };
+    el.querySelectorAll("#mCam button").forEach(b => b.onclick = () => { store.set("stellarchy_camspeed", +b.dataset.v); applyComfort(); dlg.close(); });
+    el.querySelector("#mCalm").onclick = () => { store.set("stellarchy_calm", !document.body.classList.contains("calm")); applyComfort(); dlg.close(); };
+    el.querySelector("#mSym").onclick =() => { const on = !store.get("stellarchy_symbols", false); store.set("stellarchy_symbols", on); scene.setSymbols(on); dlg.close(); };
     const nb = el.querySelector("#mNotify"); if (nb) nb.onclick = () => { Notification.requestPermission(); dlg.close(); };
     el.querySelector("#mLeave").onclick = () => leaveRoom(); el.querySelector("#mBack").onclick = () => dlg.close();
   });
@@ -607,4 +618,11 @@ function floatLoss(i, n, who) {
 // the last roll: each attacking die against the defending die it met; won pairs glow, lost ones dim
 function rollHtml(g) {
   const lr = g.lastRoll; return lr && lr.from !== undefined ? `<div class="dice${ui.rollRev === st.rev ? " fresh" : ""}" aria-label="Last roll">${lr.a.map((x, j) => `<span class="die a${j < lr.d.length ? (x > lr.d[j] ? " won" : " lost") : ""}" style="--j:${j}">${x}</span>`).join("")}<span class="vs">vs</span>${lr.d.map((x, j) => `<span class="die d${j < lr.a.length ? (lr.a[j] > x ? " lost" : " won") : ""}" style="--j:${j + 3}">${x}</span>`).join("")}<span class="tally">${lr.rounds > 1 ? `${lr.rounds} rolls · ` : ""}lost ${lr.lostA}, destroyed ${lr.lostD}</span></div>` : "";
+}
+
+// ---------- comfort settings: camera speed and calm motion (follows the system's reduced-motion setting by default) ----------
+function applyComfort() {
+  const calm = store.get("stellarchy_calm", matchMedia("(prefers-reduced-motion: reduce)").matches);
+  document.body.classList.toggle("calm", calm);
+  if (scene) { scene.setCalm(calm); scene.setCameraSpeed(store.get("stellarchy_camspeed", 1)); }
 }

@@ -91,6 +91,20 @@ check(a.state.status === "over", `game finished (turn ${a.state.game.turnNo}, ${
 const sneaky = client(code, { name: "Late" }); await sneaky.ready; await until(() => sneaky.state);
 check(sneaky.seat === null, "a late arrival watches instead of taking a seat");
 for (const c of [a, bb, sneaky]) c.ws.close();
+// quick play: straight into a running game against AI; a second player takes over an AI seat in the same room
+{
+  const q1 = await (await fetch(BASE + "/api/quick", { method: "POST" })).json();
+  const p1 = client(q1.code, { name: "Quinn", main: "#22d3c5" }); await p1.ready; await until(() => p1.state && p1.state.game);
+  check(p1.state.status === "playing" && p1.state.seats.length === 4 && p1.state.seats.filter(s => s.ai).length === 3, `quick play starts at once with 3 AI players (${q1.code})`);
+  await sleep(300);
+  const q2 = await (await fetch(BASE + "/api/quick", { method: "POST" })).json();
+  const p2 = client(q2.code, { name: "Rex" }); await p2.ready; await until(() => p2.seat);
+  check(q2.code === q1.code && q2.joined, "a second quick player is sent to the running game");
+  await until(() => p1.state.seats.some(s => s.name === "Rex"));
+  const rex = p1.state.seats.find(s => s.name === "Rex");
+  check(rex && !rex.ai && p2.seat === rex.id && p1.state.seats.filter(s => s.ai).length === 2, "they take over an AI seat, keeping its colour");
+  p1.ws.close(); p2.ws.close();
+}
 // an idle room closes itself (needs DEV=1 in .dev.vars for the short idle time)
 {
   const r = await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 2, public: true, idleMs: 1500 }) });

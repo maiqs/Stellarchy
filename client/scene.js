@@ -251,7 +251,9 @@ export function createScene({ container, labels, map }) {
   function resize() { W = container.clientWidth; H = container.clientHeight; renderer.setSize(W, H); camera.aspect = W / H; camera.updateProjectionMatrix(); }
   addEventListener("resize", resize); resize();
 
+  let calm = false;
   function glide(to, dist) {
+    if (calm) { const off = camera.position.clone().sub(controls.target); if (dist) off.setLength(dist); controls.target.copy(to); camera.position.copy(to.clone().add(off)); return; }   // calm motion: jump, no glide
     const from = controls.target.clone(), t0 = performance.now(), camFrom = camera.position.clone();
     const off = camera.position.clone().sub(controls.target); if (dist) off.setLength(dist);
     const step = t => { const k = Math.min(1, (t - t0) / 700), e = k * (2 - k); controls.target.lerpVectors(from, to, e); if (dist) camera.position.lerpVectors(camFrom, to.clone().add(off), e); if (k < 1) requestAnimationFrame(step); };
@@ -343,7 +345,9 @@ export function createScene({ container, labels, map }) {
     onPick(fn) { pickCb = fn; }, onHover(fn) { hoverCb = fn; },
     setAutoRotate(on) { controls.autoRotate = on; },
     setAllNames(on) { showAllNames = on; },
-    setSymbols(on) { symbols = on; },   // colour-blind help: each holder's ship symbol beside the count
+    setSymbols(on) { symbols = on; },
+    setCameraSpeed(k) { controls.rotateSpeed = k; controls.zoomSpeed = 1.1 * k; controls.panSpeed = k; },
+    setCalm(on) { calm = on; if (on) controls.autoRotate = false; controls.enableDamping = !on; },   // colour-blind help: each holder's ship symbol beside the count
     screenOf,
     dispose() { running = false; removeEventListener("resize", resize); renderer.dispose(); renderer.domElement.remove(); labels.innerHTML = ""; scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); },
   };

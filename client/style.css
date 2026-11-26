@@ -238,3 +238,4 @@ dialog.tip { top: auto; bottom: calc(var(--bot) + var(--barh, 150px) + 16px); ma
 .standings b { font: 700 .8rem var(--mono); color: var(--muted); }
 .standings .me { color: var(--pc); font-weight: 600; }
 .win { width: 100%; }
+body.calm *, body.calm *::before, body.calm *::after { animation: none !important; transition: none !important; }

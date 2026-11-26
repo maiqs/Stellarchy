@@ -19,6 +19,18 @@ export default {
       }
       return new Response("could not make a room", { status: 503 });
     }
+    // quick play: a running quick room with an AI seat to take over, else a fresh one (4 seats, 100 suns)
+    if (p === "/api/quick" && req.method === "POST") {
+      const list = await (await env.LOBBY.get(env.LOBBY.idFromName("lobby")).fetch("https://lobby/list")).json();
+      const open = list.rooms.filter(r => r.quick && r.status === "playing" && r.aiSeats > 0 && Date.now() - r.seen < 5 * 60000).sort((a, b) => a.turnNo - b.turnNo)[0];
+      if (open) return Response.json({ code: open.code, joined: true });
+      for (let tries = 0; tries < 6; tries++) {
+        const code = newCode(), stub = env.ROOMS.get(env.ROOMS.idFromName(code));
+        const r = await stub.fetch("https://room/init", { method: "POST", body: JSON.stringify({ quick: true, maxSeats: 4, size: 100, mode: "legacy", targetPct: 100, pace: "normal", code }) });
+        if (r.status === 200) return Response.json({ code, joined: false });
+      }
+      return new Response("could not make a room", { status: 503 });
+    }
     if (p === "/api/rooms" && req.method === "GET") return env.LOBBY.get(env.LOBBY.idFromName("lobby")).fetch("https://lobby/list");
     const m = p.match(/^\/api\/rooms\/([A-Za-z0-9]{4})(\/ws)?$/);
     if (m) {

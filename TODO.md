@@ -75,7 +75,7 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
      - **Territorial (expansion):** grabs as many systems as possible and goes for continent bonuses.
      - **Balanced:** the current bot, as the default.
      - Each style is a set of weights: attack-odds threshold, border reserve, card priority, continent priority, elimination priority. That is one bot brain, five tunings.
-   - [ ] **Tests:** all-bot games for each style (they all must finish); a style head-to-head report (win rates); a takeover-and-return test mid-turn.
+   - [x] **Tests:** all-bot games for each style (they all must finish); a style head-to-head report (win rates); a takeover-and-return test mid-turn. *(Covered by the per-style soak (`run.ps1 soak`), the tuner's head-to-head report (`tests/tune.js`), and the take-back test in `tests/rules.test.js`.)*
 5. **Fair play**
    - [x] Only the seated player whose turn it is can act. The server rolls all dice.
    - [x] Turn timer: a player who stays quiet is auto-skipped (a bot can play their turn after N misses).
@@ -89,7 +89,7 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
    - [ ] Responsive layout: portrait phone, landscape phone, tablet, desktop. Test at 360×640, 390×844, 768×1024, 1366×768, 1920×1080, 3440×1440. *(Round 3: checked phone portrait and 1024×768. Round 7: checked 360×640 and a landscape phone (844×390); the sun card is compact on phones, tap for more. Still to check: tablet and ultrawide.)*
    - [x] First-game hints: three short coach marks, dismissable, shown once.
    - [x] A title screen with a slowly turning star map, plus Play / Create room / Join by code.
-   - [ ] Settings: bot speed, camera sensitivity, reduced motion, colour-blind-friendly outlines.
+   - [x] Settings: bot speed, camera sensitivity, reduced motion, colour-blind-friendly outlines. *(Round 11: camera speed (slow, normal, fast) and calm motion, on by default when the system asks for reduced motion. Bot speed is the pace buttons; colour-blind help came in round 6.)*
    - [ ] Performance: cap the pixel ratio on phones and keep 60 fps on a mid phone. Fall back to fewer effects.
    - [x] Credits page: HYG (CC BY-SA 4.0), Three.js (MIT), anything else used.
 7. **Tests**
@@ -122,7 +122,7 @@ Paul: look online for features people want and give them to people. I looked at 
   - Say it on the title screen: "Free. No tokens, no timers on how much you play."
 - [x] **Solo play against AI with no server.** The rules are shared, so a solo game can run fully in the browser.
   - Offline play is also a frequent ask. Make it work offline as an installable web app.
-- [ ] **Quick play:** one button joins an open room or starts one filled with bots that people can replace.
+- [x] **Quick play:** one button joins an open room or starts one filled with bots that people can replace. *(Round 11: ⚡ Quick play joins a running quick room by taking over an AI player (keeping its colour), or starts a new one: 4 seats, 100 suns, 90 s turns, starting at once. If the server can't be reached it falls back to Play vs AI.)*
 - [x] **Quick chat and emotes.** Players ask for "quick chats". Use preset lines and emotes, with no free text to moderate. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
 - [ ] **Finding things on big maps:** *(Round 3: search by name, plus "My home sun" and "My busiest border", are done; pins and the region list are not.)*
   - search for a sun by name
@@ -266,3 +266,11 @@ Sources:
   - The page has a `hullInfo` helper. Removed unused `needsAction` and `scene.stop`.
   - Fixed the room test's stall at turn 40–47 (seen twice): it planned each human's move from another player's view, which since round 8 can't see their cards.
   - 29 of 29 unit tests and 17 of 17 room checks pass. The browser loads with no errors.
+- **Round 11 (2026-11-26):**
+  - Added ⚡ Quick play (a player wish):
+    - It's the title's main button, via `/api/quick` on the server.
+    - It goes straight into a game against 3 AI players. Later quick players take over AI seats in the running game, keeping their colours.
+    - Quick rooms are listed, with 90 s turns.
+  - Settings: camera speed, and calm motion (no glides, spinning or interface animation), which follows the system's reduced-motion setting.
+  - Ticked the style tests.
+  - 29 of 29 unit tests and 20 of 20 room checks pass, the quick-play checks included.

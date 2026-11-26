@@ -46,6 +46,7 @@ export class Room {
         seats: [], tokens: {}, creator: null, game: null, rev: 0, log: [], seed: (Math.random() * 2 ** 31) | 0, rngState: 0,
         turnStarted: 0, deadline: 0,
       };
+      if (o.quick) { this.s.opts.quick = true; this.s.public = true; this.s.opts.timer = 90; }   // quick play: listed, and a 90 s clock so a vanished player is covered
       this.s.opts.size = Math.max(clampSize(o.size ?? 100), this.s.opts.maxSeats * SUNS_PER_SEAT);
       if (this.env.DEV && o.idleMs) this.s.opts.idleMs = clampInt(o.idleMs, 500, 3600000, 0);   // local tests only
       if (o.allAI) { for (let k = 0; k < this.s.opts.maxSeats; k++) this.addBot(); }
@@ -65,7 +66,8 @@ export class Room {
     const s = this.s;
     return { code: s.code, status: s.status, public: s.public, seats: s.seats.length, humans: s.seats.filter(x => !x.ai).length,
              maxSeats: s.opts.maxSeats, mode: s.opts.mode, targetPct: s.opts.targetPct, timer: s.opts.timer, size: s.opts.size || 300, updated: s.updated,
-             names: s.seats.map(x => x.name).slice(0, 6), turnNo: s.game ? s.game.turnNo : 0 };
+             names: s.seats.map(x => x.name).slice(0, 6), turnNo: s.game ? s.game.turnNo : 0,
+             quick: !!s.opts.quick, aiSeats: s.game ? s.seats.filter((x, j) => x.ai && s.game.alive[j]).length : 0 };
   }
   async report() {   // tell the lobby about this room (public rooms only show there)
     try { await this.env.LOBBY.get(this.env.LOBBY.idFromName("lobby")).fetch("https://lobby/report", { method: "POST", body: JSON.stringify(this.summary()) }); } catch (e) {}
@@ -86,8 +88,12 @@ export class Room {
     if (m.t === "hello") {
       // a returning player's token finds their seat; otherwise they join the lobby or watch
       let seat = Object.keys(s.tokens).find(id => s.tokens[id] === m.token) || null;
-      if (!seat && s.status === "lobby" && s.seats.length < s.opts.maxSeats && m.join !== false) {
-        seat = this.addHuman(m); if (!s.creator) s.creator = seat;
+      if (!seat && m.join !== false) {
+        if (s.status === "lobby" && s.seats.length < s.opts.maxSeats) {
+          seat = this.addHuman(m); if (!s.creator) s.creator = seat;
+          // quick play: the first person in gets AI opponents and the game starts at once
+          if (s.opts.quick && !s.game) { while (s.seats.length < s.opts.maxSeats) this.addBot(); this.start(); }
+        } else if (s.status === "playing" && s.opts.quick) seat = this.takeOverAI(m);   // drop in: newcomers replace an AI player
       }
       a.seat = seat; a.needFull = true; ws.serializeAttachment(a);
       if (seat) { const st = s.seats.find(x => x.id === seat); if (st) { st.online = true; st.lostAt = 0; if (st.away && !st.autoAway) {} if (st.autoAway) { st.away = false; st.autoAway = false; this.log(`${st.name} is back`); } } this.syncGameSeats(); }
@@ -163,6 +169,17 @@ export class Room {
                         style: STYLE_KEYS.includes(m.style) ? m.style : "balanced", ai: false, away: false, online: true });
     this.s.tokens[id] = rid() + rid();
     this.log(`${this.s.seats.at(-1).name} joined`); return id;
+  }
+  // a newcomer takes over a computer player that is still in the game; it keeps its colour so the map stays readable
+  takeOverAI(m) {
+    const s = this.s, g = s.game, k = s.seats.findIndex((x, j) => x.ai && g.alive[j]);
+    if (k < 0) return null;
+    const st = s.seats[k], was = st.name;
+    st.ai = false; st.away = false; st.online = true; st.name = cleanName(m.name) || "Stellarch";
+    if (HULLS.includes(m.hull)) st.hull = m.hull; if (STYLE_KEYS.includes(m.style)) st.style = m.style;
+    s.tokens[st.id] = rid() + rid(); this.log(`${st.name} took over from ${was}`); this.syncGameSeats();
+    if (g.turn === k) this.turnBegan();   // a fresh clock if it is already their turn
+    return st.id;
   }
   addBot(style) {
     const f = freeLook(this.s.seats);
