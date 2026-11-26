@@ -193,6 +193,25 @@ dialog::backdrop { background: rgba(2, 4, 8, .6); backdrop-filter: blur(3px); }
   .suncard { left: var(--gut); right: auto; width: min(280px, 40vw); bottom: var(--bot); }
   .side, .side.right { bottom: var(--bot); top: calc(var(--top) + 52px); left: var(--gut); right: auto; width: min(280px, 40vw); max-height: none; }
   .title-inner { gap: 10px; }
+  /* round 36: landscape phones were tested for the first time. The bar took 84% of the height and the title hid the menu */
+  .actionbar { padding: 8px 12px 10px; gap: 6px; max-height: calc(100dvh - var(--top) - var(--bot) - 64px); overflow-y: auto; bottom: var(--bot); }
+  .actionbar .big { font-size: 1.05rem; }
+  .actionbar .what { font-size: .8rem; line-height: 1.35; }
+  .actionbar .row .btn { min-height: 40px; padding: 6px 12px; font-size: .82rem; }
+  .actionbar .seg button { min-height: 34px; padding: 4px 10px; font-size: .8rem; }
+  .actionbar .phases { font-size: .66rem; }
+  .iconbtn .lab { display: none; }
+  .iconbtn { padding: 0; width: 44px; }
+  #toasts { left: var(--gut); transform: none; width: min(340px, calc(100vw - min(360px, 46vw) - var(--gut) - var(--gutr) - 16px)); top: calc(var(--top) + 56px); }
+  .screen { place-items: start center; }
+  .title-inner { width: min(680px, 100%); padding: 6px 0; }
+  .wordmark { font-size: min(9vw, 17vh); }
+  .tagline { font-size: .86rem; max-width: 60ch; }
+  .menu { grid-template-columns: 1fr 1fr; width: min(620px, 100%); gap: 8px; }
+  .menu .btn.big { min-height: 44px; padding: 8px 14px; }
+  .menu .btn:not(.big), .joinrow input { min-height: 40px; }
+  .title-inner { gap: 8px; }
+  .menu > :first-child, .menu > :last-child { grid-column: 1 / -1; }
 }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 

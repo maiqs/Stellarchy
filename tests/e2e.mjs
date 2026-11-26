@@ -52,6 +52,7 @@ try {
   await page.evaluate(() => window.stellarchy.room.send({ t: "pace", pace: "slow" }));
   const skipped = await page.evaluate(async () => {
     const W = window.stellarchy, me = () => W.state.seats.findIndex(s => s.name === "E2E"), mine = () => W.state.game.turn === me();
+    for (let tries = 0; tries < 4 && !document.getElementById("bSkip"); tries++) {
     for (let k = 0; k < 400 && mine(); k++) {   // finish my own turn quickly so the AI's turn comes up
       const g = W.state.game;
       if (g.phase === "setup") W.room.send({ t: "hq", sys: g.owner.findIndex(o => o < 0) });
@@ -59,8 +60,9 @@ try {
       else if (g.phase === "attack") W.room.send({ t: "endAttack" }); else W.room.send({ t: "endTurn" });
       await new Promise(r => setTimeout(r, 30));
     }
-    for (let k = 0; k < 100 && !document.getElementById("bSkip"); k++) await new Promise(r => setTimeout(r, 50));
-    const b = document.getElementById("bSkip"); if (!b) return "no button";
+    for (let k = 0; k < 100 && !document.getElementById("bSkip") && !mine(); k++) await new Promise(r => setTimeout(r, 50));
+    }
+    const b = document.getElementById("bSkip"); if (!b) return { none: true, mine: mine(), status: W.state.status, phase: W.state.game.phase, me: me(), seats: W.state.seats.map(s => s.name + (s.away ? "(away)" : "")), bar: document.getElementById("bar").textContent.slice(0, 120) };
     const t0 = performance.now(); b.click();
     for (let k = 0; k < 400 && !(mine() || W.state.status === "over"); k++) await new Promise(r => setTimeout(r, 25));
     await new Promise(r => setTimeout(r, 100));
@@ -106,6 +108,15 @@ try {
   const p2 = await phone.newPage(); await p2.goto(BASE + "/"); await p2.waitForSelector("#mSolo", { state: "visible" });
   const wide = await p2.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
   check(!wide && await p2.isVisible("#mQuick"), "phone size: no sideways scrolling, Quick play visible");
+  // landscape phone (round 36): the whole title menu fits without scrolling, and the game's bar leaves most of the map free
+  const land = await browser.newContext({ viewport: { width: 740, height: 360 }, isMobile: true, hasTouch: true });
+  const p3 = await land.newPage(); await p3.addInitScript(() => { localStorage.setItem("stellarchy_hints_done", "true"); localStorage.setItem("stellarchy_profile", JSON.stringify({ name: "Land", main: "#3e9bff", sub: "#ffffff", hull: "orb", style: "balanced" })); });
+  await p3.goto(BASE + "/"); await p3.waitForSelector("#mSolo", { state: "visible" });
+  await sleep(400); const bottoms = await p3.evaluate(() => ["mQuick", "mSolo", "mCreate", "mWatch"].map(id => Math.round(document.getElementById(id).getBoundingClientRect().bottom)).concat(innerHeight));
+  const fits = bottoms.slice(0, -1).every(b => b <= bottoms.at(-1));
+  await p3.click("#mSolo"); await p3.click('[data-seg="mode"] [data-v="dealt"]'); await p3.click("#sGo"); await p3.waitForFunction(() => !document.getElementById("hud").hidden); await sleep(800);
+  const barFrac = await p3.evaluate(() => document.getElementById("bar").getBoundingClientRect().height / innerHeight);
+  check(fits && barFrac < .75, `landscape phone: the title menu fits and the bar leaves the map visible (bar ${Math.round(barFrac * 100)}% of the height; menu bottoms ${bottoms.join(",")})`);
 } catch (e) { failures++; console.log("  FAIL " + String(e.message).replace(/\s+/g, " ").slice(0, 400)); }
 finally { await browser.close(); stopServer(); }
 console.log(failures ? `${failures} FAILED` : "all browser checks passed");

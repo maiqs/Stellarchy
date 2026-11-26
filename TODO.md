@@ -155,7 +155,8 @@ Sources:
     - starting fleet size
   - [x] **Non-binding truces:** online Diplomacy's appeal is negotiation. Keep it light, with no free-text chat: a "Propose a truce for 3 turns" button the other player accepts or ignores. The game shows truces on the map, but anyone can break one, and breaking it is announced. *(Round 14: a 🤝 button on each rival in the players panel. Offers last a round, truces 3 rounds. AI players accept by style, decline out loud, and keep their word unless a game stalls. Breaking one is announced to everyone.)*
   - [x] **Colour-blind support:** NetEase found colour-correction use matches the share of colour-blind players. Add a colour-blind-safe palette preset and a per-player pattern or glyph on stars and in the players list, so colour is never the only cue. *(Round 6: Okabe-Ito colour-blind-safe colours in the look editor, ship symbols beside names, and a menu option for symbols on every sun.)*
-  - [ ] **Portrait and landscape:** 47% of players in that case study switched orientation. Keep both layouts first-class; the landscape phone layout is still untested.
+  - [x] **Portrait and landscape:** 47% of players in that case study switched orientation. Keep both layouts first-class. *(Round 36: landscape phones tested for the first time (740×360 and 844×390). Before, the bar took 84% of the height and the title hid the menu. Now the bar is compact and scrolls, toasts sit on the left, top-bar buttons are icon-only, and the title fits on one screen with a two-column menu. Browser check added; `tools/shot_land.mjs` takes phone screenshots.)*
+  - [ ] **Landscape waiting bar:** still 60–65% of the height while you wait (plan hint, Skip and the pace row). Next: put Skip and the pace on one row, or fold the pace row away.
   - [x] **Ranked play:** this needs accounts, so skip it for now. A local "your record" (wins, best game) in the browser is a free stand-in. *(Round 9: your record (wins, games, fastest win) on the title card and the results screen.)*
 
   Sources:
@@ -533,3 +534,7 @@ Sources:
   - Research: the most repeated ask was skipping AI turns and animations (found 4 new wishes, with sources).
   - Built speed controls. Menu → Battle effects Full / Quick / Off, and Fast and Instant paces turn Quick on by themselves. In solo games, ⏩ Skip to my turn races the AI to your next turn and then puts your pace back.
   - 51 of 51 unit tests and 16 of 16 browser checks pass (2 of the browser checks are new).
+- **Round 36 (2026-11-26):**
+  - Landscape phones were tested for the first time and fixed. The action bar had covered 84% of the screen; it is now compact and scrolls. Toasts moved left, and the title page fits on one screen with a two-column menu.
+  - New browser check for landscape; the Skip check now retries, since it once raced the AI's turn.
+  - 51 of 51 unit tests and 17 of 17 browser checks pass.
