@@ -262,6 +262,7 @@ function onState(m) {
   render();
 }
 function eventToast(e, k) {
+  truceToast(e, k);
   if (e.t === "bt") { if (e.a === k) ui.rollRev = st.rev; floatLoss(e.from, e.la, e.a); floatLoss(e.to, e.ld, e.d); }
   if (e.t === "bt" && (e.a === k || e.d === k)) {
     const mine = e.a === k, where = disp(S[e.to]);
@@ -314,6 +315,7 @@ function render() {
   renderMarks(); renderBar(); renderPlayers(); renderSunCard(); renderBadge(); if (ui.panel === "log") renderLog();
 }
 function renderMarks() {
+  setupDrag();
   const m = new Map(), g = st.game; if (!g) { scene.setMarks(m); return; }
   const k = seatIx(), mine = myTurn();
   if (g.phase === "setup" && mine) for (const i of hqChoices(MAP, g)) m.set(i, { color: "#f4e3b5", text: "+" });
@@ -439,10 +441,12 @@ function renderPlayers() {
     return `<div class="prow ${g && g.turn === k && g.status === "playing" ? "turn" : ""} ${out ? "out" : ""}" style="--pc:${esc(s.main)}">
       <span class="swatch s" style="--sw-main:${esc(s.main)};--sw-sub:${esc(s.sub)}"></span>
       <span class="nm"><span class="glyph" title="${esc(hullInfo(s.hull).name)} ships">${hullInfo(s.hull).glyph}</span> ${esc(s.name)}${tag ? `<small>${tag}</small>` : ""}</span>
+      <span class="tc">${trucePart(g, k)}</span>
       <span class="st">${g ? `${sys} ☀ · ${ships}${cards ? ` · ${cards}▤` : ""}` : ""}${!g && isCreator && s.id !== mySeat ? `<button class="btn small ghost" data-rm="${esc(s.id)}" type="button" aria-label="Remove">✕</button>` : ""}</span>
       ${g ? `<span class="bar-track"><i style="width:${(100 * sys / total).toFixed(1)}%"></i></span>` : ""}</div>`;
   }).join("") + (mySeat ? `<button class="btn small ghost" id="pLook" type="button">Edit my look</button>` : `<p class="hint">You're watching.</p>`);
   el.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => room.send({ t: "removeSeat", id: b.dataset.rm }));
+  el.querySelectorAll("[data-truce]").forEach(b => b.onclick = () => { room.send({ t: "truceOffer", to: b.dataset.truce }); toast("Truce offered. They have one round to accept."); });
   if ($("pLook")) $("pLook").onclick = () => lookDialog();
 }
 function renderLog() {
@@ -637,4 +641,47 @@ function applyComfort() {
   const calm = store.get("stellarchy_calm", matchMedia("(prefers-reduced-motion: reduce)").matches);
   document.body.classList.toggle("calm", calm);
   if (scene) { scene.setCalm(calm); scene.setCameraSpeed(store.get("stellarchy_camspeed", 1)); }
+}
+
+// ---------- drag to attack (and to fortify): the same moves as tap-then-tap, for people who like to drag ----------
+function setupDrag() {
+  const g = st && st.game, k = seatIx();
+  if (!scene || !g || !myTurn() || g.advance || !(g.phase === "attack" || (g.phase === "fortify" && !g.fortified))) { scene && scene.setDrag(null); return; }
+  const sources = new Set(), color = lookOf(k).main; let reach = { from: -1, set: null };
+  for (let i = 0; i < MAP.n; i++) if (g.owner[i] === k && g.armies[i] >= 2 && (g.phase === "fortify" || MAP.adj[i].some(j => g.owner[j] !== k))) sources.add(i);
+  scene.setDrag({
+    sources, color,
+    targetsOf: from => {
+      if (g.phase === "attack") return new Set(MAP.adj[from].filter(j => g.owner[j] !== k));
+      if (reach.from !== from) { const seen = new Set([from]), q = [from]; for (let h = 0; h < q.length; h++) for (const j of MAP.adj[q[h]]) if (!seen.has(j) && g.owner[j] === k) { seen.add(j); q.push(j); } seen.delete(from); reach = { from, set: seen }; }
+      return reach.set;   // every sun joined to it through your own space, found once per drag
+    },
+    onDrop: (from, to) => {
+      if (g.phase === "attack") { selectSun(from); send({ t: "attack", from, to, blitz: true }); }
+      else { ui.fort = { from, to, n: g.armies[from] - 1 }; selectSun(to); render(); }
+    },
+  });
+}
+
+// ---------- truces: non-binding, 3 rounds; offered from the players panel ----------
+function trucePart(g, k) {
+  const me = seatIx(); if (!g || me < 0 || k === me || g.status !== "playing" || g.phase === "setup") return "";
+  const t = (g.truces || []).find(x => (x.a === me && x.b === k) || (x.a === k && x.b === me));
+  if (t) return `<span class="truce" title="Truce until turn ${t.until}. Either side may still attack, but everyone will know.">🤝</span> `;
+  if (!g.alive[me] || !g.alive[k]) return "";
+  const offered = (g.offers || []).some(o => o.from === me && o.to === k);
+  return offered ? `<span class="truce pending" title="Truce offered">🤝?</span> ` : `<button class="btn small ghost truce-btn" data-truce="${esc(st.seats[k].id)}" type="button" title="Offer a 3-round truce">🤝</button> `;
+}
+// a toast with a button (for offers that need an answer)
+function promptToast(text, label, onYes) {
+  const t = document.createElement("div"); t.className = "toast ask"; t.innerHTML = `<span>${esc(text)}</span><button class="btn small go" type="button">${esc(label)}</button>`;
+  t.querySelector("button").onclick = () => { onYes(); t.remove(); };
+  $("toasts").appendChild(t); setTimeout(() => { t.classList.add("out"); setTimeout(() => t.remove(), 400); }, 12000);
+}
+function truceToast(e, k) {
+  if (e.t === "truceOffer" && e.to === k) promptToast(`${nameOf(e.from)} offers a truce for 3 rounds.`, "Accept", () => room.send({ t: "truceAccept", from: st.seats[e.from].id }));
+  if (e.t === "truceDeclined" && e.from === k) toast(`${nameOf(e.by)} turned down your truce.`);
+  if (e.t === "truce" && (e.a === k || e.b === k)) toast(`Truce agreed with ${nameOf(e.a === k ? e.b : e.a)} for 3 rounds. 🤝`);
+  if (e.t === "truce" && e.a !== k && e.b !== k) toast(`${nameOf(e.a)} and ${nameOf(e.b)} agreed a truce.`);
+  if (e.t === "truceBroken") toast(e.with === k ? `${nameOf(e.by)} broke your truce! 💀` : `${nameOf(e.by)} broke the truce with ${nameOf(e.with)}!`, e.with === k ? "err" : undefined);
 }

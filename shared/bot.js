@@ -2,7 +2,7 @@
 // botIntent() returns the next single intent for the seat whose turn it is, so the room can
 // play it at the chosen pace and hand the seat back to a returning human between any two steps.
 import { hops } from "./map.js";
-import { act, hqChoices, isSet, cardKind, connected, mustTrade, aggression as stallAggression } from "./rules.js";
+import { act, hqChoices, isSet, cardKind, connected, mustTrade, truceBetween, aggression as stallAggression } from "./rules.js";
 
 export const STYLES = {
   balanced:    { name: "Balanced",    blurb: "A bit of everything.",
@@ -100,6 +100,7 @@ function chooseAttack(map, g, seat, S, aggression) {
     const keep = Math.min(Math.floor(g.armies[i] / 2), Math.floor(threat(map, g, i, seat) * reserve));
     for (const j of map.adj[i]) {
       const dOwn = g.owner[j]; if (dOwn === seat) continue;
+      if (dOwn >= 0 && aggression < 4 && truceBetween(g, seat, dOwn)) continue;   // keeps its word, until a stalled war makes it reckless
       const att = g.armies[i] - 1 - keep, def = g.armies[j];
       const ok = dOwn < 0 ? g.armies[i] - 1 >= 1 : (att >= def + margin && att >= def * odds) || (needCard && att >= def + 1);
       if (!ok) continue;
@@ -146,4 +147,13 @@ export function playTurn(map, g, seat, styleKey, rng) {
     all.push(...r.events);
   }
   return all;
+}
+
+// how a computer player answers a truce offer: defensive players like peace, aggressive ones rarely agree,
+// and nobody makes peace with someone far ahead of them
+const TRUCE_KEEN = { defensive: .8, balanced: .5, cards: .5, territorial: .4, aggressive: .15 };
+export function botAcceptsTruce(g, bot, from, styleKey, rng) {
+  const held = k => g.owner.reduce((a, o) => a + (o === k ? 1 : 0), 0);
+  if (held(from) > held(bot) * 2) return false;
+  return rng() < (TRUCE_KEEN[styleKey] ?? .5);
 }

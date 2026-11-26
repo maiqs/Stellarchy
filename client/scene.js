@@ -248,6 +248,34 @@ export function createScene({ container, labels, map }) {
     const i = nearest(e.clientX, e.clientY, down[2] === "touch" ? 34 : 20); down = null; pickCb(i, e);
   });
   el.addEventListener("pointermove", e => { if (e.pointerType !== "mouse") return; const i = nearest(e.clientX, e.clientY, 20); if (i !== hoverI) { hoverI = i; el.style.cursor = i >= 0 ? "pointer" : ""; hoverCb(i); } });
+  // drag to attack: press on one of your suns that can attack, drag to a target, let go. The camera holds
+  // still during the drag (this listens before OrbitControls, in the capture phase), and a glowing line follows.
+  let drag = null, dragCfg = null;
+  const svgNS = "http://www.w3.org/2000/svg", dragSvg = document.createElementNS(svgNS, "svg"), dragLine = document.createElementNS(svgNS, "line");
+  dragSvg.setAttribute("class", "dragline"); dragSvg.appendChild(dragLine); document.body.appendChild(dragSvg);
+  container.addEventListener("pointerdown", e => {
+    if (!dragCfg || e.button > 0) return;
+    const i = nearest(e.clientX, e.clientY, e.pointerType === "touch" ? 34 : 20);
+    if (i < 0 || !dragCfg.sources.has(i)) return;
+    drag = { from: i, x: e.clientX, y: e.clientY, id: e.pointerId, moved: false, to: -1 }; controls.enabled = false;
+  }, true);
+  addEventListener("pointermove", e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 12) return;
+    drag.moved = true;
+    const t = nearest(e.clientX, e.clientY, e.pointerType === "touch" ? 40 : 26), ok = t >= 0 && dragCfg.targetsOf(drag.from).has(t);
+    drag.to = ok ? t : -1;
+    const a = screenOf(drag.from), b = ok ? screenOf(t) : [e.clientX, e.clientY];
+    if (!a) return;
+    dragLine.setAttribute("x1", a[0]); dragLine.setAttribute("y1", a[1]); dragLine.setAttribute("x2", b[0]); dragLine.setAttribute("y2", b[1]);
+    dragSvg.style.setProperty("--dc", dragCfg.color || "#fff"); dragSvg.classList.add("on"); dragSvg.classList.toggle("locked", ok);
+  });
+  const endDrag = e => {
+    if (!drag || (e && e.pointerId !== drag.id)) return;
+    const d = drag; drag = null; controls.enabled = true; dragSvg.classList.remove("on", "locked");
+    if (d.moved && d.to >= 0) { down = null; dragCfg.onDrop(d.from, d.to); }
+  };
+  addEventListener("pointerup", endDrag); addEventListener("pointercancel", endDrag);
 
   let W = 1, H = 1;
   function resize() { W = container.clientWidth; H = container.clientHeight; renderer.setSize(W, H); camera.aspect = W / H; camera.updateProjectionMatrix(); }
@@ -345,12 +373,14 @@ export function createScene({ container, labels, map }) {
     focus(i, dist) { glide(P[i].clone(), dist); },
     home() { glide(new THREE.Vector3(0, 0, 0), 80); },
     onPick(fn) { pickCb = fn; }, onHover(fn) { hoverCb = fn; },
+    // drag to attack: {sources: Set of suns, targetsOf(from) -> Set, onDrop(from, to), color}, or null to turn it off
+    setDrag(cfg) { dragCfg = cfg; },
     setAutoRotate(on) { controls.autoRotate = on; },
     setAllNames(on) { showAllNames = on; },
     setSymbols(on) { symbols = on; },
     setCameraSpeed(k) { controls.rotateSpeed = k; controls.zoomSpeed = 1.1 * k; controls.panSpeed = k; },
     setCalm(on) { calm = on; if (on) controls.autoRotate = false; controls.enableDamping = !on; },   // colour-blind help: each holder's ship symbol beside the count
     screenOf,
-    dispose() { running = false; removeEventListener("resize", resize); renderer.dispose(); renderer.domElement.remove(); labels.innerHTML = ""; scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); },
+    dispose() { dragSvg.remove(); running = false; removeEventListener("resize", resize); renderer.dispose(); renderer.domElement.remove(); labels.innerHTML = ""; scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); },
   };
 }

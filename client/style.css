@@ -116,9 +116,9 @@ dialog::backdrop { background: rgba(2, 4, 8, .6); backdrop-filter: blur(3px); }
 .badge.hot { background: var(--red); color: #fff; box-shadow: 0 0 12px var(--red); }
 
 .panel { position: fixed; z-index: 4; overflow: auto; padding: 12px; display: grid; gap: 8px; align-content: start; }
-.side { top: calc(var(--top) + 54px); left: var(--gut); width: min(290px, calc(100vw - 24px)); max-height: calc(100dvh - var(--top) - 200px); }
+.side { top: calc(var(--top) + 54px); left: var(--gut); width: min(320px, calc(100vw - 24px)); max-height: calc(100dvh - var(--top) - 200px); }
 .side.right { left: auto; right: var(--gutr); }
-.prow { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 7px 8px; border-radius: 10px; border: 1px solid transparent; }
+.prow { display: grid; grid-template-columns: auto 1fr auto auto; gap: 8px; align-items: center; padding: 7px 8px; border-radius: 10px; border: 1px solid transparent; }
 .prow.turn { border-color: color-mix(in srgb, var(--pc) 70%, transparent); background: color-mix(in srgb, var(--pc) 10%, transparent); box-shadow: 0 0 14px color-mix(in srgb, var(--pc) 25%, transparent); }
 .prow.out { opacity: .38; }
 .prow .nm { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -239,3 +239,17 @@ dialog.tip { top: auto; bottom: calc(var(--bot) + var(--barh, 150px) + 16px); ma
 .standings .me { color: var(--pc); font-weight: 600; }
 .win { width: 100%; }
 body.calm *, body.calm *::before, body.calm *::after { animation: none !important; transition: none !important; }
+
+/* ---------- drag to attack ---------- */
+.dragline { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; opacity: 0; transition: opacity .12s; }
+.dragline.on { opacity: 1; }
+.dragline line { stroke: var(--dc); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 2 9; filter: drop-shadow(0 0 6px var(--dc)); animation: march .5s linear infinite; }
+.dragline.locked line { stroke-dasharray: none; stroke-width: 4; }
+@keyframes march { to { stroke-dashoffset: -11; } }
+
+/* ---------- truces ---------- */
+.truce { font-size: .95rem; filter: drop-shadow(0 0 6px rgba(244, 227, 181, .7)); }
+.truce.pending { opacity: .6; font-size: .8rem; }
+.truce-btn { min-height: 28px; padding: 2px 6px; font-size: .9rem; opacity: .55; }
+.truce-btn:hover { opacity: 1; }
+.toast.ask { pointer-events: auto; display: flex; gap: 12px; align-items: center; border-color: var(--gold); box-shadow: 0 0 22px rgba(244, 227, 181, .25), 0 10px 30px rgba(0, 0, 0, .5); }

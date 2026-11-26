@@ -1,7 +1,7 @@
 // Solo play with no server: a stand-in for the room that speaks the same messages
 // ("welcome", "state", "error"), so the game screen cannot tell the difference.
-import { newGame, act } from "./shared/rules.js";
-import { botStep, STYLE_KEYS } from "./shared/bot.js";
+import { newGame, act, offerTruce, acceptTruce, declineTruce } from "./shared/rules.js";
+import { botStep, botAcceptsTruce, STYLE_KEYS } from "./shared/bot.js";
 import { HULL_KEYS, PACES, freeLook, BOT_NAMES } from "./shared/looks.js";
 export { PACES };
 import { mulberry32 } from "./shared/map.js";
@@ -36,6 +36,15 @@ export class LocalRoom {
     if (m.t === "pace" && PACES[m.pace]) { this.pace = m.pace; return this.commit([]); }
     if (m.t === "emote" && EMOTES.includes(m.e) && me >= 0) { this.emit({ t: "emote", seat: "me", e: m.e }); return; }
     if (m.t === "away") { if (me >= 0) { this.seats[me].away = !!m.on; this.g.seats = this.seats; } return this.commit([]); }
+    if ((m.t === "truceOffer" || m.t === "truceAccept") && me >= 0) {
+      const other = this.seats.findIndex(s => s.id === (m.t === "truceOffer" ? m.to : m.from)); if (other < 0) return;
+      const r = m.t === "truceOffer" ? offerTruce(this.g, me, other) : acceptTruce(this.g, me, other);
+      if (!r.ok) return this.emit({ t: "error", error: r.error });
+      const ev = [...r.events];
+      if (m.t === "truceOffer" && this.seats[other].ai && botAcceptsTruce(this.g, other, me, this.seats[other].style, this.rng)) { const r2 = acceptTruce(this.g, other, me); if (r2.ok) ev.push(...r2.events); }
+      else if (m.t === "truceOffer" && this.seats[other].ai) { const r2 = declineTruce(this.g, other, me); if (r2.ok) ev.push(...r2.events); }
+      return this.commit(ev);
+    }
     if (m.t !== "intent" || me < 0) return;
     if (this.seats[me].away) this.seats[me].away = false;
     const r = act(this.map, g, me, m.intent, this.rng);
@@ -48,6 +57,8 @@ export class LocalRoom {
     for (const e of events) {
       if (e.t === "elim") this.say(`${this.seats[e.seat].name} was wiped out by ${this.seats[e.by].name}`);
       if (e.t === "win") this.say(`${this.seats[e.seat].name} wins with ${e.systems} suns`);
+      if (e.t === "truce") this.say(`${this.seats[e.a].name} and ${this.seats[e.b].name} agreed a truce for 3 rounds`);
+      if (e.t === "truceBroken") this.say(`${this.seats[e.by].name} broke the truce with ${this.seats[e.with].name}!`);
     }
     // under fog of war the page only gets what the human seat can see (same rules as the room server)
     const me = this.seats.findIndex(s => s.id === "me"), g = this.g;

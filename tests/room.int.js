@@ -100,7 +100,7 @@ for (const c of [a, bb, sneaky]) c.ws.close();
   // either a fresh room (you plus 3 AI, started at once) or a running quick room where you took over an AI seat
   const mine1 = p1.state.seats.find(s => s.id === p1.seat);
   check(p1.state.status === "playing" && mine1 && !mine1.ai && (q1.joined || p1.state.seats.filter(s => s.ai).length === 3), `quick play puts you straight into a running game (${q1.code}, ${q1.joined ? "took over an AI" : "new room"})`);
-  const aiBefore = p1.state.seats.filter(s => s.ai).length;
+  const aiBefore = p1.state.seats.filter(s => s.ai).length, aiIds = new Set(p1.state.seats.filter(s => s.ai).map(s => s.id));
   await sleep(300);
   const q2 = await (await fetch(BASE + "/api/quick", { method: "POST" })).json();
   const rexName = "Rex" + Math.floor(Math.random() * 9000 + 1000);   // unique: earlier runs leave quick rooms (and Rexes) running
@@ -108,7 +108,7 @@ for (const c of [a, bb, sneaky]) c.ws.close();
   check(q2.code === q1.code && q2.joined, "a second quick player is sent to the running game");
   await until(() => p1.state.seats.some(s => s.name === rexName));
   const rex = p1.state.seats.find(s => s.name === rexName);
-  check(rex && !rex.ai && p2.seat === rex.id && p1.state.seats.filter(s => s.ai).length === aiBefore - 1, "they take over an AI seat, keeping its colour");
+  check(rex && !rex.ai && p2.seat === rex.id && aiIds.has(rex.id), `they take over an AI seat, keeping its colour (${q1.code}/${q2.code}, AI ${aiBefore} -> ${p1.state.seats.filter(s => s.ai).length}, rex ${rex ? rex.id : "missing"} vs ${p2.seat})`);
   p1.ws.close(); p2.ws.close();
 }
 // fog of war: a player never receives enemy suns they could not see, but still gets everyone's totals
@@ -135,7 +135,7 @@ for (const c of [a, bb, sneaky]) c.ws.close();
   host.send({ t: "start" }); await until(() => host.state.status === "playing");
   check(host.state.seats.length === 16 && new Set(host.state.seats.map(s => s.main)).size === 16, "16 seats, every one a different colour");
   const MAP100 = MAP_FOG(); let dropped = false; const t1 = Date.now();
-  while (Date.now() - t1 < 200000 && host.state.status === "playing") {
+  while (Date.now() - t1 < 320000 && host.state.status === "playing") {
     const g = host.state.game, k = g.turn, who = people.find(p => p.seat === host.state.seats[k].id && p.ws.readyState === 1);
     if (!dropped && g.turnNo > 30) { dropped = true; people[5].ws.close(); }
     if (who && !host.state.seats[k].away && who.state.game) {

@@ -5,8 +5,8 @@
 import STARS from "../data/stars.json";
 import { buildMap, clampSize } from "../shared/mapgen.js";
 import { prepareMap, mulberry32 } from "../shared/map.js";
-import { newGame, act, MAX_SEATS, SUNS_PER_SEAT } from "../shared/rules.js";
-import { botStep, STYLE_KEYS } from "../shared/bot.js";
+import { newGame, act, MAX_SEATS, SUNS_PER_SEAT, offerTruce, acceptTruce, declineTruce } from "../shared/rules.js";
+import { botStep, botAcceptsTruce, STYLE_KEYS } from "../shared/bot.js";
 import { HULL_KEYS as HULLS, PACES, freeLook, botName } from "../shared/looks.js";
 export { PACES };
 import { EMOTES, botEmotes } from "../shared/emotes.js";
@@ -140,6 +140,17 @@ export class Room {
         if (typeof m.e !== "string" || !EMOTES.includes(m.e) || now - (a.emoted || 0) < 2000) return;
         a.emoted = now; ws.serializeAttachment(a); this.broadcast({ t: "emote", seat: seatId, e: m.e }); return;
       }
+      case "truceOffer": case "truceAccept": {   // diplomacy works at any time, not only on your turn
+        const g = s.game; if (!g || s.status !== "playing") return;
+        const me = s.seats.indexOf(seat), other = s.seats.findIndex(x => x.id === (m.t === "truceOffer" ? m.to : m.from));
+        if (other < 0) return reply({ t: "error", error: "no such player" });
+        let r = m.t === "truceOffer" ? offerTruce(g, me, other) : acceptTruce(g, me, other);
+        if (!r.ok) return reply({ t: "error", error: r.error });
+        const ev = [...r.events];
+        if (m.t === "truceOffer" && (s.seats[other].ai || s.seats[other].away) && botAcceptsTruce(g, other, me, s.seats[other].style, Math.random)) { const r2 = acceptTruce(g, other, me); if (r2.ok) ev.push(...r2.events); }
+        else if (m.t === "truceOffer" && s.seats[other].ai) { const r2 = declineTruce(g, other, me); if (r2.ok) ev.push(...r2.events); }
+        this.afterEvents(ev); break;
+      }
       case "intent": {
         const g = s.game; if (!g || s.status !== "playing") return reply({ t: "error", error: "no game running" });
         const k = s.seats.indexOf(seat);
@@ -211,6 +222,9 @@ export class Room {
     for (const e of ev) {
       if (e.t === "turn") this.turnBegan();
       if (e.t === "elim") this.log(`${s.seats[e.seat].name} was wiped out by ${s.seats[e.by].name}`);
+      if (e.t === "truceOffer") this.log(`${s.seats[e.from].name} offered ${s.seats[e.to].name} a truce`);
+      if (e.t === "truce") this.log(`${s.seats[e.a].name} and ${s.seats[e.b].name} agreed a truce for 3 rounds`);
+      if (e.t === "truceBroken") this.log(`${s.seats[e.by].name} broke the truce with ${s.seats[e.with].name}!`);
       if (e.t === "win") { s.status = "over"; this.log(`${s.seats[e.seat].name} wins with ${e.systems} suns`); }
     }
     s.lastEvents = ev; s.lastEventsRev = s.rev + 1;

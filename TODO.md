@@ -84,7 +84,7 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
 6. **UI pass (the big one)**
    - [x] Full-screen 3D map. The UI floats on it as neon glass panels, with no big side columns.
    - [x] One clear action bar at the bottom: "YOUR TURN: place 7 ships" → "Attack or end" → "Fortify". Big touch targets.
-   - [ ] Tap a star to select it; neighbours light up as targets. Drag or tap to attack, with a dice animation and the result inline. *(Round 3: tap to select, then tap a target. Round 7: dice tumble in, each pair is marked won or lost, and losses float up over the suns. Drag-to-attack is not done.)*
+   - [x] Tap a star to select it; neighbours light up as targets. Drag or tap to attack, with a dice animation and the result inline. *(Round 3: tap to select, then tap a target. Round 7: dice tumble in, each pair is marked won or lost, and losses float up over the suns. Round 14: drag from your sun to a target to attack, or to another of your suns to fortify, with a glowing line that locks onto valid targets.)*
    - [x] Collapsible drawers: players, cards, log. Hidden by default on phones.
    - [x] Responsive layout: portrait phone, landscape phone, tablet, desktop. Test at 360×640, 390×844, 768×1024, 1366×768, 1920×1080, 3440×1440. *(Round 3: checked phone portrait and 1024×768. Round 7: checked 360×640 and a landscape phone (844×390); the sun card is compact on phones, tap for more. Still to check: tablet and ultrawide.)*
    - [x] First-game hints: three short coach marks, dismissable, shown once.
@@ -153,7 +153,7 @@ Sources:
     - card rules: escalating with the cap, fixed values, or no cards
     - fog of war
     - starting fleet size
-  - [ ] **Non-binding truces:** online Diplomacy's appeal is negotiation. Keep it light, with no free-text chat: a "Propose a truce for 3 turns" button the other player accepts or ignores. The game shows truces on the map, but anyone can break one, and breaking it is announced.
+  - [x] **Non-binding truces:** online Diplomacy's appeal is negotiation. Keep it light, with no free-text chat: a "Propose a truce for 3 turns" button the other player accepts or ignores. The game shows truces on the map, but anyone can break one, and breaking it is announced. *(Round 14: a 🤝 button on each rival in the players panel. Offers last a round, truces 3 rounds. AI players accept by style, decline out loud, and keep their word unless a game stalls. Breaking one is announced to everyone.)*
   - [x] **Colour-blind support:** NetEase found colour-correction use matches the share of colour-blind players. Add a colour-blind-safe palette preset and a per-player pattern or glyph on stars and in the players list, so colour is never the only cue. *(Round 6: Okabe-Ito colour-blind-safe colours in the look editor, ship symbols beside names, and a menu option for symbols on every sun.)*
   - [ ] **Portrait and landscape:** 47% of players in that case study switched orientation. Keep both layouts first-class; the landscape phone layout is still untested.
   - [x] **Ranked play:** this needs accounts, so skip it for now. A local "your record" (wins, best game) in the browser is a free stand-in. *(Round 9: your record (wins, games, fastest win) on the title card and the results screen.)*
@@ -289,3 +289,13 @@ Sources:
   - Checked tablet (768×1024) and ultrawide (2560×1080). Screenshots for every size are in `docs/shots/`.
   - Fixed: the quick-play test matched a "Rex" left over from an earlier run's room.
   - 31 of 31 unit tests and 26 of 26 room checks pass.
+- **Round 14 (2026-11-26):**
+  - Drag to attack and to fortify: a glowing line locks onto valid targets, and the camera holds still while you drag.
+  - Non-binding truces:
+    - offer from the players panel; offers last a round, truces 3 rounds
+    - AI players accept depending on their style and on who's ahead, decline out loud, and keep a truce unless the war has stalled
+    - breaking a truce is logged and announced to everyone
+    - works online and in solo play
+  - The players panel has its own truce column and is a little wider.
+  - Room tests: the 16-seat game gets more time (one run reached turn 551), and the AI-takeover check now compares seat identity.
+  - 32 of 32 unit tests and 26 of 26 room checks pass.

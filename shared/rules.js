@@ -160,6 +160,8 @@ const ACTIONS = {
       g.advance = g.armies[from] > 1 ? { from, to, max: g.armies[from] - 1 } : null;
       return winCheck(map, g, seat, ev);
     }
+    const tr = truceBetween(g, seat, def);   // attacking a truce partner breaks the truce, for all to see
+    if (tr) { g.truces = g.truces.filter(t => t !== tr); ev.push({ t: "truceBroken", by: seat, with: def }); }
     const roll = k => Array.from({ length: k }, () => 1 + Math.floor(rng() * 6)).sort((a, b) => b - a);
     let lostA = 0, lostD = 0, rounds = 0, a, d;
     do {
@@ -224,7 +226,7 @@ function nextTurn(map, g, ev) {
   for (let d = 0; d < k; d++) { nx = (nx + 1) % k; if (g.alive[nx]) break; }
   g.turn = nx; g.phase = "reinforce"; g.reinforcements = reinforcementsFor(map, g, nx);
   g.fortified = false; g.conq = false; g.advance = null; g.lastRoll = null; g.turnNo++;
-  trackStall(g); recordHistory(g);
+  trackStall(g); recordHistory(g); tidyTruces(g);
   ev.push({ t: "turn", seat: nx, turnNo: g.turnNo });
 }
 
@@ -261,4 +263,34 @@ export function recordHistory(g, force = false) {
   if (!force && g.turnNo % (g.seats.length * h.step) !== 0) return;
   h.samples.push({ turn: g.turnNo, held: g.seats.map((_, k) => ownedBy(g, k)) });
   if (h.samples.length > HISTORY_MAX) { h.samples = h.samples.filter((_, i) => i % 2 === 0); h.step *= 2; }
+}
+
+// ---- truces (a player wish: light diplomacy with no free-text chat) ----
+// A truce is non-binding: either side may still attack, but doing so breaks it and everyone is told.
+// Offers and acceptances can happen at any time, not only on your turn. A truce lasts 3 rounds.
+export const TRUCE_ROUNDS = 3, OFFER_ROUNDS = 1;
+const pair = (a, b) => a < b ? [a, b] : [b, a];
+export const truceBetween = (g, a, b) => (g.truces || []).find(t => (t.a === a && t.b === b) || (t.a === b && t.b === a));
+export function offerTruce(g, from, to) {
+  if (g.status !== "playing" || from === to || !g.alive[from] || !g.alive[to] || truceBetween(g, from, to)) return { ok: false, error: "no truce possible" };
+  g.offers = (g.offers || []).filter(o => !(o.from === from && o.to === to));
+  g.offers.push({ from, to, until: g.turnNo + g.seats.length * OFFER_ROUNDS });
+  return { ok: true, events: [{ t: "truceOffer", from, to }] };
+}
+export function acceptTruce(g, by, from) {
+  const o = (g.offers || []).find(x => x.from === from && x.to === by && x.until >= g.turnNo);
+  if (!o || !g.alive[from] || !g.alive[by]) return { ok: false, error: "that offer has gone" };
+  g.offers = g.offers.filter(x => x !== o && !(x.from === by && x.to === from));
+  const [a, b] = pair(from, by); (g.truces = g.truces || []).push({ a, b, until: g.turnNo + g.seats.length * TRUCE_ROUNDS });
+  return { ok: true, events: [{ t: "truce", a, b }] };
+}
+// called as turns pass and on attacks: expired truces and offers drop; attacking a partner breaks the truce
+export function tidyTruces(g) {
+  if (g.truces) g.truces = g.truces.filter(t => t.until > g.turnNo && g.alive[t.a] && g.alive[t.b]);
+  if (g.offers) g.offers = g.offers.filter(o => o.until >= g.turnNo && g.alive[o.from] && g.alive[o.to]);
+}
+export function declineTruce(g, by, from) {
+  const had = (g.offers || []).some(o => o.from === from && o.to === by);
+  g.offers = (g.offers || []).filter(o => !(o.from === from && o.to === by));
+  return had ? { ok: true, events: [{ t: "truceDeclined", by, from }] } : { ok: false, error: "no offer" };
 }

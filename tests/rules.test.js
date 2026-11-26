@@ -124,3 +124,25 @@ test("room rules: no cards, fixed sets, and a bigger starting fleet", async () =
   const r = act(MAP, g, g.turn, { t: "hq", sys: hqChoices(MAP, g)[0] }, rng);
   assert.ok(r.ok); assert.equal(g.armies[g.hq.find(h => h >= 0)], 40);
 });
+
+test("truces: offer, accept, expire, and breaking one is announced", async () => {
+  const { offerTruce, acceptTruce, truceBetween } = await import("../shared/rules.js");
+  const rng = mulberry32(41), g = newGame(MAP, { mode: "dealt", targetPct: 90, seats: seats(3, false) }, rng);
+  assert.equal(acceptTruce(g, 1, 0).ok, false, "nothing to accept yet");
+  assert.ok(offerTruce(g, 0, 1).ok);
+  assert.ok(acceptTruce(g, 1, 0).ok);
+  assert.ok(truceBetween(g, 0, 1) && truceBetween(g, 1, 0));
+  assert.equal(offerTruce(g, 0, 1).ok, false, "already at peace");
+  // an attack on the partner breaks it, with an event everyone sees
+  g.turn = 0; g.phase = "attack";
+  const from = g.owner.findIndex((o, i) => o === 0 && MAP.adj[i].some(j => g.owner[j] === 1));
+  g.armies[from] = 20; const to = MAP.adj[from].find(j => g.owner[j] === 1);
+  const r = act(MAP, g, 0, { t: "attack", from, to, blitz: true }, rng);
+  assert.ok(r.ok); assert.ok(r.events.some(e => e.t === "truceBroken" && e.by === 0 && e.with === 1));
+  assert.equal(truceBetween(g, 0, 1), undefined);
+  // truces run out after 3 rounds
+  assert.ok(offerTruce(g, 1, 2).ok && acceptTruce(g, 2, 1).ok);
+  if (g.advance) act(MAP, g, 0, { t: "advance", n: 0 }, rng);
+  for (let k = 0; k < 3 * 3 + 1 && g.status === "playing"; k++) playTurn(MAP, g, g.turn, "balanced", rng);
+  assert.equal(truceBetween(g, 1, 2), undefined, "expired");
+});
