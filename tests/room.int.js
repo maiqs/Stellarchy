@@ -18,7 +18,15 @@ function client(code, hello) {
   ws.onmessage = ev => {
     const m = JSON.parse(ev.data);
     if (m.t === "welcome") { c.seat = m.seat; c.token = m.token; c.creator = m.creator; }
-    if (m.t === "state") { c.state = m; c.states++; }
+    if (m.t === "state") {
+      if (m.board && m.game) {   // rebuild the board from full copies and diffs, as the page does
+        if (m.board.full) c.board = { owner: m.board.owner.slice(), armies: m.board.armies.slice(), rev: m.rev, fulls: (c.board ? c.board.fulls : 0) + 1, diffs: c.board ? c.board.diffs : 0 };
+        else if (c.board && m.board.base === c.board.rev) { for (const [i, o, a] of m.board.d) { c.board.owner[i] = o; c.board.armies[i] = a; } c.board.rev = m.rev; c.board.diffs++; }
+        else { c.resyncs = (c.resyncs || 0) + 1; ws.send(JSON.stringify({ t: "resync" })); return; }
+        m.game.owner = c.board.owner.slice(); m.game.armies = c.board.armies.slice();
+      }
+      c.state = m; c.states++;
+    }
     if (m.t === "error") c.errors.push(m.error);
   };
   c.ready = new Promise(r => ws.onopen = () => { ws.send(JSON.stringify({ t: "hello", ...hello })); r(); });
@@ -66,10 +74,18 @@ while (Date.now() - t0 < 240000) {
   const me = players().find(p => p.seat === seatId && p.ws.readyState === 1);
   if (me && !st.seats[k].away) {
     const it = botIntent(MAP, g, k, "balanced", rng);
-    if (it) { const rev = st.rev; me.send({ t: "intent", intent: it }); await until(() => a.state.rev > rev, 3000); continue; }
+    if (it) { const rev = st.rev; me.send({ t: "intent", intent: it }); await until(() => a.state.rev > rev, 3000); await sleep(70); continue; }   // paced like a person, under the rate limit
   }
   await sleep(40);
 }
+// hidden information stays hidden: no deck order, and other players' hands are counts only
+{
+  const g = a.state.game, mine = a.state.seats.findIndex(s => s.id === a.seat);
+  check(g.deck === undefined && typeof g.deckCount === "number", "the deck's order is never sent");
+  check(g.cards.every((h, k) => k === mine || h.every(x => x === -1)), "other players' hands are sent as counts only");
+  check(a.board.diffs > 10 && a.board.fulls <= 3, `the board arrives as changes (${a.board.fulls} full, ${a.board.diffs} diffs, ${a.resyncs || 0} resyncs)`);
+}
+console.log("  errors:", JSON.stringify([...new Set([...a.errors, ...bb.errors])]).slice(0, 300), "elapsed", Math.round((Date.now() - t0) / 1000) + "s");
 check(coveredByAI, "a dropped player's seat is played by the AI (after the grace period)");
 check(a.state.status === "over", `game finished (turn ${a.state.game.turnNo}, ${a.state.game.status})`);
 const sneaky = client(code, { name: "Late" }); await sneaky.ready; await until(() => sneaky.state);

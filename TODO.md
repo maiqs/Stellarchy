@@ -50,7 +50,7 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
      - minimum suns = 4 per seat, so the slider's floor rises with player count
      - HQ spacing shrinks on small maps (4 jumps at 100 or more suns, 2 at 10)
      - small maps have no continents
-   - [ ] **Big maps (1,000+):** *(Round 4: glows and pick rings are each one draw call, taking 3,000 suns from 34 to 79 fps in the preview. Labels, fleet caps, server diffs and lower default win % are not done yet.)*
+   - [ ] **Big maps (1,000+):** *(Round 4: glows and pick rings are each one draw call, taking 3,000 suns from 34 to 79 fps in the preview. Round 8: the server sends only changed suns, about 300 small diffs and 2 full boards per test game. Still open: labels, fleet caps, and a lower default win %.)*
      - stars drawn as one InstancedMesh
      - names and army counts only near the camera, or on hover or select
      - fleets capped per star
@@ -167,6 +167,7 @@ Sources:
   - https://steamdb.info/patchnotes/13285693
 
 ## Bugs and balance
+- [x] **Hidden information leaked (round 8):** every update carried the whole deck in draw order and every player's hand, readable in the browser's developer tools. Now each viewer gets only their own hand (others as counts) and a deck count. Room checks cover it.
 - [x] **Big maps never end (top bug, round 4):** a 6-player game on 1,000 suns had not finished after 12,000 turns, at about 11 ms a turn. Fixes to try:
   - **Fixed in round 5:** card income was the cause. Sets had reached about 9,000 ships each and swamped what territory earns. Sets are now capped at 40 ships (`TRADE_CAP` in `shared/rules.js`). Every big test game ends: 1,000 suns in 580–690 turns, 3,000 suns in 631.
   - `tests/mapgen.test.js` now runs full games on 1,000 and 3,000 suns.
@@ -248,3 +249,8 @@ Sources:
     - the debug hook kept the old map after a room changed size
   - Phones: the sun card is compact (holder and ships, tap for the science), and selecting a sun closes the players sheet. Checked at 360×640 and 844×390.
   - 28 of 28 tests pass.
+- **Round 8 (2026-11-26):**
+  - Fixed a fair-play leak: updates no longer include the deck order or other players' cards. Each viewer gets a personal message with only their own hand.
+  - Online updates send only the suns that changed: a full board on joining or on request, otherwise diffs. A test game ran on 2 full boards and about 300 diffs with no resyncs. The page and the test client both resync if a diff doesn't line up.
+  - The test players now pace their moves under the real rate limit.
+  - 28 of 28 unit tests and 17 of 17 room checks pass.

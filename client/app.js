@@ -78,7 +78,7 @@ const ui = { sel: -1, pending: {}, cards: new Set(), fort: null, adv: null, pane
 function wideScreen() { return innerWidth > 1000; }
 
 function startRoom(r) {
-  room = r; st = null; mySeat = null; ui.sel = -1; ui.pending = {}; ui.cards.clear(); ui.fort = null; ui.lastRev = -1;
+  room = r; st = null; mySeat = null; ui.sel = -1; ui.pending = {}; ui.cards.clear(); ui.fort = null; ui.lastRev = -1; ui.board = null;
   r.on(m => {
     if (m.t === "welcome") { mySeat = m.seat; isCreator = !!m.creator; if (m.token && st && st.code) store.set("stellarchy_tok_" + st.code, m.token); }
     else if (m.t === "state") onState(m);
@@ -214,6 +214,13 @@ function send(intent) { room && room.send({ t: "intent", intent }); }
 
 // ---------- state from the room ----------
 function onState(m) {
+  // online rooms send the board whole on joining, then only the suns that changed
+  if (m.board && m.game) {
+    if (m.board.full) ui.board = { owner: m.board.owner.slice(), armies: m.board.armies.slice(), rev: m.rev };
+    else if (ui.board && m.board.base === ui.board.rev) { for (const [i, o, a] of m.board.d) { ui.board.owner[i] = o; ui.board.armies[i] = a; } ui.board.rev = m.rev; }
+    else { room && room.send({ t: "resync" }); return; }
+    m.game.owner = ui.board.owner.slice(); m.game.armies = ui.board.armies.slice();
+  }
   const prev = st; st = m;
   if (m.opts && m.opts.size && mapOf(m.opts.size) !== MAP) { useMap(m.opts.size); ui.lastRev = -1; }
   if (m.code && !prev) { $("hCode").hidden = false; $("hCode").textContent = m.code; }

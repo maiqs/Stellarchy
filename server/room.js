@@ -92,11 +92,12 @@ export class Room {
       if (!seat && s.status === "lobby" && s.seats.length < s.opts.maxSeats && m.join !== false) {
         seat = this.addHuman(m); if (!s.creator) s.creator = seat;
       }
-      a.seat = seat; ws.serializeAttachment(a);
+      a.seat = seat; a.needFull = true; ws.serializeAttachment(a);
       if (seat) { const st = s.seats.find(x => x.id === seat); if (st) { st.online = true; st.lostAt = 0; if (st.away && !st.autoAway) {} if (st.autoAway) { st.away = false; st.autoAway = false; this.log(`${st.name} is back`); } } this.syncGameSeats(); }
       reply({ t: "welcome", seat, token: seat ? s.tokens[seat] : null, creator: s.creator === seat });
       await this.commit(); return;
     }
+    if (m.t === "resync") { a.needFull = true; ws.serializeAttachment(a); this.sendState(); return; }   // a client that missed a message asks for the full board
     const seatId = a.seat, seat = seatId ? s.seats.find(x => x.id === seatId) : null;
     if (!seat) { reply({ t: "error", error: "watching only" }); return; }
     const isCreator = s.creator === seatId;
@@ -252,15 +253,38 @@ export class Room {
     const s = this.s, now = Date.now(), g = s.game;
     return { t: "state", rev: s.rev, code: s.code, status: s.status, public: s.public, opts: s.opts, creator: s.creator,
              seats: s.seats.map(x => ({ id: x.id, name: x.name, main: x.main, sub: x.sub, hull: x.hull, style: x.style, ai: x.ai, away: !!x.away, online: x.online !== false })),
-             game: g, events: s.lastEventsRev === s.rev ? s.lastEvents : [], log: s.log.slice(-20),
+             game: null, events: s.lastEventsRev === s.rev ? s.lastEvents : [], log: s.log.slice(-20),
              deadline: s.deadline, warnAt: s.deadline ? s.deadline - SKIP_WARN_MS : 0, now };
+  }
+  // Each viewer gets their own message: only their own hand (others are just counts), never the deck order,
+  // and only the suns that changed since the last message (a full board on joining or when asked to resync).
+  sendState() {
+    const s = this.s, g = s.game, base = this.view(), sockets = this.ctx.getWebSockets();
+    let diff = null;
+    if (g && this.sentBoard && this.sentBoard.owner.length === g.owner.length) {
+      diff = [];
+      for (let i = 0; i < g.owner.length; i++) if (g.owner[i] !== this.sentBoard.owner[i] || g.armies[i] !== this.sentBoard.armies[i]) diff.push([i, g.owner[i], g.armies[i]]);
+    }
+    const pub = g ? { ...g, owner: undefined, armies: undefined, deck: undefined, discard: undefined, deckCount: g.deck.length, cards: undefined } : null;
+    for (const ws of sockets) {
+      const a = ws.deserializeAttachment() || {};
+      let msg = base;
+      if (g) {
+        const me = s.seats.findIndex(x => x.id === a.seat);
+        const board = a.needFull || !diff ? { full: true, owner: g.owner, armies: g.armies } : { base: this.sentRev, d: diff };
+        msg = { ...base, game: { ...pub, cards: g.cards.map((h, k) => k === me ? h : new Array(h.length).fill(-1)) }, board };
+        if (a.needFull) { a.needFull = false; ws.serializeAttachment(a); }
+      }
+      try { ws.send(JSON.stringify(msg)); } catch (e) {}
+    }
+    if (g) { this.sentBoard = { owner: g.owner.slice(), armies: g.armies.slice() }; this.sentRev = s.rev; }
   }
   broadcast(o) { const txt = JSON.stringify(o); for (const ws of this.ctx.getWebSockets()) { try { ws.send(txt); } catch (e) {} } }
   async commit() {
     const s = this.s; s.rev++; s.updated = Date.now();
     if (s.lastEventsRev !== s.rev) s.lastEvents = [];
     await this.save(); await this.schedule();
-    this.broadcast(this.view());
+    this.sendState();
     if (s.rev % 10 === 1 || s.status !== "playing") await this.report();
   }
 }
