@@ -269,3 +269,4 @@ body.calm *, body.calm *::before, body.calm *::after { animation: none !importan
 .sky.photo svg, .sky.photo.noimg img { display: none; }
 .sky.photo.noimg svg { display: block; }
 .sky .cr { display: block; opacity: .7; font-size: .56rem; margin-top: 1px; }
+.shippreview { display: block; width: 100%; height: 170px; border-radius: 12px; border: 1px solid var(--line); background: radial-gradient(ellipse at 50% 55%, #10183a, #04060b 75%); }

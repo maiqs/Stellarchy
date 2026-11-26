@@ -20,6 +20,16 @@ function merge(parts) {
   const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); return g;
 }
 const Z = g => { g.rotateX(Math.PI / 2); return g; };
+// thin bars along a shape's true edges (not its triangle diagonals): the outlines on the dice
+function edgeBars(geom, r) {
+  const e = new THREE.EdgesGeometry(geom, 10).getAttribute("position").array, bars = [], up = new THREE.Vector3(0, 1, 0), m = new THREE.Matrix4(), q = new THREE.Quaternion();
+  for (let k = 0; k < e.length; k += 6) {
+    const a = new THREE.Vector3(e[k], e[k + 1], e[k + 2]), b = new THREE.Vector3(e[k + 3], e[k + 4], e[k + 5]), dir = b.clone().sub(a), len = dir.length();
+    q.setFromUnitVectors(up, dir.normalize()); m.compose(a.clone().add(b).multiplyScalar(.5), q, new THREE.Vector3(1, 1, 1));
+    bars.push(new THREE.CylinderGeometry(r, r, len, 4).applyMatrix4(m));
+  }
+  return merge(bars);
+}
 export const HULLS = [
   { key: "triangle", name: "Triangle", glyph: "▲", make: () => ({
       hull: merge([Z(new THREE.ConeGeometry(.5, 1, 3)).scale(1, .22, 1), new THREE.BoxGeometry(.13, .16, .2).translate(0, .1, -.28)]),
@@ -36,6 +46,14 @@ export const HULLS = [
   { key: "saucer", name: "Saucer", glyph: "◓", make: () => ({
       hull: merge([new THREE.CylinderGeometry(.5, .44, .09, 30), new THREE.SphereGeometry(.19, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2).translate(0, .04, 0)]),
       detail: merge([new THREE.TorusGeometry(.5, .026, 6, 36).rotateX(Math.PI / 2)]) }) },
+  // Dice (Cage's idea): every class is a different die, d4 frigate, d6 destroyer, d12 battleship, d20 dreadnought;
+  // the true edges of each die are drawn in the highlight colour (thin bars, no face diagonals)
+  { key: "dice", name: "Dice", glyph: "🎲", make: ci => { const g = () => [new THREE.TetrahedronGeometry(.42), new THREE.BoxGeometry(.5, .5, .5), new THREE.DodecahedronGeometry(.36), new THREE.IcosahedronGeometry(.38)][ci] || new THREE.IcosahedronGeometry(.38);
+      return { hull: merge([g()]), detail: edgeBars(g().scale(1.02, 1.02, 1.02), .018) }; } },
+  // Fish (a player's request): fish-shaped hulls; they glide, no swimming. Eyes and a stripe in the highlight colour
+  { key: "fish", name: "Fish", glyph: "🐟", make: () => ({
+      hull: merge([new THREE.SphereGeometry(.3, 18, 12).scale(.55, .75, 1.25), Z(new THREE.ConeGeometry(.3, .42, 4)).scale(.18, 1, 1).translate(0, 0, -.52), new THREE.ConeGeometry(.12, .22, 3).scale(.25, 1, 1).translate(0, .26, -.02)]),
+      detail: merge([new THREE.SphereGeometry(.045, 8, 6).translate(.12, .06, .25), new THREE.SphereGeometry(.045, 8, 6).translate(-.12, .06, .25), new THREE.TorusGeometry(.215, .02, 6, 24).scale(.95, 1.3, 1).translate(0, 0, -.12)]) }) },
 ];
 const HULL_KEYS = HULLS.map(h => h.key);
 const seeded = s => () => { s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
@@ -132,7 +150,7 @@ export function createScene({ container, labels, map }) {
   const fleetMeshes = {};
   const maxPer = Object.values(MAXDRAW).reduce((a, b) => a + b, 0);
   HULLS.forEach(h => CLASSES.forEach((c, ci) => {
-    const d = h.make(); d.hull.scale(c.len, c.len, c.len); d.detail.scale(c.len, c.len, c.len);
+    const d = h.make(ci); d.hull.scale(c.len, c.len, c.len); d.detail.scale(c.len, c.len, c.len);
     const cap = Math.min(n * MAXDRAW[c.key], 6000);
     const hull = new THREE.InstancedMesh(d.hull, new THREE.MeshBasicMaterial({ color: 0xffffff }), cap);
     const detail = new THREE.InstancedMesh(d.detail, new THREE.MeshBasicMaterial({ color: 0xffffff }), cap);

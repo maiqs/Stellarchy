@@ -475,3 +475,11 @@ Sources:
   - Credits are on each card, in Credits, and in the README. The drawn sky stays as the fallback.
   - The service worker caches photos when first seen, not at install (about 25 MB).
   - Map suns now carry `gi`, their place in the 3,000-star list, so every map size and centre finds the same photo.
+- **Star photos complete:** all 2,999 suns have their 2MASS photo (35 MB in `client/sky/`). Sol uses NASA's SDO Sun.
+- **New ship styles (players' ideas, 2026-11-26):**
+  - 🎲 Dice (Cage): d4 frigate, d6 destroyer, d12 battleship, d20 dreadnought. Each die's true edges are drawn in the highlight colour (d4 6, d6 12, d12 30, d20 30 edges).
+  - 🐟 Fish: a body, tail and dorsal fin, with eyes and a stripe in the highlight colour. They glide, no swimming.
+  - Hull styles can now differ per class (`make(ci)`). The server accepts the new keys, and AI players may pick them too.
+- **3D preview in the look editor:** your sun (main colour, highlight rim, glow) with one ship of each class orbiting, updating live as you pick colours and styles (`client/preview.js`).
+  - Dice checked in the browser.
+  - Fish checked by geometry only; the browser pane stopped responding before its screenshot.

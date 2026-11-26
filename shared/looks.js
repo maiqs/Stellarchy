@@ -7,7 +7,7 @@ export const PSUB = ["#ffe066", "#ffffff", "#ff4d5a", "#0b0f18", "#3fcf6a", "#3e
   "#ffffff", "#ffe066", "#0b0f18", "#ffffff", "#ffe066", "#0b0f18", "#ffffff", "#ffe066", "#0b0f18", "#0b0f18", "#ffffff", "#0b0f18", "#0b0f18", "#0b0f18", "#0b0f18", "#0b0f18"];
 export const BOT_NAMES = ["Unit Ceres", "Overmind Vega", "Captain Null", "Admiral Byte", "Warden Kepler", "The Archivist", "Marshal Orbit", "Sentinel Nine", "Lady Parsec", "Echo Prime", "Count Quasar", "Vector Seven", "Doctor Nebula", "Baron Redshift", "Queen Corona", "Pilot Zero",
   "Sister Halo", "Duke Meridian", "Oracle Lumen", "General Ion", "Prophet Aphelion", "Signal Twelve", "Madame Zenith", "Brother Flux", "Chancellor Rho", "Nomad Kestrel", "Envoy Solace", "Herald Nadir", "Keeper Vesta", "Ghost Perihelion", "Regent Umbra", "Scout Tachyon"];
-export const HULL_KEYS = ["triangle", "brick", "tube", "orb", "saucer"];
+export const HULL_KEYS = ["triangle", "brick", "tube", "orb", "saucer", "dice", "fish"];   // dice and fish added from players' ideas (2026-11-26)
 export const PACES = { slow: 900, normal: 450, fast: 150, instant: 25 };   // ms between computer moves
 export const HEX = /^#[0-9a-fA-F]{6}$/;
 

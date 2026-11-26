@@ -6,6 +6,7 @@ import { hqChoices, mustTrade, isSet, connected, cardKind, ownedBy, target, effP
 import { STYLES, STYLE_KEYS } from "./shared/bot.js";
 import { createScene, HULLS, fleetOf, CLASSES } from "./scene.js";
 import { LocalRoom } from "./local.js";
+import { createShipPreview } from "./preview.js";
 import { EMOTES } from "./shared/emotes.js";
 import { sound } from "./sound.js";
 import { historyChart, highlights, diceLine } from "./results.js";
@@ -55,8 +56,13 @@ dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
 
 function lookDialog(after) {
   const d = { ...me };
+  // the live 3D preview: one canvas for the whole dialog, moved back in after each redraw
+  const cv = document.createElement("canvas"); cv.className = "shippreview"; cv.setAttribute("aria-label", "Your sun and ships, in 3D");
+  let pv = null; try { pv = createShipPreview(cv); } catch (e) {}
+  dlg.addEventListener("close", () => { if (pv) pv.dispose(); pv = null; }, { once: true });
   const draw = () => openDialog(`<form class="dlg" method="dialog">
     <h2>Your Stellarch</h2>
+    <div id="lPrev"></div>
     <div class="preview"><span class="swatch" style="--sw-main:${d.main};--sw-sub:${d.sub}"></span><div><b>${esc(d.name || "Stellarch")}</b><div class="hint">${hullInfo(d.hull).name} ships · ${esc(STYLES[d.style].name)}</div></div></div>
     <label class="field"><span>Name</span><input id="lName" maxlength="24" value="${esc(d.name)}" placeholder="Stellarch of Sol" autocomplete="nickname"></label>
     <div class="field"><span>Main colour</span><div class="palette">${PALETTE.map(c => `<button type="button" data-main="${c}" style="--c:${c}" aria-label="${c}" aria-pressed="${c === d.main}"></button>`).join("")}</div></div>
@@ -65,6 +71,7 @@ function lookDialog(after) {
     <div class="field"><span>Ships</span><div class="seg hulls">${HULLS.map(h => `<button type="button" data-hull="${h.key}" aria-pressed="${h.key === d.hull}" title="${h.name}">${h.glyph}</button>`).join("")}</div></div>
     <div class="field"><span>Play style</span><div class="seg">${STYLE_KEYS.map(k => `<button type="button" data-style="${k}" aria-pressed="${k === d.style}">${esc(STYLES[k].name)}</button>`).join("")}</div><p class="hint">${esc(STYLES[d.style].blurb)} The AI plays this way for you if you step away.</p></div>
     <div class="row end"><button class="btn ghost" value="cancel">Cancel</button><button class="btn go" id="lSave" value="ok">Save</button></div></form>`, el => {
+      el.querySelector("#lPrev").appendChild(cv); if (pv) pv.update(d);
       el.querySelector("#lName").addEventListener("input", e => d.name = e.target.value);
       el.querySelectorAll("[data-main]").forEach(b => b.onclick = () => { d.main = b.dataset.main; draw(); });
       el.querySelectorAll("[data-sub]").forEach(b => b.onclick = () => { d.sub = b.dataset.sub; draw(); });
