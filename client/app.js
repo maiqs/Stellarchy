@@ -129,7 +129,8 @@ class NetRoom {
     };
   }
   on(f) { this.fns.push(f); }
-  send(m) { if (this.ws.readyState === 1) this.ws.send(JSON.stringify(m)); }
+  // never drop a click silently: if the connection is down, say so (it reconnects by itself)
+  send(m) { if (this.ws.readyState === 1) this.ws.send(JSON.stringify(m)); else this.fns.forEach(f => f({ t: "error", error: "Not connected right now: reconnecting. Try again in a moment." })); }
   close() { this.closed = true; try { this.ws.close(); } catch (e) {} }
 }
 async function joinCode(code) {
