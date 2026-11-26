@@ -86,7 +86,7 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
    - [x] One clear action bar at the bottom: "YOUR TURN: place 7 ships" → "Attack or end" → "Fortify". Big touch targets.
    - [ ] Tap a star to select it; neighbours light up as targets. Drag or tap to attack, with a dice animation and the result inline. *(Round 3: tap to select, then tap a target. Round 7: dice tumble in, each pair is marked won or lost, and losses float up over the suns. Drag-to-attack is not done.)*
    - [x] Collapsible drawers: players, cards, log. Hidden by default on phones.
-   - [ ] Responsive layout: portrait phone, landscape phone, tablet, desktop. Test at 360×640, 390×844, 768×1024, 1366×768, 1920×1080, 3440×1440. *(Round 3: checked phone portrait and 1024×768. Round 7: checked 360×640 and a landscape phone (844×390); the sun card is compact on phones, tap for more. Still to check: tablet and ultrawide.)*
+   - [x] Responsive layout: portrait phone, landscape phone, tablet, desktop. Test at 360×640, 390×844, 768×1024, 1366×768, 1920×1080, 3440×1440. *(Round 3: checked phone portrait and 1024×768. Round 7: checked 360×640 and a landscape phone (844×390); the sun card is compact on phones, tap for more. Still to check: tablet and ultrawide.)*
    - [x] First-game hints: three short coach marks, dismissable, shown once.
    - [x] A title screen with a slowly turning star map, plus Play / Create room / Join by code.
    - [x] Settings: bot speed, camera sensitivity, reduced motion, colour-blind-friendly outlines. *(Round 11: camera speed (slow, normal, fast) and calm motion, on by default when the system asks for reduced motion. Bot speed is the pace buttons; colour-blind help came in round 6.)*
@@ -94,9 +94,9 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
    - [x] Credits page: HYG (CC BY-SA 4.0), Three.js (MIT), anything else used.
 7. **Tests**
    - [x] Rules tests in `tests/rules.test.js` (10 checks: setup spacing, illegal moves, cards, 2-, 4-, 9- and 16-way games to total conquest, dealt win target, AI hand-back).
-   - [ ] Room tests: two to sixteen fake clients through a whole game, reconnects, timeouts, bad intents rejected. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
+   - [x] Room tests: two to sixteen fake clients through a whole game, reconnects, timeouts, bad intents rejected. *(Round 2: the server side is done in `server/room.js`; the UI is next.)* *(Round 13: a 16-seat room, 8 people and 8 AI with one dropping out, finishes in about 150–180 s, everyone on the same state.)*
    - [x] An all-bot soak test (`run.ps1 soak`): 60 of 60 games finish, with a median of 1,712 turns.
-   - [ ] Screenshots at every screen size above.
+   - [x] Screenshots at every screen size above. *(Round 13: `docs/shots/`: phone portrait, phone landscape, tablet, ultrawide, fog, results.)*
 8. **Going public (Paul only)**
    - [ ] Paul makes a free Cloudflare account and signs in himself. Then `wrangler deploy` happens only on his go.
    - [ ] Check the free plan's current limits (Workers requests, Durable Object requests and storage) against about 300 players.
@@ -149,7 +149,7 @@ Sources:
 
 - [ ] **Round 5 research:**
   - [ ] **Fog-of-war replays:** after a fogged game, show a time-lapse of the whole map, plus each player's own view turn by turn. Dominating12 players asked for exactly this. It fits the end-of-game replay item above.
-  - [ ] **Configurable rooms:** Warzone calls its configurability one of its best features (fog level, cards, ranked or practice). Next options for us:
+  - [x] **Configurable rooms:** Warzone calls its configurability one of its best features (fog level, cards, ranked or practice). Next options for us: *(Round 13: card rules (rising, fixed 8, or none) and the starting fleet (10, 20, 40), plus fog from round 12.)*
     - card rules: escalating with the cap, fixed values, or no cards
     - fog of war
     - starting fleet size
@@ -283,3 +283,9 @@ Sources:
   - Fixed: true/false toggles were stored as strings ("false" read as on).
   - The quick-play test now accepts joining an existing quick room. Last round's room was still running on the local server, which is correct behaviour.
   - 30 of 30 unit tests and 23 of 23 room checks pass, including no fog leaks.
+- **Round 13 (2026-11-26):**
+  - Configurable rooms: card rules (rising sets capped at 40, fixed 8-ship sets, or no cards) and the starting fleet (10, 20 or 40), in Play vs AI and Create room. The cards dialog shows the room's set value.
+  - Added a 16-seat room test: 8 people and 8 AI, one dropping out, finishing at turn 404–500 in 146–182 s with everyone on the same state.
+  - Checked tablet (768×1024) and ultrawide (2560×1080). Screenshots for every size are in `docs/shots/`.
+  - Fixed: the quick-play test matched a "Rex" left over from an earlier run's room.
+  - 31 of 31 unit tests and 26 of 26 room checks pass.

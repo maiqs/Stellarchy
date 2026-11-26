@@ -2,7 +2,7 @@
 // The server (or LocalRoom for solo play) owns the game; this page only shows it and sends intents.
 import { prepareMap, specClass } from "./shared/map.js";
 import { buildMap, clampSize, SIZE_STEPS } from "./shared/mapgen.js";
-import { hqChoices, mustTrade, isSet, connected, cardKind, ownedBy, target, effPct, tradeValue } from "./shared/rules.js";
+import { hqChoices, mustTrade, isSet, connected, cardKind, ownedBy, target, effPct, setValue } from "./shared/rules.js";
 import { STYLES, STYLE_KEYS } from "./shared/bot.js";
 import { createScene, HULLS, fleetOf, CLASSES } from "./scene.js";
 import { LocalRoom } from "./local.js";
@@ -159,6 +159,13 @@ function sizeField(o, seats) {
   return `<div class="field"><span>Map size: ${o.size.toLocaleString()} suns</span>${optionSeg("size", steps.map(s => [s, s >= 1000 ? (s / 1000) + "k" : String(s)]), o.size)}
     <p class="hint">The ${o.size.toLocaleString()} nearest real star systems to Earth${o.size >= 1000 ? ", out to " + Math.round(mapOf(o.size).systems.at(-1).distLy) + " light years" : ""}. A game takes ${sizeWords(o.size)}.${o.size >= 1000 ? " Fainter stars are missing from the catalogue this far out, so big maps lean towards brighter stars." : ""}</p></div>`;
 }
+// room rules players can change (Warzone-style configurability): how card sets pay, and the starting fleet
+function rulesFields(o) {
+  o.cards = o.cards || "escalating"; o.hqArmies = o.hqArmies || 10;
+  return `<div class="field"><span>Cards</span>${optionSeg("cards", [["escalating", "Rising sets"], ["fixed", "Fixed sets"], ["none", "No cards"]], o.cards)}
+    <p class="hint">${o.cards === "escalating" ? "Each set traded at the table pays more: 4, 6, 8, 10, 12, 15, then +5, capped at 40." : o.cards === "fixed" ? "Every set pays 8 ships, however many have been traded." : "No cards at all: ships come only from suns, regions and your home sun."}</p></div>
+    ${o.mode === "dealt" ? "" : `<div class="field"><span>Starting fleet</span>${optionSeg("hqArmies", [[10, "10 ships"], [20, "20"], [40, "40"]], o.hqArmies)}<p class="hint">Ships at each home sun when the war begins. Bigger fleets spread faster.</p></div>`}`;
+}
 function soloDialog() {
   const o = { size: 100, ...store.get("stellarchy_solo", { bots: 5, mode: "legacy", targetPct: 100, pace: "normal" }) };
   const draw = () => openDialog(`<form class="dlg" method="dialog"><h2>Play vs AI</h2>
@@ -167,6 +174,7 @@ function soloDialog() {
     <div class="field"><span>Start</span>${optionSeg("mode", [["legacy", "One home sun each"], ["dealt", "Suns dealt out"]], o.mode)}
       <p class="hint">${o.mode === "legacy" ? "Everyone founds a single home sun and expands outward." : "Every sun is shared out at random from the start."}</p></div>
     <div class="field"><span>Fog of war</span>${optionSeg("fog", [["false", "Off"], ["true", "On"]], String(!!o.fog))}<p class="hint">${o.fog ? "You see only your own suns and their neighbours. Everything else is dark until you get close." : "Everyone sees the whole map."}</p></div>
+    ${rulesFields(o)}
     <div class="field"><span>Win at</span>${optionSeg("targetPct", [[50, "50%"], [65, "65%"], [80, "80%"], [100, "Total conquest"]], o.targetPct)}</div>
     <div class="field"><span>AI speed</span>${optionSeg("pace", [["slow", "Slow"], ["normal", "Normal"], ["fast", "Fast"], ["instant", "Instant"]], o.pace)}</div>
     <div class="row end"><button class="btn ghost" value="cancel">Cancel</button><button class="btn go big" id="sGo" value="ok">Launch</button></div></form>`, el => {
@@ -184,6 +192,7 @@ function createDialog() {
     ${sizeField(o, o.maxSeats)}
     <div class="field"><span>Start</span>${optionSeg("mode", [["legacy", "One home sun each"], ["dealt", "Suns dealt out"]], o.mode)}</div>
     <div class="field"><span>Fog of war</span>${optionSeg("fog", [["false", "Off"], ["true", "On"]], String(!!o.fog))}<p class="hint">${o.fog ? "You see only your own suns and their neighbours. Everything else is dark until you get close." : "Everyone sees the whole map."}</p></div>
+    ${rulesFields(o)}
     <div class="field"><span>Win at</span>${optionSeg("targetPct", [[50, "50%"], [65, "65%"], [80, "80%"], [100, "Total conquest"]], o.targetPct)}</div>
     <div class="row end"><button class="btn ghost" value="cancel">Cancel</button><button class="btn go big" id="cGo" value="ok">Create</button></div></form>`, el => {
       wireSegs(el, o, draw);
@@ -472,9 +481,9 @@ function openCards() {
   const draw = () => {
     const hand = g.cards[k] || [], sel = [...ui.cards].filter(c => hand.includes(c)), ok = sel.length === 3 && isSet(MAP, sel), canTrade = myTurn() && g.phase === "reinforce";
     openDialog(`<div class="dlg"><h2>Your cards</h2>
-      <p class="hint">Trade three of a kind, one of each colour, or any two with a wild. The next set is worth <b>${tradeValue(g.trades)}</b> ships (it goes up every trade at the table). ${hand.length >= 5 ? "<b style='color:var(--red)'>Five cards: you must trade now.</b>" : ""}</p>
+      <p class="hint">Trade three of a kind, one of each colour, or any two with a wild. The next set is worth <b>${setValue(g)}</b> ships${g.cardMode === "fixed" ? " (this room pays a fixed amount)" : " (it goes up every trade at the table, to a cap of 40)"}. ${hand.length >= 5 ? "<b style='color:var(--red)'>Five cards: you must trade now.</b>" : ""}</p>
       ${hand.length ? `<div class="cards">${hand.map(id => cardFace(id, sel.includes(id))).join("")}</div>` : `<p class="hint">No cards yet. Take at least one sun in a turn to earn one.</p>`}
-      <div class="row end"><button class="btn ghost" id="kClose" type="button">Close</button><button class="btn" id="kBest" type="button" ${canTrade ? "" : "disabled"}>Pick best set</button><button class="btn go" id="kTrade" type="button" ${ok && canTrade ? "" : "disabled"}>Trade for ${tradeValue(g.trades)}</button></div></div>`, el => {
+      <div class="row end"><button class="btn ghost" id="kClose" type="button">Close</button><button class="btn" id="kBest" type="button" ${canTrade ? "" : "disabled"}>Pick best set</button><button class="btn go" id="kTrade" type="button" ${ok && canTrade ? "" : "disabled"}>Trade for ${setValue(g)}</button></div></div>`, el => {
         el.querySelectorAll("[data-card]").forEach(b => b.onclick = () => { const id = +b.dataset.card; ui.cards.has(id) ? ui.cards.delete(id) : ui.cards.size < 3 && ui.cards.add(id); draw(); });
         el.querySelector("#kClose").onclick = () => dlg.close();
         el.querySelector("#kBest").onclick = () => { const b = bestSet(hand); if (b) { ui.cards = new Set(b); draw(); } else toast("No set in your hand yet."); };

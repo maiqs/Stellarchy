@@ -108,3 +108,19 @@ test("fog of war: you see your suns and their neighbours, and battles you could 
   const far = v.owner.findIndex(o => o === FOGGED), farN = MAP.adj[far].find(j => v.owner[j] === FOGGED);
   if (farN !== undefined) assert.equal(maskEvents([{ t: "bt", from: far, to: farN }], v.vis).length, 0, "a battle out of sight is hidden");
 });
+
+test("room rules: no cards, fixed sets, and a bigger starting fleet", async () => {
+  const { setValue, FIXED_SET } = await import("../shared/rules.js");
+  // no cards: nobody ever holds one
+  let rng = mulberry32(31), g = newGame(MAP, { mode: "legacy", cards: "none", seats: seats(4) }, rng);
+  runGame(MAP, g, rng);
+  assert.equal(g.status, "over"); assert.equal(g.cards.flat().length, 0);
+  // fixed sets always pay the same, whatever has been traded
+  g = newGame(MAP, { mode: "dealt", cards: "fixed", targetPct: 80, seats: seats(3, false) }, mulberry32(32));
+  g.trades = 9; assert.equal(setValue(g), FIXED_SET);
+  g.cardMode = "escalating"; assert.ok(setValue(g) > FIXED_SET);
+  // starting fleet
+  rng = mulberry32(33); g = newGame(MAP, { mode: "legacy", hqArmies: 40, seats: seats(3) }, rng);
+  const r = act(MAP, g, g.turn, { t: "hq", sys: hqChoices(MAP, g)[0] }, rng);
+  assert.ok(r.ok); assert.equal(g.armies[g.hq.find(h => h >= 0)], 40);
+});

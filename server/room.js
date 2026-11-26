@@ -48,6 +48,8 @@ export class Room {
         turnStarted: 0, deadline: 0,
       };
       this.s.opts.fog = !!o.fog;   // fog of war: see only your suns and their neighbours
+      this.s.opts.cards = ["escalating", "fixed", "none"].includes(o.cards) ? o.cards : "escalating";
+      this.s.opts.hqArmies = [10, 20, 40].includes(o.hqArmies) ? o.hqArmies : 10;
       if (o.quick) { this.s.opts.quick = true; this.s.public = true; this.s.opts.timer = 90; }   // quick play: listed, and a 90 s clock so a vanished player is covered
       this.s.opts.size = Math.max(clampSize(o.size ?? 100), this.s.opts.maxSeats * SUNS_PER_SEAT);
       if (this.env.DEV && o.idleMs) this.s.opts.idleMs = clampInt(o.idleMs, 500, 3600000, 0);   // local tests only
@@ -195,7 +197,7 @@ export class Room {
   start() {
     const s = this.s;
     if (this.map.n < s.seats.length * SUNS_PER_SEAT) return;
-    s.game = newGame(this.map, { mode: s.opts.mode, targetPct: s.opts.targetPct, seats: s.seats }, this.rng());
+    s.game = newGame(this.map, { mode: s.opts.mode, targetPct: s.opts.targetPct, cards: s.opts.cards, hqArmies: s.opts.hqArmies, seats: s.seats }, this.rng());
     s.status = "playing"; this.log("The war begins"); this.turnBegan();
   }
 

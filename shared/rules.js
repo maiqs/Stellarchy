@@ -9,6 +9,9 @@ export const MAX_SEATS = 16;
 // sets rise 4, 6, 8, 10, 12, 15, then +5 each, capped so card income can never swamp what territory earns
 // (uncapped, 1,000-sun games reached 9,000 ships a set and never ended)
 export const TRADE_CAP = 40;
+// what the next set pays: escalating (the default), or a flat 8 ships in a "fixed" room
+export const FIXED_SET = 8;
+export const setValue = g => g.cardMode === "fixed" ? FIXED_SET : tradeValue(g.trades);
 export const tradeValue = k => Math.min(TRADE_CAP, k < TRADE_VALUES.length ? TRADE_VALUES[k] : 15 + 5 * (k - TRADE_VALUES.length + 1));
 // home suns sit further apart on bigger maps
 export const hqSpacing = n => n >= 100 ? 4 : n >= 30 ? 3 : 2;
@@ -32,6 +35,8 @@ export function newGame(map, opts, rng) {
   const g = {
     v: 1, status: "playing", mode: opts.mode === "dealt" ? "dealt" : "legacy",
     targetPct: allAI ? 100 : clampPct(opts.targetPct ?? 100),   // computer-only games run to total conquest (Paul)
+    cardMode: ["escalating", "fixed", "none"].includes(opts.cards) ? opts.cards : "escalating",   // room option: how card sets pay
+    hqArmies: [10, 20, 40].includes(opts.hqArmies) ? opts.hqArmies : HQ_ARMIES,           // room option: the starting fleet at a home sun
     seats, owner: new Array(n).fill(-1), armies: new Array(n).fill(0), hq: seats.map(() => -1),
     turn: first, setupFirst: first, phase: "setup", reinforcements: 0, fortified: false, turnNo: 1,
     alive: seats.map(() => true), deck: shuffled([...Array(n + 2).keys()], rng), discard: [], cards: seats.map(() => []),
@@ -111,8 +116,9 @@ const ACTIONS = {
   hq(map, g, seat, { sys }, rng, ev) {
     if (g.phase !== "setup") return "not choosing home suns";
     if (!hqChoices(map, g).includes(sys)) return "too close to another home sun";
-    g.owner[sys] = seat; g.armies[sys] = HQ_ARMIES; g.hq[seat] = sys;
-    ev.push({ t: "hq", seat, s: sys }, { t: "rf", s: sys, n: HQ_ARMIES });
+    const fleet = g.hqArmies || HQ_ARMIES;
+    g.owner[sys] = seat; g.armies[sys] = fleet; g.hq[seat] = sys;
+    ev.push({ t: "hq", seat, s: sys }, { t: "rf", s: sys, n: fleet });
     const k = g.seats.length;
     for (let d = 1; d <= k; d++) { const c = (seat + d) % k; if (g.hq[c] < 0) { g.turn = c; return; } }
     g.phase = "reinforce"; g.turn = g.setupFirst; g.reinforcements = reinforcementsFor(map, g, g.turn);
@@ -121,7 +127,7 @@ const ACTIONS = {
   trade(map, g, seat, { cards }, rng, ev) {
     if (g.phase !== "reinforce") return "trade during reinforcement";
     if (!Array.isArray(cards) || !isSet(map, cards) || !cards.every(c => g.cards[seat].includes(c))) return "not a set you hold";
-    const val = tradeValue(g.trades);
+    const val = setValue(g);
     g.cards[seat] = g.cards[seat].filter(c => !cards.includes(c)); g.discard.push(...cards); g.trades++;
     g.reinforcements += val;
     const bonus = cards.find(c => c < map.n && g.owner[c] === seat);
@@ -197,7 +203,7 @@ const ACTIONS = {
   },
   endTurn(map, g, seat, i, rng, ev) {
     if (g.phase === "setup" || g.phase === "reinforce") return "place your ships first";
-    if (g.conq) {   // a turn with a conquest earns a card
+    if (g.conq && g.cardMode !== "none") {   // a turn with a conquest earns a card (unless the room plays without cards)
       if (!g.deck.length && g.discard.length) { g.deck = shuffled(g.discard, rng); g.discard = []; }
       if (g.deck.length) { const c = g.deck.pop(); g.cards[seat].push(c); ev.push({ t: "card", seat }); }
     }

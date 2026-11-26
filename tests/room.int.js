@@ -103,10 +103,11 @@ for (const c of [a, bb, sneaky]) c.ws.close();
   const aiBefore = p1.state.seats.filter(s => s.ai).length;
   await sleep(300);
   const q2 = await (await fetch(BASE + "/api/quick", { method: "POST" })).json();
-  const p2 = client(q2.code, { name: "Rex" }); await p2.ready; await until(() => p2.seat);
+  const rexName = "Rex" + Math.floor(Math.random() * 9000 + 1000);   // unique: earlier runs leave quick rooms (and Rexes) running
+  const p2 = client(q2.code, { name: rexName }); await p2.ready; await until(() => p2.seat);
   check(q2.code === q1.code && q2.joined, "a second quick player is sent to the running game");
-  await until(() => p1.state.seats.some(s => s.name === "Rex"));
-  const rex = p1.state.seats.find(s => s.name === "Rex");
+  await until(() => p1.state.seats.some(s => s.name === rexName));
+  const rex = p1.state.seats.find(s => s.name === rexName);
   check(rex && !rex.ai && p2.seat === rex.id && p1.state.seats.filter(s => s.ai).length === aiBefore - 1, "they take over an AI seat, keeping its colour");
   p1.ws.close(); p2.ws.close();
 }
@@ -123,6 +124,29 @@ for (const c of [a, bb, sneaky]) c.ws.close();
   check(leaks === 0, `no enemy sun out of sight is sent (${leaks} leaked)`);
   check(Array.isArray(g.totals) && g.totals.reduce((a, t) => a + t.held, 0) === 100, "everyone's totals still arrive under fog");
   f1.ws.close();
+}
+// a full 16-seat room: 8 people and 8 AI players through a whole game, one person dropping out partway
+{
+  const r = await (await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 16, size: 100, mode: "dealt", targetPct: 40, pace: "instant", cards: "fixed" }) })).json();
+  const people = [];
+  for (let k = 0; k < 8; k++) { const c = client(r.code, { name: "P" + k }); await c.ready; await until(() => c.seat); people.push(c); }
+  const host = people[0]; for (let k = 0; k < 8; k++) { host.send({ t: "addBot" }); await sleep(80); }
+  await until(() => host.state.seats.length === 16);
+  host.send({ t: "start" }); await until(() => host.state.status === "playing");
+  check(host.state.seats.length === 16 && new Set(host.state.seats.map(s => s.main)).size === 16, "16 seats, every one a different colour");
+  const MAP100 = MAP_FOG(); let dropped = false; const t1 = Date.now();
+  while (Date.now() - t1 < 200000 && host.state.status === "playing") {
+    const g = host.state.game, k = g.turn, who = people.find(p => p.seat === host.state.seats[k].id && p.ws.readyState === 1);
+    if (!dropped && g.turnNo > 30) { dropped = true; people[5].ws.close(); }
+    if (who && !host.state.seats[k].away && who.state.game) {
+      const it = botIntent(MAP100, who.state.game, k, "aggressive", rng);
+      if (it) { const rev = host.state.rev; who.send({ t: "intent", intent: it }); await until(() => host.state.rev > rev, 3000); await sleep(70); continue; }
+    }
+    await sleep(40);
+  }
+  check(host.state.status === "over", `the 16-seat game finished (turn ${host.state.game.turnNo}, ${Math.round((Date.now() - t1) / 1000)} s)`);
+  check(people.every(p => p.ws.readyState !== 1 || p.state.rev === host.state.rev), "every connected player ended on the same state");
+  people.forEach(p => p.ws.close());
 }
 // an idle room closes itself (needs DEV=1 in .dev.vars for the short idle time)
 {
