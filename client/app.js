@@ -7,6 +7,7 @@ import { STYLES, STYLE_KEYS } from "./shared/bot.js";
 import { createScene, HULLS, fleetOf, CLASSES } from "./scene.js";
 import { LocalRoom } from "./local.js";
 import { EMOTES } from "./shared/emotes.js";
+import { sound } from "./sound.js";
 import { PALETTE, HEX } from "./shared/looks.js";
 // the 3D hull for a key, falling back to the first
 const hullInfo = key => HULLS.find(h => h.key === key) || HULLS[0];
@@ -261,12 +262,15 @@ function onState(m) {
     if (key !== ui.lastTurnKey) { ui.lastTurnKey = key; if (!g.advance) ui.adv = null; ui.fort = null; if (g.phase !== "reinforce") ui.pending = {}; if (g.phase !== "attack" && g.phase !== "fortify") selectSun(-1); }
     if (g.advance) ui.adv = ui.adv && ui.adv.to === g.advance.to ? ui.adv : { to: g.advance.to, n: g.advance.max };
     for (const e of (m.rev !== ui.lastRev ? m.events : [])) eventToast(e, k);
-    if (prev && prev.game && prev.game.turn !== g.turn && g.turn === k && g.status === "playing") { toast("Your turn"); if (document.hidden) notifyTurn(); }
+    if (prev && prev.game && prev.game.turn !== g.turn && g.turn === k && g.status === "playing") { toast("Your turn"); sound.turn(); if (document.hidden) notifyTurn(); }
   }
   ui.lastRev = m.rev;
   render();
 }
 function eventToast(e, k) {
+  if (e.t === "bt" && (e.a === k || e.d === k)) { sound.laser(); if (e.cap) (e.a === k ? sound.capture : sound.lost)(); }
+  if (e.t === "elim") sound.out();
+  if (e.t === "win") sound.win();
   truceToast(e, k);
   if (e.t === "bt") { if (e.a === k) ui.rollRev = st.rev; floatLoss(e.from, e.la, e.a); floatLoss(e.to, e.ld, e.d); }
   if (e.t === "bt" && (e.a === k || e.d === k)) {
@@ -552,13 +556,15 @@ $("hMenu").onclick = () => openDialog(`<div class="dlg"><h2>Menu</h2>
   <div class="field"><span>Show</span><div class="seg"><button type="button" id="mNames" aria-pressed="${!!ui.allNames}">All sun names</button><button type="button" id="mSpin" aria-pressed="${!!ui.spin}">Slow rotation</button><button type="button" id="mSym" aria-pressed="${!!store.get("stellarchy_symbols", false)}">Ship symbols on suns</button></div>
   <p class="hint">Ship symbols put each holder's ship shape (▲ ■ ▬ ● ◓) beside the count, so colour is never the only clue.</p></div>
   <div class="field"><span>Camera speed</span><div class="seg" id="mCam">${[[.5, "Slow"], [1, "Normal"], [1.7, "Fast"]].map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${store.get("stellarchy_camspeed", 1) === v}">${l}</button>`).join("")}</div></div>
+  <div class="field"><span>Sound</span><div class="seg"><button type="button" id="mSound" aria-pressed="${sound.on}">${sound.on ? "Sound on" : "Sound off"}</button></div><p class="hint">Quiet cues: your turn, your battles, captures, knock-outs and the win.</p></div>
   <div class="field"><span>Motion</span><div class="seg"><button type="button" id="mCalm" aria-pressed="${document.body.classList.contains("calm")}">Calm motion</button></div><p class="hint">No camera glides, spinning or bouncing interface. Battles still show.</p></div>
   ${"Notification" in window && Notification.permission === "default" ? `<button class="btn" id="mNotify" type="button">Alert me when it's my turn</button>` : ""}
   <div class="row end"><button class="btn" id="mLeave" type="button">Leave game</button><button class="btn go" id="mBack" type="button">Back to the war</button></div></div>`, el => {
     el.querySelector("#mNames").onclick = () => { ui.allNames = !ui.allNames; scene.setAllNames(ui.allNames); dlg.close(); };
     el.querySelector("#mSpin").onclick = () => { ui.spin = !ui.spin; scene.setAutoRotate(ui.spin); dlg.close(); };
     el.querySelectorAll("#mCam button").forEach(b => b.onclick = () => { store.set("stellarchy_camspeed", +b.dataset.v); applyComfort(); dlg.close(); });
-    el.querySelector("#mCalm").onclick = () => { store.set("stellarchy_calm", !document.body.classList.contains("calm")); applyComfort(); dlg.close(); };
+    el.querySelector("#mSound").onclick = () => { store.set("stellarchy_sound", !sound.on); applyComfort(); if (sound.on) sound.turn(); dlg.close(); };
+    el.querySelector("#mCalm").onclick =() => { store.set("stellarchy_calm", !document.body.classList.contains("calm")); applyComfort(); dlg.close(); };
     el.querySelector("#mSym").onclick =() => { const on = !store.get("stellarchy_symbols", false); store.set("stellarchy_symbols", on); scene.setSymbols(on); dlg.close(); };
     const nb = el.querySelector("#mNotify"); if (nb) nb.onclick = () => { Notification.requestPermission(); dlg.close(); };
     el.querySelector("#mLeave").onclick = () => leaveRoom(); el.querySelector("#mBack").onclick = () => dlg.close();
@@ -647,6 +653,7 @@ function rollHtml(g) {
 
 // ---------- comfort settings: camera speed and calm motion (follows the system's reduced-motion setting by default) ----------
 function applyComfort() {
+  sound.setOn(store.get("stellarchy_sound", true));
   const calm = store.get("stellarchy_calm", matchMedia("(prefers-reduced-motion: reduce)").matches);
   document.body.classList.toggle("calm", calm);
   if (scene) { scene.setCalm(calm); scene.setCameraSpeed(store.get("stellarchy_camspeed", 1)); }

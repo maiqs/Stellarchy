@@ -50,7 +50,7 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
      - minimum suns = 4 per seat, so the slider's floor rises with player count
      - HQ spacing shrinks on small maps (4 jumps at 100 or more suns, 2 at 10)
      - small maps have no continents
-   - [ ] **Big maps (1,000+):** *(Round 4: glows and pick rings are each one draw call, taking 3,000 suns from 34 to 79 fps in the preview. Round 8: the server sends only changed suns, about 300 small diffs and 2 full boards per test game. Round 9: choosing 1,000+ suns sets the win target to 65% unless you picked one. Still open: labels and fleet caps.)*
+   - [x] **Big maps (1,000+):** *(Round 4: glows and pick rings are each one draw call, taking 3,000 suns from 34 to 79 fps in the preview. Round 8: the server sends only changed suns, about 300 small diffs and 2 full boards per test game. Round 9: choosing 1,000+ suns sets the win target to 65% unless you picked one. Round 16: measured 111–124 fps on 3,000 fully held suns (desktop). Counts only show where they're readable (266 of 3,000), and fleets are capped per class.)*
      - stars drawn as one InstancedMesh
      - names and army counts only near the camera, or on hover or select
      - fleets capped per star
@@ -90,7 +90,7 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
    - [x] First-game hints: three short coach marks, dismissable, shown once.
    - [x] A title screen with a slowly turning star map, plus Play / Create room / Join by code.
    - [x] Settings: bot speed, camera sensitivity, reduced motion, colour-blind-friendly outlines. *(Round 11: camera speed (slow, normal, fast) and calm motion, on by default when the system asks for reduced motion. Bot speed is the pace buttons; colour-blind help came in round 6.)*
-   - [ ] Performance: cap the pixel ratio on phones and keep 60 fps on a mid phone. Fall back to fewer effects.
+   - [x] Performance: cap the pixel ratio on phones and keep 60 fps on a mid phone. Fall back to fewer effects. *(Round 16: adaptive quality. Under about 45 fps for 2 s it drops the pixel ratio to 1, then halves debris. The pixel ratio is capped at 1.5 on phones from the start.)*
    - [x] Credits page: HYG (CC BY-SA 4.0), Three.js (MIT), anything else used.
 7. **Tests**
    - [x] Rules tests in `tests/rules.test.js` (10 checks: setup spacing, illegal moves, cards, 2-, 4-, 9- and 16-way games to total conquest, dealt win target, AI hand-back).
@@ -117,7 +117,7 @@ Paul: look online for features people want and give them to people. I looked at 
   - Add extra time when there are many ships to place.
   - Show "time banks" rather than an instant kick.
 - [x] **Timer choice per room:** none (friends), 90 s, 3 min, or a long-turn mode (12 or 24 h) where AI covers a missed turn. *(Round 2: the server side is done in `server/room.js`; the UI is next.)*
-  - Long turns need turn alerts: the browser notification API, a flashing tab title and a sound. Email needs accounts, so skip it. *(Round 3: the browser notification and the tab title are done; a sound is not.)*
+  - Long turns need turn alerts: the browser notification API, a flashing tab title and a sound. Email needs accounts, so skip it. *(Round 3: the browser notification and the tab title are done; a sound is not.)* *(Round 16: the sound is done: a chime on your turn.)*
 - [x] **No pay-to-play limits, ever.** The big official game's most common complaint is free-tier token caps.
   - Say it on the title screen: "Free. No tokens, no timers on how much you play."
 - [x] **Solo play against AI with no server.** The rules are shared, so a solo game can run fully in the browser.
@@ -326,3 +326,8 @@ Sources:
   - Fixed: quick play could send you to a room whose last AI seat had just gone, leaving you only watching. The lobby list is a few moves stale, so each candidate room is now asked directly, and the page retries once if a seat vanishes as you join.
   - Room test: 26 of 26 on an undisturbed run. One run stalled because the dev server reloaded mid-test while files were being edited; it was not the game.
   - 32 of 32 unit tests pass.
+- **Round 16 (2026-11-26):**
+  - Big maps: 3,000 fully held suns run at 111–124 fps on desktop.
+  - Adaptive quality for slower devices: the pixel ratio drops to 1, then debris is halved, if frames stay under about 45 fps.
+  - Sound, synthesised with no audio files: your-turn chime, laser for your battles, capture and loss pings, knock-out thud, win fanfare. It's quiet, it wakes on the first tap, and a menu switch turns it off.
+  - 32 of 32 tests pass.

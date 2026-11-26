@@ -16,3 +16,6 @@ A free-to-play browser game (formerly Three Hundred Suns): a neon 3D war for Sol
   - `data/star_map.json` comes from the HYG Database v4.1 by David Nash (CC BY-SA 4.0).
   - three.js is MIT-licensed.
   - Chakra Petch and IBM Plex are OFL-licensed.
+
+## Sound
+Stellarchy's sounds are synthesised in the browser (client/sound.js); there are no audio files.

@@ -204,6 +204,7 @@ export function createScene({ container, labels, map }) {
   sparks.frustumCulled = false; scene.add(sparks);
   let pNext = 0;
   function boom(p, who, cls, small) {
+    if (quality === 0 && Math.random() < .5) return;   // lite effects: half the explosions throw debris
     const c = new THREE.Color(mainOf(who)), w = new THREE.Color("#ffffff"), sub = new THREE.Color(subOf(who));
     const count = small ? 10 + cls * 6 : 18 + cls * 16, speed = small ? 1.2 : 2.2 + cls * .5;
     for (let k = 0; k < count; k++) {
@@ -292,9 +293,22 @@ export function createScene({ container, labels, map }) {
 
   // ---- frame loop ----
   let lastT = clock(), running = true;
+  // adaptive quality: if frames stay slow (under ~45 fps for 2 s), step down: first a lower pixel ratio,
+  // then lighter battle effects (half the debris). It never steps back up mid-game, so the picture stays stable.
+  let quality = 2, slowFor = 0, ema = 1 / 60;
+  function adapt(dt) {
+    if (!dt || dt > .5) return;   // ignore pauses (hidden tab, a long first frame)
+    ema = ema * .95 + dt * .05;
+    slowFor = ema > 1 / 45 ? slowFor + dt : 0;
+    if (slowFor > 2 && quality > 0) {
+      quality--; slowFor = 0;
+      if (quality === 1) { renderer.setPixelRatio(1); resize(); }
+    }
+  }
   function frame() {
     if (!running) return;
     const t = clock(), dt = Math.min(.1, t - lastT); lastT = t;
+    adapt(t - (frame.prev || t)); frame.prev = t;
     controls.update();
     dying = dying.filter(d => { if (t < d.die) return true; unitPos(d.u, d.i, t, tmp); boom(tmp.clone(), d.u.owner, d.u.cls, d.kind === "break"); return false; });
     Object.values(fleetMeshes).forEach(fm => fm.count = 0);
@@ -375,6 +389,7 @@ export function createScene({ container, labels, map }) {
     onPick(fn) { pickCb = fn; }, onHover(fn) { hoverCb = fn; },
     // drag to attack: {sources: Set of suns, targetsOf(from) -> Set, onDrop(from, to), color}, or null to turn it off
     setDrag(cfg) { dragCfg = cfg; },
+    get quality() { return quality; },
     pickAt(x, y, touch) { return nearest(x, y, touch ? 34 : 20); },   // the sun under a screen point, or -1
     setAutoRotate(on) { controls.autoRotate = on; },
     setAllNames(on) { showAllNames = on; },
