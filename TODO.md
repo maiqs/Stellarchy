@@ -107,6 +107,46 @@ ode`, because the MSI needed an admin prompt. `run.ps1` puts it on PATH.
 - Name: **Stellarchy** (agreed with Paul, 2026-11-25). Players are "Stellarchs"; "Stellarch" alone belongs to another game (stellarch.io). Run a proper trademark search before going public.
 - Should rooms have chat? (It needs moderation; the default is no chat, just quick emotes.)
 
+
+## Player wishes (online research, 2026-11-25)
+Paul: look online for features people want and give them to people. I looked at Warzone's feature-request forum, Board Game Arena bug reports, and Steam threads for the big official conquest game. These are forum anecdotes, not surveys. Re-check every round ending in 5.
+- [ ] **Never freeze on a quitter.** The top complaint everywhere is games stuck on a departed player's turn.
+  - AI takeover (step 4c) covers it. Also show a plain "Skipping in 10 s" so nobody waits blind.
+- [ ] **Fair, server-side timers with a grace period.** Board Game Arena players got booted by a timer that ran out before their turn even showed.
+  - Run the clock on the room and start it only once the turn has reached the client.
+  - Add extra time when there are many ships to place.
+  - Show "time banks" rather than an instant kick.
+- [ ] **Timer choice per room:** none (friends), 90 s, 3 min, or a long-turn mode (12 or 24 h) where AI covers a missed turn.
+  - Long turns need turn alerts: the browser notification API, a flashing tab title and a sound. Email needs accounts, so skip it.
+- [ ] **No pay-to-play limits, ever.** The big official game's most common complaint is free-tier token caps.
+  - Say it on the title screen: "Free. No tokens, no timers on how much you play."
+- [ ] **Solo play against AI with no server.** The rules are shared, so a solo game can run fully in the browser.
+  - Offline play is also a frequent ask. Make it work offline as an installable web app.
+- [ ] **Quick play:** one button joins an open room or starts one filled with bots that people can replace.
+- [ ] **Quick chat and emotes.** Players ask for "quick chats". Use preset lines and emotes, with no free text to moderate.
+- [ ] **Finding things on big maps:**
+  - search for a sun by name
+  - pin suns
+  - jump to "my borders" and "my home sun"
+  - a region list showing bonuses and who holds what
+- [ ] **Bigger games:** Warzone players ask for 60–100 players. Consider up to 32 seats on maps of 500 suns or more.
+- [ ] **Fog of war as a room option.** It's a Warzone staple: you see only your suns and their neighbours.
+- [ ] **End-of-game screen:**
+  - a graph of systems held over time
+  - each player's best moment
+  - a replay you can scrub through
+- [ ] **Speed controls:** skip animations, and watch bots at speed.
+- [ ] **Undo before confirm:** take back placements until you press Confirm.
+- [ ] **Later:** a map editor and custom scenarios, which are big in Warzone.
+
+Sources:
+- https://warlight.uservoice.com/forums/77051-warzone-features/filters/hot
+- https://www.warzone.com/Forum/323804-warzone-feature-list?Offset=20
+- https://sv.boardgamearena.com/bug?id=155996
+- https://it.boardgamearena.com/bug?id=171910
+- https://boardgamegeek.com/wiki/page/PLAY_ONLINE
+- https://steamcommunity.com/app/1128810/discussions/0/1743393963178028328
+
 ## Bugs and balance
 - [ ] **Styles are lopsided** (soak, 60 games). Win rate per seat, against a fair share of 10.3%:
   - aggressive 25.9%, territorial 14.7%, balanced 5.2%, card hunter 5.2%, defensive 0.9%
