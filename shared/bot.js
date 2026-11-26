@@ -12,9 +12,9 @@ export const STYLES = {
   defensive:   { name: "Defensive",   blurb: "Stacks the borders and attacks only with strong odds.",
                  odds: 1.4, margin: 1, reserve: 0.35, cards: 1, continent: 5, elim: 1, claim: 6, hold: 0.8, spread: true },
   cards:       { name: "Card hunter", blurb: "Takes a sun every turn for a card, saves for big trades.",
-                 odds: 1.5, margin: 2, reserve: 0.3, cards: 2.5, continent: 1.5, elim: 4, claim: 4, hold: 0.5, saveSets: true, cardEveryTurn: true },
+                 odds: 1.5, margin: 0, reserve: 0.3, cards: 2.5, continent: 2.7, elim: 4, claim: 4, hold: 0.5, saveSets: true, cardEveryTurn: true },
   territorial: { name: "Territorial", blurb: "Grabs as many suns as it can and chases region bonuses.",
-                 odds: 1.42, margin: 1, reserve: 0.15, cards: 0.5, continent: 5, elim: 1, claim: 6.5, hold: 0.3 },
+                 odds: 1.42, margin: 1, reserve: 0.15, cards: 0.5, continent: 5, elim: 1, claim: 6.5, hold: 0.66 },
 };
 export const STYLE_KEYS = Object.keys(STYLES);
 export const styleOf = key => STYLES[key] || STYLES.balanced;

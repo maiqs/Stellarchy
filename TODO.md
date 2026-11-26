@@ -174,11 +174,12 @@ Sources:
   - a bigger starting fleet and more reinforcements on big maps
   - a lower default win % for 1,000 suns or more
   - faster bots (cache frontier, threat and region progress per turn instead of rescanning every sun at every step)
-- [ ] **Styles are uneven** (soak). Win rate per seat, against a fair share of about 10%:
+- [x] **Styles are uneven** (within about 3 points of fair since round 5) (soak). Win rate per seat, against a fair share of about 10%:
   - Round 1: aggressive 25.9%, territorial 14.7%, balanced 5.2%, card hunter 5.2%, defensive 0.9%.
   - Round 2, after tuning, 80 games: defensive 16.5%, aggressive 12.7%, territorial 9.6%, balanced 7.0%, card hunter 5.1%.
   - Round 5, after the tuner and the card cap, 120 games: territorial 17.3%, aggressive 10.5%, defensive 8.9%, card hunter 7.6%, balanced 6.3%.
   - The tuner now has identity rules: aggressive keeps the lowest odds, defensive the most hold and reserve, the card hunter the most card focus, territorial the most claiming. A second run is going.
+  - Round 5, third tuner run (200 games): balanced 13.8%, aggressive 14.7%, territorial 12.9%, defensive 11.6%, card hunter 9.7%, against a fair share of 12.6%. Applied: card hunter margin 0 and region focus 2.7, territorial hold 0.66.
   - Hand-tuning is noisy, swinging several points between 50 and 80 games. Next: an automatic tuner (`TUNE=` env in `tests/soak.js`), running many seeds and nudging each style toward the fair share.
 - [ ] **Automatic tuner** (`tests/tune.js`, round 4): hill-climbs one style weight at a time across 240 games on 28 threads, keeping changes that bring win rates closer together. The first run is going in the background; apply `tests/tune_result.json` next round.
 - [ ] **Games are long:** (round 5: with the card cap the median is down to 781 turns, from 1,712; max 2,116) a median of 1,712 turns from one home sun to total conquest. At "fast" (0.15 s a move) a computer-only game takes hours. Consider a faster pace for computer-only games, or a bigger home start.
