@@ -1,6 +1,6 @@
 // Solo play with no server: a stand-in for the room that speaks the same messages
 // ("welcome", "state", "error"), so the game screen cannot tell the difference.
-import { newGame, act, offerTruce, acceptTruce, declineTruce } from "./shared/rules.js";
+import { newGame, act, offerTruce, acceptTruce, declineTruce, endByAgreement } from "./shared/rules.js";
 import { botStep, botAcceptsTruce, STYLE_KEYS } from "./shared/bot.js";
 import { HULL_KEYS, PACES, freeLook, BOT_NAMES } from "./shared/looks.js";
 export { PACES };
@@ -44,6 +44,10 @@ export class LocalRoom {
       if (m.t === "truceOffer" && this.seats[other].ai && botAcceptsTruce(this.g, other, me, this.seats[other].style, this.rng)) { const r2 = acceptTruce(this.g, other, me); if (r2.ok) ev.push(...r2.events); }
       else if (m.t === "truceOffer" && this.seats[other].ai) { const r2 = declineTruce(this.g, other, me); if (r2.ok) ev.push(...r2.events); }
       return this.commit(ev);
+    }
+    if (m.t === "endVote" && m.on && me >= 0) {   // solo: you are the only voter, so it simply ends
+      const r = endByAgreement(this.g); if (!r.ok) return this.emit({ t: "error", error: r.error });
+      this.say("You ended the game: most suns wins"); return this.commit(r.events);
     }
     if (m.t !== "intent" || me < 0) return;
     if (this.seats[me].away) this.seats[me].away = false;

@@ -90,6 +90,11 @@ textarea { font: .95rem/1.45 var(--body); color: inherit; width: 100%; resize: v
 textarea:focus { outline: none; border-color: var(--me); box-shadow: 0 0 0 3px color-mix(in srgb, var(--me) 25%, transparent); }
 .dlg.note .count { text-align: right; margin: 4px 0 0; }
 
+/* end-the-game vote banner (round 42) */
+.votebanner { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 12px; font-size: .84rem;
+  background: rgba(255, 196, 77, .09); border: 1px solid rgba(255, 196, 77, .45); box-shadow: 0 0 16px rgba(255, 196, 77, .14); color: #ffe7b0; }
+.votebanner .row { gap: 6px; }
+
 /* ---------- title ---------- */
 .screen { position: fixed; inset: 0; display: grid; place-items: center; padding: var(--top) var(--gutr) var(--bot) var(--gut); overflow: auto; z-index: 3;
   background: radial-gradient(ellipse at center, rgba(4, 6, 11, .1) 0%, rgba(4, 6, 11, .65) 75%); }

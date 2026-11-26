@@ -220,6 +220,22 @@ for (const c of [a, bb, sneaky]) c.ws.close();
   for (let k = 0; k < 6; k++) codes.push((await post({ text: "note " + k }, { "x-limit-test": "1", "CF-Connecting-IP": ip })).status);
   check(codes.slice(0, 5).every(c => c === 200) && codes[5] === 429, `the 6th note in an hour from one visitor is refused (${codes.join(",")})`);
 }
+// ending by agreement (round 42): one player asks, the game ends only when every human still playing agrees
+{
+  const { code: vc } = await (await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 3, mode: "dealt" }) })).json();
+  const a = client(vc, { name: "Ava" }); await a.ready; await until(() => a.state && a.seat);
+  const b = client(vc, { name: "Ben" }); await b.ready; await until(() => b.state && b.seat && a.state.seats.length === 2);
+  a.send({ t: "addBot" }); await until(() => a.state.seats.length === 3);
+  a.send({ t: "start" }); await until(() => a.state.status === "playing" && b.state.status === "playing");
+  a.send({ t: "endVote", on: true }); await until(() => b.state.endVote);
+  const asked = b.state.endVote && b.state.endVote.need.length === 2 && b.state.status === "playing";
+  b.send({ t: "endVote", on: false }); await until(() => !a.state.endVote);
+  const kept = !a.state.endVote && a.state.status === "playing";
+  a.send({ t: "endVote", on: true }); await until(() => b.state.endVote); b.send({ t: "endVote", on: true });
+  await until(() => a.state.status === "over" && a.state.game && a.state.game.status === "over");
+  check(asked && kept && a.state.status === "over" && a.state.game.winner >= 0, `ending by agreement: one ask waits for everyone, "keep playing" cancels it, and two yeses end it (winner seat ${a.state.game && a.state.game.winner})`);
+  a.ws.close(); b.ws.close();
+}
 // an idle room closes itself (needs DEV=1 in .dev.vars for the short idle time)
 {
   const r = await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 2, public: true, idleMs: 1500 }) });

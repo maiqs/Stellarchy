@@ -386,7 +386,34 @@ function renderMarks() {
 }
 
 const PHASES = [["reinforce", "Reinforce"], ["attack", "Attack"], ["fortify", "Fortify"]];
+// every bar gets the end-vote banner on top when a request to end the game is open
 function renderBar() {
+  renderBarInner();
+  const v = st && st.endVote, bar = $("bar"); if (!v || !st.game || st.status !== "playing") return;
+  const me = mySeat, asked = st.seats.find(s => s.id === v.by), waiting = v.need.filter(id => !v.yes.includes(id)).length, mine = v.need.includes(me), agreed = v.yes.includes(me);
+  const L = leaderNow(), div = document.createElement("div"); div.className = "votebanner";
+  div.innerHTML = `<span>⚑ <b>${esc(asked ? asked.name : "Someone")}</b> asks to end the game now: most suns wins (${esc(nameOf(L.seat))}, ${L.suns} suns). ${agreed ? `Waiting for ${waiting} more…` : ""}</span>
+    <span class="row">${mine && !agreed ? `<button class="btn small go" id="vYes" type="button">Agree</button>` : ""}${mine ? `<button class="btn small ghost" id="vNo" type="button">Keep playing</button>` : ""}</span>`;
+  bar.prepend(div);
+  if ($("vYes")) $("vYes").onclick = () => room.send({ t: "endVote", on: true });
+  if ($("vNo")) $("vNo").onclick = () => room.send({ t: "endVote", on: false });
+}
+// who leads right now (the server's totals stay right under fog of war)
+function leaderNow() {
+  const g = st.game; let seat = -1, suns = -1, ships = -1;
+  st.seats.forEach((s, k) => { if (!g.alive[k]) return; const tot = g.totals && g.totals[k], h = tot ? tot.held : ownedBy(g, k), sh = tot ? tot.ships : g.armies.reduce((a, v, i) => a + (g.owner[i] === k ? v : 0), 0); if (h > suns || (h === suns && sh > ships)) { seat = k; suns = h; ships = sh; } });
+  return { seat, suns };
+}
+function endDialog() {
+  const L = leaderNow(), solo = st.local, others = !solo && st.seats.some((s, k) => !s.ai && !s.away && st.game.alive[k] && s.id !== mySeat);
+  openDialog(`<div class="dlg"><h2>End the game now?</h2>
+    <p class="hint">The player with the most suns wins: right now that's <b style="color:${esc(lookOf(L.seat).main)}">${esc(nameOf(L.seat))}</b> with ${L.suns} suns.${others ? " Everyone still playing has 2 minutes to agree; it ends only if they all do." : ""}</p>
+    <div class="row end"><button class="btn ghost" id="eNo" type="button">Keep playing</button><button class="btn go" id="eYes" type="button">${others ? "Ask everyone" : "End it now"}</button></div></div>`, el => {
+    el.querySelector("#eNo").onclick = () => dlg.close();
+    el.querySelector("#eYes").onclick = () => { dlg.close(); room.send({ t: "endVote", on: true }); };
+  });
+}
+function renderBarInner() {
   if (ui.replay) return renderReplayBar();
   const bar = $("bar"), g = st.game, k = seatIx();
   bar.classList.toggle("mine", !!myTurn());
@@ -620,7 +647,7 @@ $("hMenu").onclick = () => openDialog(`<div class="dlg"><h2>Menu</h2>
   <div class="field"><span>Battle effects</span><div class="seg" id="mFx">${[["full", "Full"], ["quick", "Quick"], ["off", "Off"]].map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${store.get("stellarchy_fx", "full") === v}">${l}</button>`).join("")}</div><p class="hint">Quick plays lasers and flights faster; Off moves ships at once with no lasers or debris. Fast and Instant paces use Quick automatically.</p></div>
   <div class="field"><span>Motion</span><div class="seg"><button type="button" id="mCalm" aria-pressed="${document.body.classList.contains("calm")}">Calm motion</button></div><p class="hint">No camera glides, spinning or bouncing interface. Battles still show.</p></div>
   ${"Notification" in window && Notification.permission === "default" ? `<button class="btn" id="mNotify" type="button">Alert me when it's my turn</button>` : ""}
-  <div class="row end"><button class="btn ghost" id="mHowIn" type="button">How to play</button><button class="btn ghost" id="mNoteIn" type="button">✉ Note to the developer</button><button class="btn" id="mLeave" type="button">Leave game</button><button class="btn go" id="mBack" type="button">Back to the war</button></div></div>`, el => {
+  <div class="row end"><button class="btn ghost" id="mHowIn" type="button">How to play</button><button class="btn ghost" id="mNoteIn" type="button">✉ Note to the developer</button>${st && st.game && st.status === "playing" && seatIx() >= 0 && st.game.alive[seatIx()] && st.game.phase !== "setup" ? `<button class="btn ghost" id="mEnd" type="button">⚑ End the game now…</button>` : ""}<button class="btn" id="mLeave" type="button">Leave game</button><button class="btn go" id="mBack" type="button">Back to the war</button></div></div>`, el => {
     el.querySelector("#mNames").onclick = () => { ui.allNames = !ui.allNames; scene.setAllNames(ui.allNames); dlg.close(); };
     el.querySelector("#mSpin").onclick = () => { ui.spin = !ui.spin; scene.setAutoRotate(ui.spin); dlg.close(); };
     el.querySelectorAll("#mFx button").forEach(b => b.onclick = () => { store.set("stellarchy_fx", b.dataset.v); scene.setEffects(effectsMode()); dlg.close(); });
@@ -632,6 +659,7 @@ $("hMenu").onclick = () => openDialog(`<div class="dlg"><h2>Menu</h2>
     const nb = el.querySelector("#mNotify"); if (nb) nb.onclick = () => { Notification.requestPermission(); dlg.close(); };
     el.querySelector("#mHowIn").onclick = () => howDialog();
     el.querySelector("#mNoteIn").onclick = () => noteDialog();
+    if (el.querySelector("#mEnd")) el.querySelector("#mEnd").onclick = () => endDialog();
     el.querySelector("#mLeave").onclick = () => leaveRoom(); el.querySelector("#mBack").onclick = () => dlg.close();
   });
 $("hCode").onclick = share;

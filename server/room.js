@@ -5,7 +5,7 @@
 import STARS from "../data/stars.json";
 import { buildMap, clampSize, CENTRES } from "../shared/mapgen.js";
 import { prepareMap, mulberry32 } from "../shared/map.js";
-import { newGame, act, MAX_SEATS, SUNS_PER_SEAT, offerTruce, acceptTruce, declineTruce } from "../shared/rules.js";
+import { newGame, act, MAX_SEATS, SUNS_PER_SEAT, offerTruce, acceptTruce, declineTruce, endByAgreement } from "../shared/rules.js";
 import { botStep, botAcceptsTruce, STYLE_KEYS } from "../shared/bot.js";
 import { HULL_KEYS as HULLS, PACES, freeLook, botName } from "../shared/looks.js";
 export { PACES };
@@ -23,7 +23,8 @@ const SKIP_WARN_MS = 10000;    // "AI takes over in 10 s" is shown this long bef
 // with up to DELIVERY_MS forgiven for a slow connection; then each player has a one-off time bank per game.
 export const DELIVERY_MS = 10000, BANK_MS = 30000;
 const MAX_LOG = 60;
-const REPORT_EVERY_MS = 60000;   // a listed room re-reports at most once a minute unless what the list shows changes
+const REPORT_EVERY_MS = 60000;   // (lobby reports)
+export const VOTE_MS = 120000;   // a request to end the game lasts 2 minutes   // a listed room re-reports at most once a minute unless what the list shows changes
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const cleanName = s => safeName(String(s ?? "").replace(/[\u0000-\u001f\u007f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 24));   // offensive names become "Stellarch"
@@ -167,6 +168,19 @@ export class Room {
         if (typeof m.e !== "string" || !EMOTES.includes(m.e) || now - (a.emoted || 0) < 2000) return;
         a.emoted = now; ws.serializeAttachment(a); this.broadcast({ t: "emote", seat: seatId, e: m.e }); return;
       }
+      case "endVote": {   // end the game now, most suns wins: every human still playing and present must agree
+        const g = s.game; if (!g || s.status !== "playing") return reply({ t: "error", error: "there is no game to end" });
+        const me = s.seats.indexOf(seat); if (!g.alive[me]) return reply({ t: "error", error: "only players still in the game can vote" });
+        if (!m.on) { if (s.endVote) { s.endVote = null; this.log(`${seat.name} wants to keep playing`); } break; }
+        if (!s.endVote || now > s.endVote.until) { s.endVote = { by: seatId, yes: [], until: now + VOTE_MS }; this.log(`${seat.name} asks to end the game now: most suns wins`); }
+        if (!s.endVote.yes.includes(seatId)) s.endVote.yes.push(seatId);
+        const voters = this.voters();
+        if (voters.every(id => s.endVote.yes.includes(id))) {
+          const r = endByAgreement(g); if (!r.ok) return reply({ t: "error", error: r.error });
+          s.endVote = null; this.log("Everyone agreed to end the game"); this.afterEvents(r.events);
+        }
+        break;
+      }
       case "truceOffer": case "truceAccept": {   // diplomacy works at any time, not only on your turn
         const g = s.game; if (!g || s.status !== "playing") return;
         const me = s.seats.indexOf(seat), other = s.seats.findIndex(x => x.id === (m.t === "truceOffer" ? m.to : m.from));
@@ -252,6 +266,8 @@ export class Room {
   }
 
   // ---- the clock: computer turns, away players, timers and dropped connections ----
+  // who must agree to end the game: humans still in it who are here (the AI covering a seat does not vote)
+  voters() { const s = this.s, g = s.game; return s.seats.filter((x, k) => !x.ai && !x.away && x.online !== false && g.alive[k]).map(x => x.id); }
   controlledByAI(k) { const st = this.s.seats[k]; return !!st && (st.ai || st.away); }
   turnBegan() {
     const s = this.s, now = Date.now(); s.turnStarted = now; s.turnSeen = false; s.onBank = false;
@@ -338,6 +354,7 @@ export class Room {
     return { t: "state", rev: s.rev, code: s.code, status: s.status, public: s.public, opts: s.opts, creator: s.creator,
              seats: s.seats.map(x => ({ id: x.id, name: x.name, main: x.main, sub: x.sub, hull: x.hull, style: x.style, ai: x.ai, away: !!x.away, online: x.online !== false, bank: x.ai ? 0 : (x.bank ?? BANK_MS) })),
              game: null, events: s.lastEventsRev === s.rev ? s.lastEvents : [], log: s.log.slice(-20),
+             endVote: s.endVote && Date.now() < s.endVote.until && s.status === "playing" ? { by: s.endVote.by, yes: s.endVote.yes, need: this.voters(), until: s.endVote.until } : null,
              deadline: s.deadline, onBank: !!s.onBank, turnSeen: !!s.turnSeen, warnAt: s.deadline ? s.deadline - SKIP_WARN_MS : 0, now };
   }
   // Each viewer gets their own message: only their own hand (others are counts), never the deck order,

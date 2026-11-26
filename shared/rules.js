@@ -326,3 +326,21 @@ export function declineTruce(g, by, from) {
   g.offers = (g.offers || []).filter(o => !(o.from === from && o.to === by));
   return had ? { ok: true, events: [{ t: "truceDeclined", by, from }] } : { ok: false, error: "no offer" };
 }
+
+// ---- ending by agreement (player wish, round 42): the game ends now and the player with the most suns wins
+// (ties go to the most ships, then the earlier seat). Online, every human still playing must agree first.
+export function leader(g) {
+  let best = -1, bs = -1, bships = -1;
+  for (let k = 0; k < g.alive.length; k++) {
+    if (!g.alive[k]) continue;
+    let suns = 0, ships = 0; for (let i = 0; i < g.owner.length; i++) if (g.owner[i] === k) { suns++; ships += g.armies[i]; }
+    if (suns > bs || (suns === bs && ships > bships)) { best = k; bs = suns; bships = ships; }
+  }
+  return best;
+}
+export function endByAgreement(g) {
+  if (g.status === "over" || g.phase === "setup") return { ok: false, error: "the game can only be ended once it is under way" };
+  const seat = leader(g); if (seat < 0) return { ok: false, error: "nobody is left" };
+  g.status = "over"; g.winner = seat; g.advance = null; recordHistory(g, true);
+  return { ok: true, events: [{ t: "win", seat, systems: ownedBy(g, seat), turnNo: g.turnNo, agreed: true }] };
+}

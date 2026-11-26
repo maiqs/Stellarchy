@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { prepareMap, mulberry32, hops } from "../shared/map.js";
-import { newGame, act, invariants, hqChoices, reinforcementsFor, isSet, target } from "../shared/rules.js";
+import { newGame, act, invariants, hqChoices, reinforcementsFor, isSet, target, endByAgreement, leader } from "../shared/rules.js";
 import { botIntent, playTurn, STYLE_KEYS } from "../shared/bot.js";
 
 import { buildMap } from "../shared/mapgen.js";
@@ -210,4 +210,21 @@ test("dice record: over a whole game the dice average close to 3.5", () => {
   runGame(MAP, g, rng);
   const n = g.dice.reduce((a, d) => a + d.n, 0), sum = g.dice.reduce((a, d) => a + d.sum, 0);
   assert.ok(n > 500, `${n} dice`); assert.ok(Math.abs(sum / n - 3.5) < .1, `average ${(sum / n).toFixed(3)}`);
+});
+
+test("ending by agreement: most suns wins, ties go to most ships", () => {
+  const g = newGame(MAP, { mode: "dealt", seats: seats(3, false) }, mulberry32(9));
+  assert.equal(g.phase === "setup", false);
+  const n = g.owner.length;
+  for (let i = 0; i < n; i++) { g.owner[i] = i % 3 === 2 ? 2 : i % 3; g.armies[i] = 1; }
+  g.owner[0] = 2; g.owner[1] = 2;   // seat 2 now holds the most suns
+  assert.equal(leader(g), 2);
+  const r = endByAgreement(g);
+  assert.ok(r.ok); assert.equal(g.status, "over"); assert.equal(g.winner, 2); assert.equal(r.events[0].t, "win"); assert.ok(r.events[0].agreed);
+  assert.equal(endByAgreement(g).ok, false, "a finished game cannot end twice");
+  // a tie on suns goes to the bigger fleet
+  const h = newGame(MAP, { mode: "dealt", seats: seats(2, false) }, mulberry32(10));
+  for (let i = 0; i < h.owner.length; i++) { h.owner[i] = i % 2; h.armies[i] = 1; }
+  if (h.owner.length % 2) h.owner[h.owner.length - 1] = -1;
+  h.armies[1] = 50; assert.equal(leader(h), 1);
 });

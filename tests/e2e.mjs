@@ -99,6 +99,14 @@ try {
   check((await page.evaluate(() => localStorage.getItem("stellarchy_fx"))) === '"off"', "the battle effects choice is saved");
   await page.evaluate(() => localStorage.setItem("stellarchy_fx", '"full"'));
 
+  // ending by agreement, solo: Menu → End the game now → the most suns wins at once
+  await page.click("#hMenu"); await page.click("#mEnd"); await page.waitForSelector("#eYes");
+  await page.screenshot({ path: fileURLToPath(new URL("../docs/shots/end.png", import.meta.url)) }).catch(() => {});
+  await page.click("#eYes"); await page.waitForFunction(() => window.stellarchy.state.status === "over", null, { timeout: 5000 }).catch(() => {});
+  check(await page.evaluate(() => window.stellarchy.state.status === "over" && window.stellarchy.state.game.winner >= 0), "solo: End the game now ends it, and the most suns wins");
+  await page.waitForSelector("#dlg[open] .chart", { timeout: 5000 }).catch(() => {}); await page.keyboard.press("Escape");
+  await page.click("#bAgain"); await page.waitForFunction(() => window.stellarchy.state && window.stellarchy.state.status === "playing");
+
   // cards show real photos
   await page.evaluate(() => { const W = window.stellarchy; W.state.game.cards[0] = [W.MAP.systems.findIndex(s => s.name === "Sirius")].filter(i => i >= 0); });
   if (await page.evaluate(() => window.stellarchy.state.game.cards[0].length)) {
