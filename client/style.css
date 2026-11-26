@@ -56,6 +56,19 @@ input[type=color] { padding: 3px; width: 48px; cursor: pointer; }
 input[type=range] { accent-color: var(--me); padding: 0; min-height: 32px; border: 0; background: none; width: 100%; }
 a { color: var(--gold); }
 
+/* waiting bar: Skip and the pace share a row; planned ships are chips you tap to cancel (round 37) */
+.waitrow { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
+.waitrow:empty { display: none; }
+.waitrow .seg { justify-content: center; }
+.planrow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; }
+.planchip { display: inline-flex; align-items: center; gap: 6px; font: 600 .78rem var(--body); color: var(--ink, #e8eefc); background: color-mix(in srgb, var(--me) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--me) 55%, transparent); border-radius: 999px; padding: 4px 6px 4px 11px; min-height: 32px; cursor: pointer;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--me) 22%, transparent); transition: background .15s, border-color .15s; }
+.planchip b { font-weight: 700; max-width: 12ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.planchip i { font-style: normal; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: rgba(255, 255, 255, .08); color: var(--muted); font-size: .7rem; }
+.planchip:hover, .planchip:focus-visible { border-color: #ff6b7a; background: rgba(255, 77, 90, .14); }
+.planchip:hover i, .planchip:focus-visible i { background: #ff4d5a; color: #fff; }
+
 /* ---------- title ---------- */
 .screen { position: fixed; inset: 0; display: grid; place-items: center; padding: var(--top) var(--gutr) var(--bot) var(--gut); overflow: auto; z-index: 3;
   background: radial-gradient(ellipse at center, rgba(4, 6, 11, .1) 0%, rgba(4, 6, 11, .65) 75%); }
@@ -212,6 +225,15 @@ dialog::backdrop { background: rgba(2, 4, 8, .6); backdrop-filter: blur(3px); }
   .menu .btn:not(.big), .joinrow input { min-height: 40px; }
   .title-inner { gap: 8px; }
   .menu > :first-child, .menu > :last-child { grid-column: 1 / -1; }
+  /* round 37: the waiting bar in one short block: Skip and the pace on one row, short labels, smaller chips */
+  .actionbar .long { display: none; }
+  .waitrow { flex-wrap: nowrap; gap: 6px; }
+  .waitrow .btn { min-height: 34px; padding: 4px 12px; font-size: .78rem; flex: none; }
+  .waitrow .seg { flex-wrap: nowrap; gap: 4px; }
+  .waitrow .seg button { padding: 4px 8px; font-size: .74rem; }
+  .planchip { min-height: 28px; font-size: .72rem; padding: 2px 4px 2px 9px; }
+  .planchip i { width: 18px; height: 18px; }
+  .planrow .btn.small { min-height: 28px; padding: 2px 10px; font-size: .72rem; }
 }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 

@@ -408,10 +408,11 @@ function renderBar() {
   if (!myTurn()) {
     const k2 = g.turn, away = turnSeat.away, me2 = k >= 0 ? st.seats[k] : null;
     const doing = g.phase === "setup" ? "choosing a home sun" : g.phase === "reinforce" ? "reinforcing" : g.phase === "attack" ? "attacking" : "fortifying";
-    bar.innerHTML = `${phaseRow}<div class="big" style="color:${esc(lookOf(k2).main)}">${k < 0 ? "" : "Wait your turn · "}${esc(nameOf(k2))}</div>
+    bar.innerHTML = `${phaseRow}<div class="big" style="color:${esc(lookOf(k2).main)}">${k < 0 ? "" : `<span class="long">Wait your turn · </span>`}${esc(nameOf(k2))}</div>
       <div class="what">${esc(nameOf(k2))} is ${doing}${turnSeat.ai ? " (AI)" : away ? " (AI is playing for them)" : ""}.${timerText(g)}</div>
-      ${planLine(g, k)}${me2 && me2.away ? `<div class="row"><button class="btn go" id="bBack" type="button">Take my seat back</button></div>` : skipButton() ? `<div class="row">${skipButton()}</div>` : ""}${ui.skipping ? "" : paceRow()}`;
+      ${planLine(g, k)}${me2 && me2.away ? `<div class="row"><button class="btn go" id="bBack" type="button">Take my seat back</button></div>` : ""}<div class="waitrow">${me2 && me2.away ? "" : skipButton()}${ui.skipping ? "" : paceRow()}</div>`;
     if ($("bClearPlan")) $("bClearPlan").onclick = () => { ui.plan = {}; render(); };
+    document.querySelectorAll("[data-plan]").forEach(b => b.onclick = () => { delete ui.plan[b.dataset.plan]; render(); });
     if (me2 && me2.away) $("bBack").onclick = () => room.send({ t: "away", on: false });
     wirePace(); wireSkip(); return;
   }
@@ -490,7 +491,7 @@ function effectsMode(m = st) {
 }
 function skipButton() {
   const me = seatIx() >= 0 ? st.seats[seatIx()] : null;
-  return st.local && me && !me.away && st.status === "playing" ? `<button class="btn" id="bSkip" type="button" title="The AI plays at full speed until your turn">${ui.skipping ? "⏩ Skipping…" : "⏩ Skip to my turn"}</button>` : "";
+  return st.local && me && !me.away && st.status === "playing" ? `<button class="btn" id="bSkip" type="button" title="The AI plays at full speed until your turn">${ui.skipping ? "⏩ Skipping…" : `⏩ Skip<span class="long"> to my turn</span>`}</button>` : "";
 }
 function wireSkip() { const b = $("bSkip"); if (b) b.onclick = () => { if (ui.skipping) return; ui.skipping = (st.opts && st.opts.pace) || "normal"; room.send({ t: "pace", pace: "instant" }); }; }
 function paceRow() {
@@ -808,7 +809,9 @@ function applyPlan(g, k) {
 function planLine(g, k) {
   if (k < 0 || !g.alive[k] || g.phase === "setup") return "";
   const p = planned(), est = reinforcementsFor(MAP, g, k);
-  return p ? `<div class="row"><span class="hint">Planned ${p} of about ${est} ships for your next turn.</span><button class="btn small ghost" id="bClearPlan" type="button">Clear plan</button></div>`
+  const ids = Object.keys(ui.plan).filter(i => ui.plan[i] > 0), shown = ids.slice(0, 8);
+  const chips = shown.map(i => `<button class="planchip" type="button" data-plan="${i}" title="Cancel the plan for ${esc(disp(S[i]))}" aria-label="Cancel ${ui.plan[i]} planned for ${esc(disp(S[i]))}"><b>${esc(disp(S[i]))}</b> +${ui.plan[i]}<i aria-hidden="true">✕</i></button>`).join("") + (ids.length > shown.length ? `<span class="hint">+${ids.length - shown.length} more</span>` : "");
+  return p ? `<div class="planrow"><span class="hint">Planned ${p} of about ${est} ships:</span>${chips}<button class="btn small ghost" id="bClearPlan" type="button">Clear all</button></div>`
            : `<div class="hint">While you wait, tap your suns to plan where your ${est} new ships go.</div>`;
 }
 

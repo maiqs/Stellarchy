@@ -156,7 +156,7 @@ Sources:
   - [x] **Non-binding truces:** online Diplomacy's appeal is negotiation. Keep it light, with no free-text chat: a "Propose a truce for 3 turns" button the other player accepts or ignores. The game shows truces on the map, but anyone can break one, and breaking it is announced. *(Round 14: a 🤝 button on each rival in the players panel. Offers last a round, truces 3 rounds. AI players accept by style, decline out loud, and keep their word unless a game stalls. Breaking one is announced to everyone.)*
   - [x] **Colour-blind support:** NetEase found colour-correction use matches the share of colour-blind players. Add a colour-blind-safe palette preset and a per-player pattern or glyph on stars and in the players list, so colour is never the only cue. *(Round 6: Okabe-Ito colour-blind-safe colours in the look editor, ship symbols beside names, and a menu option for symbols on every sun.)*
   - [x] **Portrait and landscape:** 47% of players in that case study switched orientation. Keep both layouts first-class. *(Round 36: landscape phones tested for the first time (740×360 and 844×390). Before, the bar took 84% of the height and the title hid the menu. Now the bar is compact and scrolls, toasts sit on the left, top-bar buttons are icon-only, and the title fits on one screen with a two-column menu. Browser check added; `tools/shot_land.mjs` takes phone screenshots.)*
-  - [ ] **Landscape waiting bar:** still 60–65% of the height while you wait (plan hint, Skip and the pace row). Next: put Skip and the pace on one row, or fold the pace row away.
+  - [x] **Landscape waiting bar:** still 60–65% of the height while you wait (plan hint, Skip and the pace row). *(Round 37: Skip and the pace share one row, with short labels in landscape: 55% now, 58% with four planned suns.)*
   - [x] **Ranked play:** this needs accounts, so skip it for now. A local "your record" (wins, best game) in the browser is a free stand-in. *(Round 9: your record (wins, games, fastest win) on the title card and the results screen.)*
 
   Sources:
@@ -208,7 +208,7 @@ Sources:
   - [x] **Skip the AI's turns and the animations:** the most repeated ask found this round. Armello players call long AI turns unplayable and want a skip button; Gems of War asks for "Skip AI turn animation"; Hearthstone asks for a "Skip animations" option and speed settings; Board Game Arena asks for an option to turn off scoring animations, and another for no flashing or repeated animations. *(Round 35: Battle effects Full / Quick / Off and ⏩ Skip to my turn.)*
   - [ ] **Slow it down for me only:** Lords of Waterdeep players found the AI too fast to follow and asked to slow it, but not for everyone. Online, our pace is per room; a per-viewer replay of the last turn ("What just happened?") would cover it without slowing others.
   - [ ] **Vote to end a stuck game:** war.app players can vote to end a game after someone disconnects and restart from a few turns back. For us: when only AI-covered seats are holding the game up, the humans can vote "end now, most suns wins".
-  - [ ] **Order clean-up:** Warzone and itch.io players keep asking to reorder or cancel queued orders quickly. Our plan-while-waiting could show each planned sun as a chip with an ✕.
+  - [x] **Order clean-up:** Warzone and itch.io players keep asking to reorder or cancel queued orders quickly. Our plan-while-waiting could show each planned sun as a chip with an ✕. *(Round 37: each planned sun is a neon chip (name +ships ✕); tap one to cancel it; Clear all stays.)*
   - [x] **Turn reminders and team planning:** a Neptune's Pride-style newcomer had to keep their own reminder list. Covered: browser notifications, the tab title and a chime (rounds 3 and 16).
 
   Sources:
@@ -538,3 +538,8 @@ Sources:
   - Landscape phones were tested for the first time and fixed. The action bar had covered 84% of the screen; it is now compact and scrolls. Toasts moved left, and the title page fits on one screen with a two-column menu.
   - New browser check for landscape; the Skip check now retries, since it once raced the AI's turn.
   - 51 of 51 unit tests and 17 of 17 browser checks pass.
+- **Round 37 (2026-11-26):**
+  - Planned ships now show as chips you tap to cancel (a player wish).
+  - The landscape waiting bar is shorter (Skip and the pace share a row).
+  - Found that the browser test's moves were never sent in the page's format (`{t: "intent"}`), so the Skip check had passed by luck; fixed.
+  - 51 of 51 unit tests and 18 of 18 browser checks pass.

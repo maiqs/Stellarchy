@@ -54,20 +54,26 @@ try {
     const W = window.stellarchy, me = () => W.state.seats.findIndex(s => s.name === "E2E"), mine = () => W.state.game.turn === me();
     for (let tries = 0; tries < 4 && !document.getElementById("bSkip"); tries++) {
     for (let k = 0; k < 400 && mine(); k++) {   // finish my own turn quickly so the AI's turn comes up
-      const g = W.state.game;
-      if (g.phase === "setup") W.room.send({ t: "hq", sys: g.owner.findIndex(o => o < 0) });
-      else if (g.phase === "reinforce") W.room.send({ t: "place", placement: { [g.owner.indexOf(me())]: g.reinforcements } });
-      else if (g.phase === "attack") W.room.send({ t: "endAttack" }); else W.room.send({ t: "endTurn" });
+      const g = W.state.game, move = intent => W.room.send({ t: "intent", intent });   // moves travel wrapped, as the page sends them
+      if (g.phase === "setup") move({ t: "hq", sys: g.owner.findIndex(o => o < 0) });
+      else if (g.phase === "reinforce") move({ t: "place", placement: { [g.owner.indexOf(me())]: g.reinforcements } });
+      else if (g.phase === "attack") move({ t: "endAttack" }); else move({ t: "endTurn" });
       await new Promise(r => setTimeout(r, 30));
     }
     for (let k = 0; k < 100 && !document.getElementById("bSkip") && !mine(); k++) await new Promise(r => setTimeout(r, 50));
     }
     const b = document.getElementById("bSkip"); if (!b) return { none: true, mine: mine(), status: W.state.status, phase: W.state.game.phase, me: me(), seats: W.state.seats.map(s => s.name + (s.away ? "(away)" : "")), bar: document.getElementById("bar").textContent.slice(0, 120) };
-    const t0 = performance.now(); b.click();
+    // plan chips: a planned sun shows as a chip; tapping it cancels that plan
+    const mySun = W.state.game.owner.indexOf(me()); W.ui.plan[mySun] = 2;
+    for (let k = 0; k < 60 && !document.querySelector(".planchip"); k++) await new Promise(r => setTimeout(r, 50));
+    const chip = document.querySelector(".planchip"); if (chip) chip.click();
+    const chipOk = !!chip && !W.ui.plan[mySun] && !document.querySelector(".planchip");
+    const t0 = performance.now(); document.getElementById("bSkip").click();
     for (let k = 0; k < 400 && !(mine() || W.state.status === "over"); k++) await new Promise(r => setTimeout(r, 25));
     await new Promise(r => setTimeout(r, 100));
-    return { ms: Math.round(performance.now() - t0), pace: W.state.opts.pace, back: mine() || W.state.status === "over" };
+    return { ms: Math.round(performance.now() - t0), pace: W.state.opts.pace, back: mine() || W.state.status === "over", chipOk };
   });
+  check(skipped.chipOk, "a planned sun shows as a chip, and tapping it cancels that plan");
   check(skipped.back && skipped.pace === "slow", `Skip to my turn reaches my turn fast and puts the pace back (${JSON.stringify(skipped)})`);
   await page.click("#hMenu"); await page.click('#mFx [data-v="off"]');
   check((await page.evaluate(() => localStorage.getItem("stellarchy_fx"))) === '"off"', "the battle effects choice is saved");
