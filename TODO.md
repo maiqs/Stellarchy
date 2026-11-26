@@ -130,7 +130,7 @@ Paul: look online for features people want and give them to people. I looked at 
   - jump to "my borders" and "my home sun"
   - a region list showing bonuses and who holds what
 - [ ] **Bigger games:** Warzone players ask for 60–100 players. Consider up to 32 seats on maps of 500 suns or more.
-- [ ] **Fog of war as a room option.** It's a Warzone staple: you see only your suns and their neighbours.
+- [x] **Fog of war as a room option.** It's a Warzone staple: you see only your suns and their neighbours. *(Round 12: an option in Play vs AI and Create room. It's applied per viewer on the server and in solo play (`shared/fog.js`). Fogged suns are dim slate; battles out of sight are hidden; totals still show. Off during home-sun choice, after the game ends, and for players who are out.)*
 - [ ] **End-of-game screen:** *(Round 9: the graph of suns held over time and the standings are done; best moments and a scrubbable replay are not.)*
   - a graph of systems held over time
   - each player's best moment
@@ -274,3 +274,12 @@ Sources:
   - Settings: camera speed, and calm motion (no glides, spinning or interface animation), which follows the system's reduced-motion setting.
   - Ticked the style tests.
   - 29 of 29 unit tests and 20 of 20 room checks pass, the quick-play checks included.
+- **Round 12 (2026-11-26):**
+  - Fog of war, as a room and solo option:
+    - you see your suns and their neighbours
+    - the server sends each viewer only that, events and the last roll included
+    - the players panel uses the server's totals
+  - The server now remembers per connection what it last sent, so diffs follow each viewer's own (fogged) board.
+  - Fixed: true/false toggles were stored as strings ("false" read as on).
+  - The quick-play test now accepts joining an existing quick room. Last round's room was still running on the local server, which is correct behaviour.
+  - 30 of 30 unit tests and 23 of 23 room checks pass, including no fog leaks.

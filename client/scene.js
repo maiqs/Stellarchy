@@ -115,7 +115,9 @@ export function createScene({ container, labels, map }) {
 
   // ---- board state ----
   let owner = new Array(n).fill(-1), armies = new Array(n).fill(0), hqOf = new Array(n).fill(-1), look = () => ({ main: UNCLAIMED, sub: "#05070c", hull: "triangle" });
-  const mainOf = p => p < 0 ? UNCLAIMED : look(p).main, subOf = p => p < 0 ? "#05070c" : look(p).sub;
+  // owner -1 is unclaimed (white); -2 is hidden by fog of war (a dim slate star)
+  const FOG_COLOR = "#2c3550";
+  const mainOf = p => p === -2 ? FOG_COLOR : p < 0 ? UNCLAIMED : look(p).main, subOf = p => p < 0 ? "#05070c" : look(p).sub;
   const hullOf = p => { const h = p >= 0 && look(p).hull; return HULL_KEYS.includes(h) ? h : HULL_KEYS[Math.max(0, p) % HULLS.length]; };
   const glyphOf = p => HULLS.find(h => h.key === hullOf(p)).glyph;
 

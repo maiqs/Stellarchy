@@ -10,6 +10,7 @@ import { botStep, STYLE_KEYS } from "../shared/bot.js";
 import { HULL_KEYS as HULLS, PACES, freeLook, botName } from "../shared/looks.js";
 export { PACES };
 import { EMOTES, botEmotes } from "../shared/emotes.js";
+import { fogActive, maskBoard, maskEvents, totals } from "../shared/fog.js";
 
 // maps are built per size and kept for reuse (the same size always gives the same map)
 const MAPS = new Map();
@@ -46,6 +47,7 @@ export class Room {
         seats: [], tokens: {}, creator: null, game: null, rev: 0, log: [], seed: (Math.random() * 2 ** 31) | 0, rngState: 0,
         turnStarted: 0, deadline: 0,
       };
+      this.s.opts.fog = !!o.fog;   // fog of war: see only your suns and their neighbours
       if (o.quick) { this.s.opts.quick = true; this.s.public = true; this.s.opts.timer = 90; }   // quick play: listed, and a 90 s clock so a vanished player is covered
       this.s.opts.size = Math.max(clampSize(o.size ?? 100), this.s.opts.maxSeats * SUNS_PER_SEAT);
       if (this.env.DEV && o.idleMs) this.s.opts.idleMs = clampInt(o.idleMs, 500, 3600000, 0);   // local tests only
@@ -67,7 +69,7 @@ export class Room {
     return { code: s.code, status: s.status, public: s.public, seats: s.seats.length, humans: s.seats.filter(x => !x.ai).length,
              maxSeats: s.opts.maxSeats, mode: s.opts.mode, targetPct: s.opts.targetPct, timer: s.opts.timer, size: s.opts.size || 300, updated: s.updated,
              names: s.seats.map(x => x.name).slice(0, 6), turnNo: s.game ? s.game.turnNo : 0,
-             quick: !!s.opts.quick, aiSeats: s.game ? s.seats.filter((x, j) => x.ai && s.game.alive[j]).length : 0 };
+             quick: !!s.opts.quick, fog: !!s.opts.fog, aiSeats: s.game ? s.seats.filter((x, j) => x.ai && s.game.alive[j]).length : 0 };
   }
   async report() {   // tell the lobby about this room (public rooms only show there)
     try { await this.env.LOBBY.get(this.env.LOBBY.idFromName("lobby")).fetch("https://lobby/report", { method: "POST", body: JSON.stringify(this.summary()) }); } catch (e) {}
@@ -121,6 +123,7 @@ export class Room {
         if (TIMERS.includes(m.timer)) o.timer = m.timer;
         if (m.public !== undefined) s.public = !!m.public;
         if (m.size !== undefined) o.size = clampSize(m.size);
+        if (m.fog !== undefined) o.fog = !!m.fog;
         o.size = Math.max(o.size || 300, o.maxSeats * SUNS_PER_SEAT);
         break;
       }
@@ -261,29 +264,34 @@ export class Room {
              game: null, events: s.lastEventsRev === s.rev ? s.lastEvents : [], log: s.log.slice(-20),
              deadline: s.deadline, warnAt: s.deadline ? s.deadline - SKIP_WARN_MS : 0, now };
   }
-  // Each viewer gets their own message: only their own hand (others are just counts), never the deck order,
-  // and only the suns that changed since the last message (a full board on joining or when asked to resync).
+  // Each viewer gets their own message: only their own hand (others are counts), never the deck order,
+  // the board as they can see it (fog of war), and only the suns that changed since their last message.
+  // What each socket was last sent lives in memory; after a hibernation it is simply sent whole again.
   sendState() {
     const s = this.s, g = s.game, base = this.view(), sockets = this.ctx.getWebSockets();
-    let diff = null;
-    if (g && this.sentBoard && this.sentBoard.owner.length === g.owner.length) {
-      diff = [];
-      for (let i = 0; i < g.owner.length; i++) if (g.owner[i] !== this.sentBoard.owner[i] || g.armies[i] !== this.sentBoard.armies[i]) diff.push([i, g.owner[i], g.armies[i]]);
-    }
-    // the history graph is only needed on the results screen, so it rides along once the game is over
-    const pub = g ? { ...g, owner: undefined, armies: undefined, deck: undefined, discard: undefined, deckCount: g.deck.length, cards: undefined, hist: s.status === "over" ? g.hist : undefined } : null;
+    this.sentTo = this.sentTo || new WeakMap();
+    const pub = g ? { ...g, owner: undefined, armies: undefined, deck: undefined, discard: undefined, deckCount: g.deck.length, cards: undefined,
+                      hist: s.status === "over" ? g.hist : undefined, totals: totals(g), fog: !!s.opts.fog } : null;
     for (const ws of sockets) {
       const a = ws.deserializeAttachment() || {};
       let msg = base;
       if (g) {
-        const me = s.seats.findIndex(x => x.id === a.seat);
-        const board = a.needFull || !diff ? { full: true, owner: g.owner, armies: g.armies } : { base: this.sentRev, d: diff };
-        msg = { ...base, game: { ...pub, cards: g.cards.map((h, k) => k === me ? h : new Array(h.length).fill(-1)) }, board };
+        const me = s.seats.findIndex(x => x.id === a.seat), fogged = fogActive(g, me, s.opts.fog);
+        const view = fogged ? maskBoard(this.map, g, me) : { owner: g.owner, armies: g.armies, vis: null };
+        const last = this.sentTo.get(ws);
+        let board;
+        if (a.needFull || !last || last.owner.length !== view.owner.length) board = { full: true, owner: view.owner, armies: view.armies };
+        else {
+          const d = []; for (let i = 0; i < view.owner.length; i++) if (view.owner[i] !== last.owner[i] || view.armies[i] !== last.armies[i]) d.push([i, view.owner[i], view.armies[i]]);
+          board = { base: last.rev, d };
+        }
+        this.sentTo.set(ws, { owner: view.owner.slice(), armies: view.armies.slice(), rev: s.rev });
+        msg = { ...base, events: view.vis ? maskEvents(base.events, view.vis) : base.events,
+                game: { ...pub, cards: g.cards.map((h, k) => k === me ? h : new Array(h.length).fill(-1)), lastRoll: view.vis && g.lastRoll && !(view.vis[g.lastRoll.from] || view.vis[g.lastRoll.to]) ? null : g.lastRoll }, board };
         if (a.needFull) { a.needFull = false; ws.serializeAttachment(a); }
       }
       try { ws.send(JSON.stringify(msg)); } catch (e) {}
     }
-    if (g) { this.sentBoard = { owner: g.owner.slice(), armies: g.armies.slice() }; this.sentRev = s.rev; }
   }
   broadcast(o) { const txt = JSON.stringify(o); for (const ws of this.ctx.getWebSockets()) { try { ws.send(txt); } catch (e) {} } }
   async commit() {

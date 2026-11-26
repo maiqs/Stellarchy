@@ -6,7 +6,9 @@ import { botIntent } from "../shared/bot.js";
 
 const BASE = process.env.BASE || "http://127.0.0.1:8787";
 import { buildMap } from "../shared/mapgen.js";
-const MAP = prepareMap(buildMap(JSON.parse(readFileSync(new URL("../data/stars.json", import.meta.url))), +(process.env.SIZE || 300)));
+const STARS = JSON.parse(readFileSync(new URL("../data/stars.json", import.meta.url)));
+const MAP = prepareMap(buildMap(STARS, +(process.env.SIZE || 300)));
+const MAP_FOG = () => prepareMap(buildMap(STARS, 100));   // the fog room plays on 100 suns
 const rng = mulberry32(42);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 let failures = 0;
@@ -95,15 +97,32 @@ for (const c of [a, bb, sneaky]) c.ws.close();
 {
   const q1 = await (await fetch(BASE + "/api/quick", { method: "POST" })).json();
   const p1 = client(q1.code, { name: "Quinn", main: "#22d3c5" }); await p1.ready; await until(() => p1.state && p1.state.game);
-  check(p1.state.status === "playing" && p1.state.seats.length === 4 && p1.state.seats.filter(s => s.ai).length === 3, `quick play starts at once with 3 AI players (${q1.code})`);
+  // either a fresh room (you plus 3 AI, started at once) or a running quick room where you took over an AI seat
+  const mine1 = p1.state.seats.find(s => s.id === p1.seat);
+  check(p1.state.status === "playing" && mine1 && !mine1.ai && (q1.joined || p1.state.seats.filter(s => s.ai).length === 3), `quick play puts you straight into a running game (${q1.code}, ${q1.joined ? "took over an AI" : "new room"})`);
+  const aiBefore = p1.state.seats.filter(s => s.ai).length;
   await sleep(300);
   const q2 = await (await fetch(BASE + "/api/quick", { method: "POST" })).json();
   const p2 = client(q2.code, { name: "Rex" }); await p2.ready; await until(() => p2.seat);
   check(q2.code === q1.code && q2.joined, "a second quick player is sent to the running game");
   await until(() => p1.state.seats.some(s => s.name === "Rex"));
   const rex = p1.state.seats.find(s => s.name === "Rex");
-  check(rex && !rex.ai && p2.seat === rex.id && p1.state.seats.filter(s => s.ai).length === 2, "they take over an AI seat, keeping its colour");
+  check(rex && !rex.ai && p2.seat === rex.id && p1.state.seats.filter(s => s.ai).length === aiBefore - 1, "they take over an AI seat, keeping its colour");
   p1.ws.close(); p2.ws.close();
+}
+// fog of war: a player never receives enemy suns they could not see, but still gets everyone's totals
+{
+  const r = await (await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 3, fog: true, mode: "dealt", size: 100 }) })).json();
+  const f1 = client(r.code, { name: "Fay" }); await f1.ready; await until(() => f1.state);
+  f1.send({ t: "addBot" }); f1.send({ t: "addBot" }); await until(() => f1.state.seats.length === 3);
+  f1.send({ t: "start" }); await until(() => f1.state.game && f1.state.game.phase !== "setup");
+  await sleep(1500);
+  const g = f1.state.game, me = f1.state.seats.findIndex(s => s.id === f1.seat);
+  const leaks = g.owner.filter((o, i) => o >= 0 && o !== me && !MAP_FOG(r).adj[i].some(j => g.owner[j] === me)).length;
+  check(g.fog && g.owner.some(o => o === -2), "a fog room hides far suns");
+  check(leaks === 0, `no enemy sun out of sight is sent (${leaks} leaked)`);
+  check(Array.isArray(g.totals) && g.totals.reduce((a, t) => a + t.held, 0) === 100, "everyone's totals still arrive under fog");
+  f1.ws.close();
 }
 // an idle room closes itself (needs DEV=1 in .dev.vars for the short idle time)
 {

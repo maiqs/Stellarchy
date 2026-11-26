@@ -144,7 +144,7 @@ $("mCredits").onclick = e => { e.preventDefault(); creditsDialog(); };
 
 function optionSeg(name, opts, cur) { return `<div class="seg" data-seg="${name}">${opts.map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${String(v) === String(cur)}">${esc(l)}</button>`).join("")}</div>`; }
 function wireSegs(el, state, redraw) { el.querySelectorAll("[data-seg]").forEach(seg => seg.querySelectorAll("button").forEach(b => b.onclick = () => {
-  const v = b.dataset.v, name = seg.dataset.seg; state[name] = isNaN(+v) ? v : +v;
+  const v = b.dataset.v, name = seg.dataset.seg; state[name] = v === "true" ? true : v === "false" ? false : isNaN(+v) ? v : +v;
   // big maps default to a 65% win (total conquest of 1,000+ suns is a very long game), unless the player chose a target
   if (name === "targetPct") state.pctTouched = true;
   if (name === "size" && !state.pctTouched && "targetPct" in state) state.targetPct = state.size >= 1000 ? 65 : 100;
@@ -166,6 +166,7 @@ function soloDialog() {
     ${sizeField(o, o.bots + 1)}
     <div class="field"><span>Start</span>${optionSeg("mode", [["legacy", "One home sun each"], ["dealt", "Suns dealt out"]], o.mode)}
       <p class="hint">${o.mode === "legacy" ? "Everyone founds a single home sun and expands outward." : "Every sun is shared out at random from the start."}</p></div>
+    <div class="field"><span>Fog of war</span>${optionSeg("fog", [["false", "Off"], ["true", "On"]], String(!!o.fog))}<p class="hint">${o.fog ? "You see only your own suns and their neighbours. Everything else is dark until you get close." : "Everyone sees the whole map."}</p></div>
     <div class="field"><span>Win at</span>${optionSeg("targetPct", [[50, "50%"], [65, "65%"], [80, "80%"], [100, "Total conquest"]], o.targetPct)}</div>
     <div class="field"><span>AI speed</span>${optionSeg("pace", [["slow", "Slow"], ["normal", "Normal"], ["fast", "Fast"], ["instant", "Instant"]], o.pace)}</div>
     <div class="row end"><button class="btn ghost" value="cancel">Cancel</button><button class="btn go big" id="sGo" value="ok">Launch</button></div></form>`, el => {
@@ -182,6 +183,7 @@ function createDialog() {
     <div class="field"><span>Turn timer</span>${optionSeg("timer", [[0, "None"], [90, "90 s"], [180, "3 min"], [43200, "12 h"], [86400, "24 h"]], o.timer)}<p class="hint">When time runs out, the AI plays that turn in the player's style. They take over again as soon as they act.</p></div>
     ${sizeField(o, o.maxSeats)}
     <div class="field"><span>Start</span>${optionSeg("mode", [["legacy", "One home sun each"], ["dealt", "Suns dealt out"]], o.mode)}</div>
+    <div class="field"><span>Fog of war</span>${optionSeg("fog", [["false", "Off"], ["true", "On"]], String(!!o.fog))}<p class="hint">${o.fog ? "You see only your own suns and their neighbours. Everything else is dark until you get close." : "Everyone sees the whole map."}</p></div>
     <div class="field"><span>Win at</span>${optionSeg("targetPct", [[50, "50%"], [65, "65%"], [80, "80%"], [100, "Total conquest"]], o.targetPct)}</div>
     <div class="row end"><button class="btn ghost" value="cancel">Cancel</button><button class="btn go big" id="cGo" value="ok">Create</button></div></form>`, el => {
       wireSegs(el, o, draw);
@@ -214,7 +216,7 @@ function creditsDialog() {
 // ---------- HUD helpers ----------
 const seatIx = () => st && st.game ? st.seats.findIndex(s => s.id === mySeat) : -1;
 const lookOf = k => { const s = st && st.seats[k]; return s ? { main: s.main, sub: s.sub, hull: s.hull } : { main: "#cccccc", sub: "#ffffff", hull: "triangle" }; };
-const nameOf = k => k < 0 ? "Unclaimed" : (st.seats[k] && st.seats[k].name) || "Player";
+const nameOf = k => k === -2 ? "Unknown (fog of war)" : k < 0 ? "Unclaimed" : (st.seats[k] && st.seats[k].name) || "Player";
 const myTurn = () => st && st.game && st.status === "playing" && st.game.turn === seatIx() && seatIx() >= 0;
 
 function toast(text, kind) {
@@ -421,7 +423,8 @@ function renderPlayers() {
   if (el.hidden) return;
   const g = st.game, total = MAP.n;
   el.innerHTML = `<p class="eyebrow">${g ? `Turn ${g.turnNo} · win at ${effPct(g)}%` : "Players"}</p>` + st.seats.map((s, k) => {
-    const sys = g ? ownedBy(g, k) : 0, ships = g ? g.armies.reduce((a, v, i) => a + (g.owner[i] === k ? v : 0), 0) : 0, out = g && g.phase !== "setup" && !g.alive[k];
+    const tot = g && g.totals ? g.totals[k] : null;   // the server's totals stay right under fog of war
+    const sys = tot ? tot.held : g ? ownedBy(g, k) : 0, ships = tot ? tot.ships : g ? g.armies.reduce((a, v, i) => a + (g.owner[i] === k ? v : 0), 0) : 0, out = g && g.phase !== "setup" && !g.alive[k];
     const tag = s.ai ? "AI" : s.away ? "AI playing" : !s.online ? "offline" : s.id === mySeat ? "you" : "";
     const cards = g && g.cards[k] ? g.cards[k].length : 0;
     return `<div class="prow ${g && g.turn === k && g.status === "playing" ? "turn" : ""} ${out ? "out" : ""}" style="--pc:${esc(s.main)}">
@@ -449,8 +452,8 @@ function renderSunCard() {
   const cont = MAP.continents[MAP.contOf[i]];
   el.hidden = false;
   el.innerHTML = `<p class="eyebrow">${esc(cont ? cont.name : "")}${cont ? ` · +${cont.bonus} for holding all ${cont.members.length}` : ""}</p>
-    <h3><span class="swatch s" style="--sw-main:${o < 0 ? "#eef2ff" : esc(lookOf(o).main)};--sw-sub:${o < 0 ? "#05070c" : esc(lookOf(o).sub)}"></span>${esc(disp(s))}</h3>
-    <dl><dt>Held by</dt><dd>${o >= 0 ? hullInfo(lookOf(o).hull).glyph + " " : ""}${esc(nameOf(o))}${g && g.hq.indexOf(i) >= 0 ? " ★ home" : ""}</dd><dt>Ships</dt><dd>${a} ${a ? `(${fleet})` : ""}</dd>
+    <h3><span class="swatch s" style="--sw-main:${o === -2 ? "#2c3550" : o < 0 ? "#eef2ff" : esc(lookOf(o).main)};--sw-sub:${o < 0 ? "#05070c" : esc(lookOf(o).sub)}"></span>${esc(disp(s))}</h3>
+    <dl><dt>Held by</dt><dd>${o >= 0 ? hullInfo(lookOf(o).hull).glyph + " " : ""}${esc(nameOf(o))}${g && g.hq.indexOf(i) >= 0 ? " ★ home" : ""}</dd><dt>Ships</dt><dd>${o === -2 ? "hidden by fog" : `${a} ${a ? `(${fleet})` : ""}`}</dd>
     <dt>Sun</dt><dd><span class="sundot" style="color:${CARD_COLOR[kind]};background:${CARD_COLOR[kind]}"></span>${esc((s.spect || "").trim() || "type unknown")}${c ? ` · ${SUN_WORDS[c] || ""}` : ""}</dd>
     <dt>Surface</dt><dd>${surfaceTemp(s)}</dd><dt>Light</dt><dd>${lightText(s)}</dd><dt>From Earth</dt><dd>${s.name === "Sol" ? "home" : s.distLy.toFixed(1) + " ly"}</dd></dl>
     ${STAR_FACTS[s.name] ? `<p class="fact">${esc(STAR_FACTS[s.name])}</p>` : ""}`;

@@ -94,3 +94,17 @@ test("history: sampled through the game, capped, and ends on the final board", (
   assert.equal(s.at(-1).held[g.winner], MAP.n, "the last sample shows the winner holding everything");
   for (let i = 1; i < s.length; i++) assert.ok(s[i].turn >= s[i - 1].turn);
 });
+
+test("fog of war: you see your suns and their neighbours, and battles you could see", async () => {
+  const { maskBoard, maskEvents, fogActive, FOGGED } = await import("../shared/fog.js");
+  const rng = mulberry32(5), g = newGame(MAP, { mode: "dealt", targetPct: 80, seats: seats(4, false) }, rng);
+  assert.ok(fogActive(g, 0, true) && !fogActive(g, 0, false) && !fogActive(g, -1, true));
+  const v = maskBoard(MAP, g, 0);
+  for (let i = 0; i < MAP.n; i++) {
+    const near = g.owner[i] === 0 || MAP.adj[i].some(j => g.owner[j] === 0);
+    assert.equal(v.owner[i] === FOGGED, !near, `sun ${i}`);
+    if (!near) assert.equal(v.armies[i], 0);
+  }
+  const far = v.owner.findIndex(o => o === FOGGED), farN = MAP.adj[far].find(j => v.owner[j] === FOGGED);
+  if (farN !== undefined) assert.equal(maskEvents([{ t: "bt", from: far, to: farN }], v.vis).length, 0, "a battle out of sight is hidden");
+});

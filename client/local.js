@@ -6,6 +6,7 @@ import { HULL_KEYS, PACES, freeLook, BOT_NAMES } from "./shared/looks.js";
 export { PACES };
 import { mulberry32 } from "./shared/map.js";
 import { EMOTES, botEmotes } from "./shared/emotes.js";
+import { fogActive, maskBoard, maskEvents, totals } from "./shared/fog.js";
 
 
 export class LocalRoom {
@@ -13,7 +14,7 @@ export class LocalRoom {
   constructor(map, opts, me) {
     this.map = map; this.listeners = []; this.timer = 0; this.rev = 0; this.log = [];
     const seed = (Math.random() * 2 ** 31) | 0; let k = 0; this.rng = () => mulberry32(seed ^ Math.imul(++k, 0x9E3779B1))();
-    this.pace = PACES[opts.pace] ? opts.pace : "normal";
+    this.pace = PACES[opts.pace] ? opts.pace : "normal"; this.fog = !!opts.fog;
     const seats = [];
     if (!opts.watch) seats.push({ id: "me", name: me.name || "Stellarch", main: me.main, sub: me.sub, hull: me.hull, style: me.style || "balanced", ai: false, away: false, online: true });
     const bots = Math.max(1, Math.min(15, opts.bots | 0));
@@ -48,8 +49,16 @@ export class LocalRoom {
       if (e.t === "elim") this.say(`${this.seats[e.seat].name} was wiped out by ${this.seats[e.by].name}`);
       if (e.t === "win") this.say(`${this.seats[e.seat].name} wins with ${e.systems} suns`);
     }
-    this.emit({ t: "state", rev: this.rev, code: null, local: true, status: this.g.status === "over" ? "over" : "playing", opts: { pace: this.pace },
-                seats: this.seats.map(s => ({ ...s })), game: this.g, events, log: this.log.slice(-20), deadline: 0, warnAt: 0, now: Date.now() });
+    // under fog of war the page only gets what the human seat can see (same rules as the room server)
+    const me = this.seats.findIndex(s => s.id === "me"), g = this.g;
+    let game = g, evs = events;
+    if (fogActive(g, me, this.fog)) {
+      const v = maskBoard(this.map, g, me);
+      game = { ...g, owner: v.owner, armies: v.armies, totals: totals(g), fog: true, lastRoll: g.lastRoll && !(v.vis[g.lastRoll.from] || v.vis[g.lastRoll.to]) ? null : g.lastRoll };
+      evs = maskEvents(events, v.vis);
+    } else game = { ...g, totals: totals(g), fog: !!this.fog };
+    this.emit({ t: "state", rev: this.rev, code: null, local: true, status: g.status === "over" ? "over" : "playing", opts: { pace: this.pace, fog: !!this.fog },
+                seats: this.seats.map(s => ({ ...s })), game, events: evs, log: this.log.slice(-20), deadline: 0, warnAt: 0, now: Date.now() });
     clearTimeout(this.timer);
     const k = this.g.turn, st = this.seats[k];
     if (this.g.status === "playing" && (st.ai || st.away)) this.timer = setTimeout(() => this.aiMove(), PACES[this.pace]);
