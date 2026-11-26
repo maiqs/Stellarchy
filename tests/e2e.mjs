@@ -3,6 +3,7 @@
 // Usage: node tests/e2e.mjs   (or .\run.ps1 e2e)
 import { chromium } from "playwright-core";
 import { spawn, execSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 const PORT = 8788, BASE = `http://127.0.0.1:${PORT}`, sleep = ms => new Promise(r => setTimeout(r, ms));
 let failures = 0; const check = (ok, what) => { console.log((ok ? "  ok   " : "  FAIL ") + what); if (!ok) failures++; };
@@ -75,6 +76,18 @@ try {
   });
   check(skipped.chipOk, "a planned sun shows as a chip, and tapping it cancels that plan");
   check(skipped.back && skipped.pace === "slow", `Skip to my turn reaches my turn fast and puts the pace back (${JSON.stringify(skipped)})`);
+  // While you waited: at the start of my turn, a recap of what happened to me, with a tap to fly to each sun
+  if (skipped.back) {
+    await page.evaluate(() => { const W = window.stellarchy, g = W.state.game, k = W.state.seats.findIndex(s => s.name === "E2E");
+      const mineSun = g.owner.indexOf(k), theirs = g.owner.findIndex(o => o >= 0 && o !== k);
+      W.ui.recap = { lost: [{ sun: theirs, by: g.owner[theirs], hits: 2, lost: 5, killed: 1 }], held: [{ sun: mineSun, by: g.owner[theirs], hits: 1, lost: 1, killed: 4 }], shipsLost: 6, shipsKilled: 5, news: [], any: true }; W.render(); });
+    const line = await page.textContent("#bRecap").catch(() => "");
+    await page.click("#bRecap"); await page.waitForSelector("#dlg[open] .recaprow");
+    const rows = await page.locator("#dlg .recaprow").count();
+    await page.screenshot({ path: fileURLToPath(new URL("../docs/shots/recap.png", import.meta.url)) }).catch(() => {});
+    await page.click("#dlg .recaprow.bad"); await sleep(300); const closed = !(await page.isVisible("#dlg[open]")); await page.keyboard.press("Escape"); await sleep(1200);
+    check(/lost 1 sun · held 1/.test(line) && rows === 2 && closed, `a "While you waited" recap opens with each sun, and a tap flies there (${line.trim()})`);
+  }
   await page.click("#hMenu"); await page.click('#mFx [data-v="off"]');
   check((await page.evaluate(() => localStorage.getItem("stellarchy_fx"))) === '"off"', "the battle effects choice is saved");
   await page.evaluate(() => localStorage.setItem("stellarchy_fx", '"full"'));

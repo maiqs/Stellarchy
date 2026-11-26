@@ -206,7 +206,7 @@ Sources:
 
 - [ ] **Round 35 research:**
   - [x] **Skip the AI's turns and the animations:** the most repeated ask found this round. Armello players call long AI turns unplayable and want a skip button; Gems of War asks for "Skip AI turn animation"; Hearthstone asks for a "Skip animations" option and speed settings; Board Game Arena asks for an option to turn off scoring animations, and another for no flashing or repeated animations. *(Round 35: Battle effects Full / Quick / Off and ⏩ Skip to my turn.)*
-  - [ ] **Slow it down for me only:** Lords of Waterdeep players found the AI too fast to follow and asked to slow it, but not for everyone. Online, our pace is per room; a per-viewer replay of the last turn ("What just happened?") would cover it without slowing others.
+  - [x] **Slow it down for me only:** Lords of Waterdeep players found the AI too fast to follow and asked to slow it, but not for everyone. Online, our pace is per room; a per-viewer replay of the last turn ("What just happened?") would cover it without slowing others. *(Round 38: "While you waited": at the start of your turn the bar shows ⟲ lost N suns · held N (red when you lost any). It opens a list of each sun lost or held, who attacked, ships lost and destroyed, plus knock-outs and broken truces; tap a sun to fly there. `client/recap.js`, unit-tested.)*
   - [ ] **Vote to end a stuck game:** war.app players can vote to end a game after someone disconnects and restart from a few turns back. For us: when only AI-covered seats are holding the game up, the humans can vote "end now, most suns wins".
   - [x] **Order clean-up:** Warzone and itch.io players keep asking to reorder or cancel queued orders quickly. Our plan-while-waiting could show each planned sun as a chip with an ✕. *(Round 37: each planned sun is a neon chip (name +ships ✕); tap one to cancel it; Clear all stays.)*
   - [x] **Turn reminders and team planning:** a Neptune's Pride-style newcomer had to keep their own reminder list. Covered: browser notifications, the tab title and a chime (rounds 3 and 16).
@@ -223,6 +223,7 @@ Sources:
   - https://forum.ironhelmet.com/t/a-bunch-of-collected-feedback-from-a-newbie/5320
 
 ## Bugs and balance
+- [ ] **Check:** after tapping a recap row (flying to a sun), the browser test could not click the Cards button until Escape cleared the selection. Probably the closing dialog or the sun card; check on a real screen whether the top bar is blocked.
 - [x] **Invite links never loaded (round 32, there since round 3):** a fresh page at `/r/CODE` resolved `app.js`, `style.css` and the other files under `/r/` and got 404s. Creating a room only changed the address after load, so earlier tests missed it. Fixed with `<base href="/">`. The browser tests now open an invite link fresh.
 - [x] **Dark specks after battles (round 28):** debris and lasers used additive blending that also added opacity to the see-through canvas, so fading debris left black specks over the nebula backdrop. Light effects now add colour only (`lightOnly` in `client/scene.js`); checked clean after a 56-turn war.
 - [x] **Best moments wrapped badly (round 28):** each bold name became its own flex column. The text is wrapped in one span.
@@ -543,3 +544,7 @@ Sources:
   - The landscape waiting bar is shorter (Skip and the pace share a row).
   - Found that the browser test's moves were never sent in the page's format (`{t: "intent"}`), so the Skip check had passed by luck; fixed.
   - 51 of 51 unit tests and 18 of 18 browser checks pass.
+- **Round 38 (2026-11-26):**
+  - "While you waited": a recap at the start of your turn of every sun you lost or held, ships lost and destroyed, and news. Tap a sun to fly there. This answers the wish to slow the game for one player without slowing the room.
+  - Unit test for the recap, and a browser check with a screenshot (`docs/shots/recap.png`).
+  - 52 of 52 unit tests and 19 of 19 browser checks pass.

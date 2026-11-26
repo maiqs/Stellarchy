@@ -15,6 +15,7 @@ import { readSetup, setupLink } from "./setup.js";
 import { PALETTE, HEX } from "./shared/looks.js";
 // the 3D hull for a key, falling back to the first
 const hullInfo = key => HULLS.find(h => h.key === key) || HULLS[0];
+import { noteEvent, summarise, recapLine } from "./recap.js";
 import { CARD_NAMES, CARD_COLOR, STAR_FACTS, SUN_WORDS, surfaceTemp, disp, lightText, skyWindow, scienceLine } from "./cards.js";
 
 const $ = id => document.getElementById(id);
@@ -292,8 +293,9 @@ function onState(m) {
     scene.setEffects(effectsMode(m));
     if (!ui.replay) scene.setBoard(g, lookOf, m.rev !== ui.lastRev ? m.events : []);   // a replay keeps the screen until it is closed
     // a new turn or phase clears selections
+    if (m.rev !== ui.lastRev) for (const e of m.events || []) noteEvent(ui.recapNotes = ui.recapNotes || [], e, k);   // "While you waited" recap
     const key = `${g.turnNo}:${g.phase}:${!!g.advance}`;
-    if (key !== ui.lastTurnKey) { ui.lastTurnKey = key; if (!g.advance) ui.adv = null; ui.fort = null; if (g.phase !== "reinforce") ui.pending = {}; if (myTurn() && g.phase === "reinforce") applyPlan(g, k); if (g.phase !== "attack" && g.phase !== "fortify") selectSun(-1); }
+    if (key !== ui.lastTurnKey) { ui.lastTurnKey = key; if (!g.advance) ui.adv = null; ui.fort = null; if (g.phase !== "reinforce") ui.pending = {}; if (myTurn() && g.phase === "reinforce") { applyPlan(g, k); ui.recap = summarise(ui.recapNotes || [], g.owner, k); ui.recapNotes = []; } if (!myTurn()) ui.recap = null; if (g.phase !== "attack" && g.phase !== "fortify") selectSun(-1); }
     if (g.advance) ui.adv = ui.adv && ui.adv.to === g.advance.to ? ui.adv : { to: g.advance.to, n: g.advance.max };
     for (const e of (m.rev !== ui.lastRev ? m.events : [])) eventToast(e, k);
     if (prev && prev.game && prev.game.turn !== g.turn && g.turn === k && g.status === "playing") { toast("Your turn"); sound.turn(); if (document.hidden) notifyTurn(); }
@@ -441,7 +443,8 @@ function renderBar() {
         <button class="btn" id="bUndo" type="button" ${placed() ? "" : "disabled"}>Undo</button>
         ${ui.sel >= 0 && g.owner[ui.sel] === k && left > 0 ? `<button class="btn" id="bAllHere" type="button">All ${left} here</button>` : ""}
         ${left > 1 && !force ? `<button class="btn" id="bSpread" type="button" title="One at a time across the suns that face an enemy, most threatened first">Spread on borders</button>` : ""}
-        <button class="btn go" id="bPlace" type="button" ${left === 0 && !force ? "" : "disabled"}>Confirm</button>${awayBtn}</div>${timerText(g, true)}`;
+        <button class="btn go" id="bPlace" type="button" ${left === 0 && !force ? "" : "disabled"}>Confirm</button>${awayBtn}</div>${recapLine(ui.recap) ? `<button class="recapbtn ${ui.recap.lost.length ? "bad" : ""}" id="bRecap" type="button">⟲ ${recapLine(ui.recap)}<i>See where</i></button>` : ""}${timerText(g, true)}`;
+    if ($("bRecap")) $("bRecap").onclick = recapDialog;
     if ($("bCards")) $("bCards").onclick = openCards;
     $("bUndo").onclick = () => { const keys = Object.keys(ui.pending); const last = ui.sel >= 0 && ui.pending[ui.sel] ? ui.sel : keys[keys.length - 1]; if (last !== undefined) { ui.pending[last]--; if (!ui.pending[last]) delete ui.pending[last]; } render(); };
     if ($("bAllHere")) $("bAllHere").onclick = () => { ui.pending[ui.sel] = (ui.pending[ui.sel] || 0) + left; render(); };
@@ -657,7 +660,7 @@ async function share() {
 // a /r/CODE link opens that room directly
 const linked = location.pathname.match(/^\/r\/([A-Za-z0-9]{4})$/);
 if (linked) needName(() => joinCode(linked[1]));
-window.stellarchy = { get MAP() { return MAP; }, get scene() { return scene; }, get state() { return st; }, get room() { return room; }, ui };   // for debugging and tests (getters: the map and scene change with room size)
+window.stellarchy = { get MAP() { return MAP; }, get scene() { return scene; }, get state() { return st; }, get room() { return room; }, ui, render: () => render() };   // for debugging and tests (getters: the map and scene change with room size)
 // keep floating cards clear of the action bar, whatever its height
 new ResizeObserver(() => document.documentElement.style.setProperty("--barh", $("bar").offsetHeight + "px")).observe($("bar"));
 
@@ -906,6 +909,23 @@ function howDialog() {
     <h3>Fair clocks</h3>
     <p class="hint">In rooms with a turn timer, your clock starts when your turn reaches your screen, not before. More ships to place means more time. If time runs out, a one-off 30 s time bank kicks in before the AI plays your turn, and you can take your seat back any time.</p>
     <div class="row end"><button class="btn go" id="howOk" type="button">Got it</button></div></div>`, el => el.querySelector("#howOk").onclick = () => dlg.close());
+}
+
+// ---------- "While you waited": what happened to me since my last turn; tap a sun to fly there ----------
+function recapDialog() {
+  const r = ui.recap; if (!r) return;
+  const sunRow = (s, lost) => `<button class="recaprow ${lost ? "bad" : "good"}" type="button" data-fly="${s.sun}"><b>${esc(disp(S[s.sun]))}</b>
+    <span>${lost ? `taken by <em style="color:${esc(lookOf(s.by).main)}">${esc(nameOf(s.by))}</em>` : `held against <em style="color:${esc(lookOf(s.by).main)}">${esc(nameOf(s.by))}</em>${s.hits > 1 ? ` (${s.hits} attacks)` : ""}`} · lost ${s.lost}, destroyed ${s.killed}</span><i aria-hidden="true">➜</i></button>`;
+  const news = r.news.map(n => n.t === "out" ? `${esc(nameOf(n.seat))} was wiped out by ${esc(nameOf(n.by))}.` : `${esc(nameOf(n.by))} broke your truce.`);
+  openDialog(`<div class="dlg"><h2>While you waited</h2>
+    <p class="hint">Since your last turn you lost ${r.shipsLost} ship${r.shipsLost === 1 ? "" : "s"} and destroyed ${r.shipsKilled}. Tap a sun to fly there.</p>
+    ${r.lost.length ? `<h3>Suns lost</h3><div class="recaplist">${r.lost.map(s => sunRow(s, true)).join("")}</div>` : ""}
+    ${r.held.length ? `<h3>Suns held</h3><div class="recaplist">${r.held.map(s => sunRow(s, false)).join("")}</div>` : ""}
+    ${news.length ? `<h3>News</h3><ul class="hint">${news.map(x => `<li>${x}</li>`).join("")}</ul>` : ""}
+    <div class="row end"><button class="btn go" id="rcOk" type="button">Back to my turn</button></div></div>`, el => {
+    el.querySelector("#rcOk").onclick = () => dlg.close();
+    el.querySelectorAll("[data-fly]").forEach(b => b.onclick = () => { const i = +b.dataset.fly; dlg.close(); selectSun(i); scene.focus(i, 30); render(); });
+  });
 }
 
 // ---------- regions list (in Find): each region's bonus, who leads it, and a tap to fly there ----------
