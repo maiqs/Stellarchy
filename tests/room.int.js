@@ -170,6 +170,17 @@ for (const c of [a, bb, sneaky]) c.ws.close();
   check(h.state.status === "playing" && h.state.seats.length === 32 && new Set(h.state.seats.map(s => s.main)).size === 32, `a 32-seat room starts with 32 distinct colours (${h.state.seats.length} seats, ${h.state.status}, ${h.errors.slice(0, 2)})`);
   h.ws.close();
 }
+// launch protections: offensive names are replaced, and one visitor can't make rooms endlessly
+{
+  const nr = await (await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 2 }) })).json();
+  const bad = client(nr.code, { name: "sh1t lord" }); await bad.ready; await until(() => bad.state && bad.state.seats.length === 1);
+  check(bad.state.seats.length === 1 && bad.state.seats[0].name === "Stellarch", `an offensive name is replaced before anyone sees it (${bad.state.seats[0] && bad.state.seats[0].name})`);
+  bad.ws.close();
+  const ip = "10.77." + Math.floor(Math.random() * 250) + "." + Math.floor(Math.random() * 250);
+  const make = () => fetch(BASE + "/api/rooms", { method: "POST", headers: { "x-limit-test": "1", "CF-Connecting-IP": ip }, body: JSON.stringify({ maxSeats: 2 }) }).then(r => r.status);
+  const statuses = []; for (let k = 0; k < 11; k++) statuses.push(await make());
+  check(statuses.slice(0, 10).every(s => s === 200) && statuses[10] === 429, `the 11th room in 10 minutes from one visitor is refused (${statuses.join(",")})`);
+}
 // an idle room closes itself (needs DEV=1 in .dev.vars for the short idle time)
 {
   const r = await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 2, public: true, idleMs: 1500 }) });

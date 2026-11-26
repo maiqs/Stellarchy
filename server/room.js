@@ -10,6 +10,7 @@ import { botStep, botAcceptsTruce, STYLE_KEYS } from "../shared/bot.js";
 import { HULL_KEYS as HULLS, PACES, freeLook, botName } from "../shared/looks.js";
 export { PACES };
 import { EMOTES, botEmotes } from "../shared/emotes.js";
+import { safeName } from "../shared/names.js";
 import { fogActive, maskBoard, maskEvents, totals } from "../shared/fog.js";
 
 // maps are built per size and kept for reuse (the same size always gives the same map)
@@ -21,7 +22,7 @@ const SKIP_WARN_MS = 10000;    // "AI takes over in 10 s" is shown this long bef
 const MAX_LOG = 60;
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
-const cleanName = s => String(s ?? "").replace(/[\u0000-\u001f\u007f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 24);
+const cleanName = s => safeName(String(s ?? "").replace(/[\u0000-\u001f\u007f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 24));   // offensive names become "Stellarch"
 const rid = () => crypto.randomUUID().replace(/-/g, "").slice(0, 16);
 
 export class Room {

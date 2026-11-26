@@ -7,10 +7,21 @@ const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 const newCode = () => Array.from(crypto.getRandomValues(new Uint8Array(4)), b => ALPHABET[b % ALPHABET.length]).join("");
 const CODE = /^[A-Z2-9]{4}$/;
 
+const PER_VISITOR = 10, GLOBAL = 120;   // room-creation limits (launch protection)
+// ask the lobby whether this visitor may make another room; returns a Response to send back when not
+async function mayCreate(req, env) {
+  const ip = req.headers.get("CF-Connecting-IP") || "local";
+  // on the local dev server the limits are relaxed unless a test asks for the real ones (x-limit-test)
+  const relaxed = env.DEV && !req.headers.get("x-limit-test");
+  const r = await env.LOBBY.get(env.LOBBY.idFromName("lobby")).fetch(`https://lobby/allow?ip=${encodeURIComponent(ip)}${relaxed ? "&relaxed=1" : ""}`);
+  return r.ok ? null : new Response(await r.text(), { status: 429, headers: { "content-type": "application/json" } });
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url), p = url.pathname;
     if (p === "/api/rooms" && req.method === "POST") {
+      const no = await mayCreate(req, env); if (no) return no;
       let o = {}; try { o = await req.json(); } catch (e) {}
       for (let tries = 0; tries < 6; tries++) {
         const code = newCode(), stub = env.ROOMS.get(env.ROOMS.idFromName(code));
@@ -24,10 +35,11 @@ export default {
       const list = await (await env.LOBBY.get(env.LOBBY.idFromName("lobby")).fetch("https://lobby/list")).json();
       // the lobby's list can be a few moves stale, so each candidate room is asked directly for a free AI seat
       const cands = list.rooms.filter(r => r.quick && r.status === "playing" && r.aiSeats > 0 && Date.now() - r.seen < 5 * 60000).sort((a, b) => a.turnNo - b.turnNo).slice(0, 5);
-      for (const c of cands) {
+      for (const c of cands) {   // joining is never limited, only making new rooms
         const fresh = await env.ROOMS.get(env.ROOMS.idFromName(c.code)).fetch(`https://room/api/rooms/${c.code}`).then(r => r.ok ? r.json() : null).catch(() => null);
         if (fresh && fresh.status === "playing" && fresh.aiSeats > 0) return Response.json({ code: c.code, joined: true });
       }
+      { const no = await mayCreate(req, env); if (no) return no; }
       for (let tries = 0; tries < 6; tries++) {
         const code = newCode(), stub = env.ROOMS.get(env.ROOMS.idFromName(code));
         const r = await stub.fetch("https://room/init", { method: "POST", body: JSON.stringify({ quick: true, maxSeats: 4, size: 100, mode: "legacy", targetPct: 100, pace: "normal", code }) });
@@ -53,6 +65,17 @@ export class Lobby {
   async fetch(req) {
     const url = new URL(req.url), now = Date.now();
     for (const [c, r] of Object.entries(this.rooms)) if (now - r.seen > 15 * 60000 || (r.status === "over" && now - r.seen > 2 * 60000)) delete this.rooms[c];
+    // launch protection: at most PER_VISITOR new rooms per visitor per 10 min, and GLOBAL a minute in all
+    if (url.pathname === "/allow") {
+      const ip = url.searchParams.get("ip") || "unknown", win = 10 * 60000;
+      this.made = this.made || new Map(); this.recent = (this.recent || []).filter(t => now - t < 60000);
+      const mine = (this.made.get(ip) || []).filter(t => now - t < win);
+      if (mine.length >= (url.searchParams.get("relaxed") ? 1000 : PER_VISITOR)) return Response.json({ ok: false, error: "You've made a lot of rooms in the last few minutes. Join one, or try again shortly." }, { status: 429 });
+      if (this.recent.length >= GLOBAL) return Response.json({ ok: false, error: "Stellarchy is very busy right now. Try again in a minute, or play vs AI." }, { status: 429 });
+      mine.push(now); this.made.set(ip, mine); this.recent.push(now);
+      if (this.made.size > 5000) for (const [k, v] of this.made) if (!v.some(t => now - t < win)) this.made.delete(k);
+      return Response.json({ ok: true });
+    }
     if (url.pathname === "/report") {
       const r = await req.json();
       if (r.public) this.rooms[r.code] = { ...r, seen: now }; else delete this.rooms[r.code];

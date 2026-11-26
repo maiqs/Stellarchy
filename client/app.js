@@ -9,6 +9,7 @@ import { LocalRoom } from "./local.js";
 import { createShipPreview } from "./preview.js";
 import { EMOTES } from "./shared/emotes.js";
 import { sound } from "./sound.js";
+import { isOffensive } from "./shared/names.js";
 import { historyChart, highlights, diceLine } from "./results.js";
 import { readSetup, setupLink } from "./setup.js";
 import { PALETTE, HEX } from "./shared/looks.js";
@@ -77,7 +78,10 @@ function lookDialog(after) {
       el.querySelectorAll("[data-sub]").forEach(b => b.onclick = () => { d.sub = b.dataset.sub; draw(); });
       el.querySelectorAll("[data-hull]").forEach(b => b.onclick = () => { d.hull = b.dataset.hull; draw(); });
       el.querySelectorAll("[data-style]").forEach(b => b.onclick = () => { d.style = b.dataset.style; draw(); });
-      el.querySelector("#lSave").onclick = () => { Object.assign(me, d, { name: d.name.replace(/\s+/g, " ").trim().slice(0, 24) }); saveMe(); if (room && room.send) room.send({ t: "look", ...me }); if (after) setTimeout(after, 30); };
+      el.querySelector("#lSave").onclick = () => {
+        const nm = d.name.replace(/\s+/g, " ").trim().slice(0, 24), bad = isOffensive(nm);   // the server filters names too
+        if (bad) toast("That name isn't allowed here, so you'll be Stellarch. Pick another any time.", "err");
+        Object.assign(me, d, { name: bad ? "" : nm }); saveMe(); if (room && room.send) room.send({ t: "look", ...me }); if (after) setTimeout(after, 30); };
     });
   draw();
 }
@@ -149,6 +153,7 @@ $("mSolo").onclick = () => needName(soloDialog);
 $("mQuick").onclick = () => needName(() => quickPlay(false));
 async function quickPlay(retried) {
   const r = await fetch("/api/quick", { method: "POST" }).catch(() => null);
+  if (r && r.status === 429) { toast((await r.json().catch(() => ({}))).error || "Too many new rooms just now.", "err"); return; }
   if (!r || !r.ok) { toast("Online play is not reachable right now, so here is a game against the AI.", "err"); return soloDialog(); }
   const { code, joined } = await r.json(); await joinCode(code);
   if (!joined) return;
@@ -228,6 +233,7 @@ function createDialog(preset) {
       el.querySelector("#cGo").onclick = async () => {
         o.public = o.public === true || o.public === "true"; store.set("stellarchy_create", o);
         const r = await fetch("/api/rooms", { method: "POST", body: JSON.stringify(o) }).catch(() => null);
+        if (r && r.status === 429) return toast((await r.json().catch(() => ({}))).error || "Too many new rooms just now. Try again shortly.", "err");
         if (!r || !r.ok) return toast("The game server can't be reached. Try Play vs AI.", "err");
         const { code } = await r.json(); history.replaceState(null, "", "/r/" + code); startRoom(new NetRoom(code));
       };

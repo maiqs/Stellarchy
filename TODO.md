@@ -483,3 +483,11 @@ Sources:
 - **3D preview in the look editor:** your sun (main colour, highlight rim, glow) with one ship of each class orbiting, updating live as you pick colours and styles (`client/preview.js`).
   - Dice checked in the browser.
   - Fish checked by geometry only; the browser pane stopped responding before its screenshot.
+- **Round 31 (2026-11-26):**
+  - Launch protections from the round-30 assessment:
+    - room creation is limited to 10 per visitor per 10 minutes and 120 a minute overall (in the Lobby; joining is never limited)
+    - offensive player names become "Stellarch" on the server, and the look editor warns (`shared/names.js`, disguised spellings caught, innocent words like Scunthorpe allowed)
+    - the page shows the server's "slow down" message
+  - Local dev relaxes the room limit unless a test sends `x-limit-test`.
+  - Tests: 50 of 50 unit and 31 of 31 room checks pass.
+  - Paul was playing solo in the preview, so his tab was left alone (local games don't use the server).
