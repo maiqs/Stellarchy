@@ -170,6 +170,7 @@ $("mCreate").onclick = () => needName(createDialog);
 $("mJoin").onsubmit = e => { e.preventDefault(); needName(() => joinCode($("joinCode").value)); };
 $("mRooms").onclick = roomsDialog;
 $("mCredits").onclick = e => { e.preventDefault(); creditsDialog(); };
+$("mNote").onclick = e => { e.preventDefault(); noteDialog(); };
 $("mHow").onclick = e => { e.preventDefault(); howDialog(); };
 
 function optionSeg(name, opts, cur) { return `<div class="seg" data-seg="${name}">${opts.map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${String(v) === String(cur)}">${esc(l)}</button>`).join("")}</div>`; }
@@ -619,7 +620,7 @@ $("hMenu").onclick = () => openDialog(`<div class="dlg"><h2>Menu</h2>
   <div class="field"><span>Battle effects</span><div class="seg" id="mFx">${[["full", "Full"], ["quick", "Quick"], ["off", "Off"]].map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${store.get("stellarchy_fx", "full") === v}">${l}</button>`).join("")}</div><p class="hint">Quick plays lasers and flights faster; Off moves ships at once with no lasers or debris. Fast and Instant paces use Quick automatically.</p></div>
   <div class="field"><span>Motion</span><div class="seg"><button type="button" id="mCalm" aria-pressed="${document.body.classList.contains("calm")}">Calm motion</button></div><p class="hint">No camera glides, spinning or bouncing interface. Battles still show.</p></div>
   ${"Notification" in window && Notification.permission === "default" ? `<button class="btn" id="mNotify" type="button">Alert me when it's my turn</button>` : ""}
-  <div class="row end"><button class="btn ghost" id="mHowIn" type="button">How to play</button><button class="btn" id="mLeave" type="button">Leave game</button><button class="btn go" id="mBack" type="button">Back to the war</button></div></div>`, el => {
+  <div class="row end"><button class="btn ghost" id="mHowIn" type="button">How to play</button><button class="btn ghost" id="mNoteIn" type="button">✉ Note to the developer</button><button class="btn" id="mLeave" type="button">Leave game</button><button class="btn go" id="mBack" type="button">Back to the war</button></div></div>`, el => {
     el.querySelector("#mNames").onclick = () => { ui.allNames = !ui.allNames; scene.setAllNames(ui.allNames); dlg.close(); };
     el.querySelector("#mSpin").onclick = () => { ui.spin = !ui.spin; scene.setAutoRotate(ui.spin); dlg.close(); };
     el.querySelectorAll("#mFx button").forEach(b => b.onclick = () => { store.set("stellarchy_fx", b.dataset.v); scene.setEffects(effectsMode()); dlg.close(); });
@@ -630,6 +631,7 @@ $("hMenu").onclick = () => openDialog(`<div class="dlg"><h2>Menu</h2>
     el.querySelector("#mSym").onclick = () => { const on = !store.get("stellarchy_symbols", false); store.set("stellarchy_symbols", on); scene.setSymbols(on); dlg.close(); };
     const nb = el.querySelector("#mNotify"); if (nb) nb.onclick = () => { Notification.requestPermission(); dlg.close(); };
     el.querySelector("#mHowIn").onclick = () => howDialog();
+    el.querySelector("#mNoteIn").onclick = () => noteDialog();
     el.querySelector("#mLeave").onclick = () => leaveRoom(); el.querySelector("#mBack").onclick = () => dlg.close();
   });
 $("hCode").onclick = share;
@@ -878,6 +880,35 @@ function copySetup(kind, o) {
 {
   const p = new URLSearchParams(location.search), kind = p.get("play");
   if (kind === "solo" || kind === "room") { const preset = readSetup(p); history.replaceState(null, "", "/"); needName(() => kind === "solo" ? soloDialog(preset) : createDialog(preset)); }
+}
+
+// ---------- a note to the developer: a bug, an idea, or just "love it"; Paul reads them with tools/notes.mjs ----------
+const NOTE_MAX = 2000;
+function noteDialog() {
+  const draft = store.get("stellarchy_note_draft", ""), kinds = [["bug", "🐞 Bug"], ["idea", "💡 Idea"], ["love", "💜 Love it"], ["other", "💬 Other"]];
+  let kind = "idea";
+  openDialog(`<div class="dlg note"><h2>A note to the developer</h2>
+    <p class="hint">Found a bug, have an idea, or just enjoying it? Every note is read. It's sent with your screen size and where you are in the game, nothing else.</p>
+    <div class="field"><span>What kind</span><div class="seg" id="nKind">${kinds.map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${v === kind}">${l}</button>`).join("")}</div></div>
+    <div class="field"><label for="nText">Your note</label><textarea id="nText" rows="6" maxlength="${NOTE_MAX}" placeholder="What happened, or what would make it better?">${esc(draft)}</textarea>
+      <p class="hint count" id="nCount"></p></div>
+    <div class="field"><label for="nName">Your name (optional)</label><input id="nName" maxlength="24" autocomplete="off" placeholder="Anonymous"></div>
+    <div class="row end"><button class="btn ghost" id="nCancel" type="button">Cancel</button><button class="btn go" id="nSend" type="button">Send note</button></div></div>`, el => {
+    const text = el.querySelector("#nText"), count = el.querySelector("#nCount"), sendBtn = el.querySelector("#nSend");
+    const upd = () => { const n = text.value.trim().length; count.textContent = `${text.value.length} / ${NOTE_MAX}`; sendBtn.disabled = n < 3; store.set("stellarchy_note_draft", text.value); };
+    text.oninput = upd; upd(); setTimeout(() => text.focus(), 50);
+    el.querySelectorAll("#nKind button").forEach(b => b.onclick = () => { kind = b.dataset.v; el.querySelectorAll("#nKind button").forEach(x => x.setAttribute("aria-pressed", x === b)); });
+    el.querySelector("#nCancel").onclick = () => dlg.close();
+    sendBtn.onclick = async () => {
+      sendBtn.disabled = true; sendBtn.textContent = "Sending…";
+      const g = st && st.game, context = { screen: `${innerWidth}x${innerHeight}`, room: st && st.code || "", status: st ? st.status : "menu", turn: g ? g.turnNo : null, solo: !!(st && st.local) };
+      const r = await fetch("/api/notes", { method: "POST", body: JSON.stringify({ kind, text: text.value, name: el.querySelector("#nName").value, context }) }).catch(() => null);
+      const body = r ? await r.json().catch(() => ({})) : {};
+      if (r && r.ok) { store.set("stellarchy_note_draft", ""); dlg.close(); toast("Thanks! Your note is on its way. 💜"); return; }
+      sendBtn.disabled = false; sendBtn.textContent = "Send note";
+      toast(body.error || "Couldn't send it just now (are you offline?). Your note is kept here; try again later.", "err");
+    };
+  });
 }
 
 // ---------- how to play ----------

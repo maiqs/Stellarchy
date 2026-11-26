@@ -7,3 +7,5 @@ tools/starbuild/bin/
 tools/starbuild/obj/
 tests/tune_result.json
 client/sw.js
+feedback/
+.notes-key

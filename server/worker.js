@@ -47,6 +47,19 @@ export default {
       }
       return new Response("could not make a room", { status: 503 });
     }
+    // notes to the developer (round 42): anyone can leave one; only Paul's key reads them back (tools/notes.mjs)
+    if (p === "/api/notes") {
+      const stub = env.NOTES.get(env.NOTES.idFromName("notes"));
+      if (req.method === "POST") {
+        const ip = req.headers.get("CF-Connecting-IP") || "local";
+        return stub.fetch(`https://notes/add?ip=${encodeURIComponent(ip)}${env.DEV && !req.headers.get("x-limit-test") ? "&relaxed=1" : ""}`, { method: "POST", body: await req.text() });
+      }
+      if (req.method === "GET") {
+        if (!env.NOTES_KEY || req.headers.get("x-notes-key") !== env.NOTES_KEY) return new Response("not allowed", { status: 403 });
+        return stub.fetch(`https://notes/list?after=${encodeURIComponent(url.searchParams.get("after") || "0")}`);
+      }
+      return new Response("method not allowed", { status: 405 });
+    }
     if (p === "/api/rooms" && req.method === "GET") return env.LOBBY.get(env.LOBBY.idFromName("lobby")).fetch("https://lobby/list");
     const m = p.match(/^\/api\/rooms\/([A-Za-z0-9]{4})(\/ws)?$/);
     if (m) {
@@ -93,5 +106,36 @@ export class Lobby {
     }
     const list = Object.values(this.rooms).sort((a, b) => (a.status === "lobby" ? 0 : 1) - (b.status === "lobby" ? 0 : 1) || b.seen - a.seen).slice(0, 50);
     return Response.json({ rooms: list });
+  }
+}
+
+// Notes to the developer: kept in order, each with a number, the kind, the text and a little context (screen size,
+// room). Visitors' addresses are used only for the hourly limit, in memory, and never stored.
+const NOTE_MAX = 2000, NOTES_PER_HOUR = 5;
+const NOTE_KINDS = ["bug", "idea", "love", "other"];
+export class Notes {
+  constructor(ctx) { this.ctx = ctx; this.recent = new Map(); }
+  async fetch(req) {
+    const url = new URL(req.url), now = Date.now();
+    if (url.pathname === "/add") {
+      const ip = url.searchParams.get("ip") || "unknown", mine = (this.recent.get(ip) || []).filter(t => now - t < 3600000);
+      if (mine.length >= (url.searchParams.get("relaxed") ? 1000 : NOTES_PER_HOUR)) return Response.json({ ok: false, error: "Thanks! That's plenty of notes for one hour. Try again later." }, { status: 429 });
+      let m = {}; try { m = JSON.parse((await req.text()).slice(0, 8000)); } catch (e) {}
+      const clean = (s, n) => String(s ?? "").replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, "").trim().slice(0, n);
+      const text = clean(m.text, NOTE_MAX); if (text.length < 3) return Response.json({ ok: false, error: "Write a few words first." }, { status: 400 });
+      mine.push(now); this.recent.set(ip, mine); if (this.recent.size > 5000) this.recent.clear();
+      const id = ((await this.ctx.storage.get("next")) || 1);
+      const c = m.context && typeof m.context === "object" ? m.context : {};
+      const note = { id, at: new Date(now).toISOString(), kind: NOTE_KINDS.includes(m.kind) ? m.kind : "other", name: clean(m.name, 24), text,
+                     context: { screen: clean(c.screen, 20), room: clean(c.room, 8), status: clean(c.status, 12), turn: Number.isFinite(+c.turn) ? +c.turn : null, solo: !!c.solo } };
+      await this.ctx.storage.put({ ["n:" + String(id).padStart(8, "0")]: note, next: id + 1 });
+      return Response.json({ ok: true, id });
+    }
+    if (url.pathname === "/list") {
+      const after = Math.max(0, +url.searchParams.get("after") || 0);
+      const got = await this.ctx.storage.list({ prefix: "n:", start: "n:" + String(after + 1).padStart(8, "0"), limit: 500 });
+      return Response.json({ notes: [...got.values()] });
+    }
+    return new Response("not found", { status: 404 });
   }
 }

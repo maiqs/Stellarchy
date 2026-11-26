@@ -5,6 +5,7 @@ const root = new URL("../", import.meta.url), at = p => new URL(p, root);
 const copy = (from, to) => { mkdirSync(new URL(".", at(to)), { recursive: true }); cpSync(at(from), at(to), { recursive: true }); };
 
 rmSync(at("client/shared"), { recursive: true, force: true });
+rmSync(at("client/data"), { recursive: true, force: true });   // generated too: clearing it drops leftovers (an old star_map.json was cached offline until round 42)
 copy("shared/", "client/shared/");
 copy("data/stars.json", "client/data/stars.json");
 copy("node_modules/three/build/three.module.js", "client/vendor/three.module.js");

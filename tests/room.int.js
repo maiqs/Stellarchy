@@ -206,6 +206,20 @@ for (const c of [a, bb, sneaky]) c.ws.close();
   let s; for (let k = 0; k < 240; k++) { s = await (await fetch(BASE + `/api/rooms/${lc}`)).json(); if (s.status === "over") break; await sleep(500); }
   check(s.status === "over" && s.calls && s.calls.report <= 15, `a public game of ${s.turnNo} turns and ${s.calls && s.calls.alarm} AI moves sent the lobby ${s.calls && s.calls.report} reports`);
 }
+// notes to the developer (round 42): anyone can send one; only the key reads them; empty and spammy notes are refused
+{
+  const post = (body, hdr = {}) => fetch(BASE + "/api/notes", { method: "POST", headers: hdr, body: JSON.stringify(body) });
+  const sent = await post({ kind: "idea", text: "More fish ships please " + "x".repeat(3000), name: "Tester", context: { screen: "800x600", room: "ABCD", status: "playing", turn: 7 } });
+  const { id } = await sent.json();
+  const empty = await post({ kind: "bug", text: "  " });
+  const noKey = await fetch(BASE + "/api/notes");
+  const list = await (await fetch(BASE + `/api/notes?after=${id - 1}`, { headers: { "x-notes-key": "local-notes-key" } })).json();
+  const mine = list.notes.find(n => n.id === id);
+  check(sent.ok && empty.status === 400 && noKey.status === 403 && mine && mine.text.length === 2000 && mine.context.room === "ABCD", "a note is saved (cut to 2,000 characters), empty notes are refused, and only the key reads them");
+  const ip = "198.51.100." + Math.floor(Math.random() * 250), codes = [];
+  for (let k = 0; k < 6; k++) codes.push((await post({ text: "note " + k }, { "x-limit-test": "1", "CF-Connecting-IP": ip })).status);
+  check(codes.slice(0, 5).every(c => c === 200) && codes[5] === 429, `the 6th note in an hour from one visitor is refused (${codes.join(",")})`);
+}
 // an idle room closes itself (needs DEV=1 in .dev.vars for the short idle time)
 {
   const r = await fetch(BASE + "/api/rooms", { method: "POST", body: JSON.stringify({ maxSeats: 2, public: true, idleMs: 1500 }) });

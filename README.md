@@ -32,3 +32,11 @@ Stellarchy's sounds are synthesised in the browser (client/sound.js); there are 
   - Fomalhaut: NASA, ESA and P. Kalas (UC Berkeley), heic0821a
   - All three are CC BY 4.0 via esahubble.org.
 - The Sun: NASA/SDO and the AIA, EVE and HMI science teams (public domain).
+
+## Notes to the developer
+
+Players can leave a note (🐞 Bug, 💡 Idea, 💜 Love it, or 💬 Other) from the title page or the in-game Menu. A note can be up to 2,000 characters, and each visitor can send 5 an hour. Visitors' addresses are used only for that limit and are never stored.
+
+- **Read them:** `.\run.ps1 notes https://<the live address>` appends new notes to `feedback/notes-001.md`, `notes-002.md` and so on, starting a new file every ~20,000 characters. With no address it reads the local dev server.
+- **The key:** reading needs a secret key. Set it once on Cloudflare with `npx wrangler secret put NOTES_KEY`, and save the same text in a file called `.notes-key` here. Locally the key is in `.dev.vars`.
+- **Privacy:** `feedback/` and `.notes-key` are in `.gitignore`, so players' notes never go to GitHub.

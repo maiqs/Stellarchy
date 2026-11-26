@@ -2,6 +2,11 @@ name = "stellarchy"
 main = "server/worker.js"
 compatibility_date = "2026-11-01"
 
+# The page needs files copied from shared/, data/ and node_modules (and the offline cache list), which git leaves out.
+# Wrangler runs this before every deploy and dev server, so a deploy straight from GitHub works too.
+[build]
+command = "node tools/sync.mjs"
+
 [assets]
 directory = "client"
 binding = "ASSETS"
@@ -14,6 +19,14 @@ class_name = "Room"
 name = "LOBBY"
 class_name = "Lobby"
 
+[[durable_objects.bindings]]
+name = "NOTES"
+class_name = "Notes"
+
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["Room", "Lobby"]
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["Notes"]

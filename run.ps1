@@ -1,4 +1,4 @@
-# Stellarchy: .\run.ps1 test | soak | dev | room | e2e | phone | measure
+# Stellarchy: .\run.ps1 test | soak | dev | room | e2e | phone | measure | notes
 param([string]$cmd = "test")
 $node = "$env:USERPROFILE\Documents\tools\node\node-v26.13.1-win-x64"
 if (Test-Path $node) { $env:PATH = "$node;$env:PATH" }
@@ -11,5 +11,6 @@ switch ($cmd) {
   "e2e"  { node tools/sync.mjs; node tests/e2e.mjs }   # headless Edge; starts its own server on port 8788
   "phone" { node tools/sync.mjs; node tools/phone.mjs }   # play on your phone over home Wi-Fi (port 8790, QR code)
   "measure" { node tools/sync.mjs; node tests/measure.mjs }
+  "notes" { node tools/notes.mjs $args }
   default { "usage: .\run.ps1 test | soak | dev | room | e2e | phone" }
 }

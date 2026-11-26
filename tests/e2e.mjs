@@ -23,6 +23,13 @@ try {
   // title screen
   check(await page.isVisible("text=Stellarchy") && await page.isVisible("#mQuick"), "title screen shows the wordmark and Quick play");
 
+  // a note to the developer, from the title page
+  await page.click("#mNote"); await page.waitForSelector("#nText");
+  await page.click('#nKind [data-v="love"]'); await page.fill("#nText", "E2E: the neon looks great");
+  await page.screenshot({ path: fileURLToPath(new URL("../docs/shots/note.png", import.meta.url)) }).catch(() => {});
+  const noteResp = page.waitForResponse(r => r.url().endsWith("/api/notes") && r.request().method() === "POST");
+  await page.click("#nSend"); const nr = await noteResp;
+  check(nr.ok() && !(await page.isVisible("#dlg[open]")), "a note to the developer sends from the title page and the dialog closes");
   // look editor: the 3D preview and the new ship styles
   await page.click("#youCard"); await page.waitForSelector("#lPrev canvas");
   check(await page.locator('[data-hull="fish"]').count() === 1 && await page.locator('[data-hull="dice"]').count() === 1, "look editor offers dice and fish ships, with a 3D preview");

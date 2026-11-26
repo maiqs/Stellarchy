@@ -85,6 +85,11 @@ a { color: var(--gold); }
 .recaprow:hover, .recaprow:focus-visible { border-color: var(--line2); background: rgba(255, 255, 255, .06); }
 @media (max-width: 520px) { .recaprow { grid-template-columns: 1fr auto; } .recaprow span { grid-column: 1; } .recaprow i { grid-row: 1 / 3; grid-column: 2; } }
 
+/* note to the developer (round 42) */
+textarea { font: .95rem/1.45 var(--body); color: inherit; width: 100%; resize: vertical; min-height: 120px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line2); background: rgba(0, 0, 0, .35); }
+textarea:focus { outline: none; border-color: var(--me); box-shadow: 0 0 0 3px color-mix(in srgb, var(--me) 25%, transparent); }
+.dlg.note .count { text-align: right; margin: 4px 0 0; }
+
 /* ---------- title ---------- */
 .screen { position: fixed; inset: 0; display: grid; place-items: center; padding: var(--top) var(--gutr) var(--bot) var(--gut); overflow: auto; z-index: 3;
   background: radial-gradient(ellipse at center, rgba(4, 6, 11, .1) 0%, rgba(4, 6, 11, .65) 75%); }

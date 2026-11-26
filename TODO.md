@@ -566,3 +566,9 @@ Sources:
   - Measured the cost of an online game (`run.ps1 measure`): about 1,000–4,000 requests for a 4-seat, 100-sun game.
   - Paul: taking the $5 Workers Paid plan; GitHub repo https://github.com/maiqs/Stellarchy (not pushed; waiting for his go).
   - 52 of 52 unit tests, 20 of 20 browser checks and 36 of 36 room checks pass.
+- **Paul, 2026-11-26 (direct request, after round 41):**
+  - ✉ Note to the developer, on the title page and in the Menu. A note has a kind (bug, idea, love it, other), up to 2,000 characters and an optional name, and is sent with the screen size and game position. Notes are stored in a Notes Durable Object, limited to 5 per visitor per hour.
+  - `.\run.ps1 notes [address]` appends them to running markdown files in `feedback/`, a new file every ~20,000 characters, for me to process. Reading needs the `NOTES_KEY` secret. `feedback/` stays out of git.
+  - Deploying from GitHub: wrangler now runs `tools/sync.mjs` as its build step, since the generated files are not in git. A dry-run deploy from a fresh clone builds (3,048 files, 447 KB Worker). A stale `client/data/star_map.json` was dropped from the offline cache.
+  - Fixed: raw control characters had slipped into a regex through shell escaping; a scan of all source files found no others.
+  - 52 of 52 unit tests, 21 of 21 browser checks and 38 of 38 room checks pass.
